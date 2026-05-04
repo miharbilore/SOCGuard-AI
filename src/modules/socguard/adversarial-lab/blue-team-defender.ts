@@ -34,16 +34,16 @@ const STRATEGY_MAP: Record<AdversarialAttackType, DefenseStrategy> = {
   },
   JAILBREAK_ROLEPLAY: {
     category: 'PROMPT_INJECTION',
-    pattern: '(you are now|artık sen|simulated|dan mode|developer mode|without filters|no limits)',
+    pattern: '(you are now|artık sen|simulated|dan mode|developer mode|without filters|no limits|disable-guardrails)',
     severity: 'HIGH',
     confidence: 0.85,
-    rationale: 'Identifies common roleplay-based jailbreak attempt patterns used to bypass safety guardrails.',
+    rationale: 'Identifies common roleplay-based jailbreak attempt patterns (DAN, developer mode, safety bypasses).',
     fpRisks: ['Creative writing tasks', 'Normal chatbot roleplay scenarios'],
     hardNegatives: ['You are a helpful assistant', 'Imagine you are a doctor']
   },
   FRAGMENTED_PAYLOAD: {
     category: 'PROMPT_INJECTION',
-    pattern: '(let|var|const|set|define) [A-Z0-9_]{1,10}.* (ignore|forget|concatenate|birleştir)',
+    pattern: '(let|var|const|set|define) [A-Z0-9_]{1,10}.* (ignore|forget|concatenate|birleştir|combine|apply)',
     severity: 'MEDIUM',
     confidence: 0.75,
     rationale: 'Detects variable-based obfuscation where instructions are split and then reassembled.',
@@ -52,7 +52,7 @@ const STRATEGY_MAP: Record<AdversarialAttackType, DefenseStrategy> = {
   },
   PREFIX_INJECTION: {
     category: 'PROMPT_INJECTION',
-    pattern: '(the user has changed|the analyst must now|you must now begin)',
+    pattern: '(the user has changed|the analyst must now|you must now begin|priming)',
     severity: 'MEDIUM',
     confidence: 0.8,
     rationale: 'Detects output-priming attempts where the user tries to overwrite the expected response prefix.',
@@ -61,46 +61,46 @@ const STRATEGY_MAP: Record<AdversarialAttackType, DefenseStrategy> = {
   },
   FEW_SHOT_MISLEADING: {
     category: 'PROMPT_INJECTION',
-    pattern: '(User:|Assistant:|Q:|A:).*(Ignore|Forget)',
+    pattern: '(User:|Assistant:|Q:|A:).*(Ignore|Forget|normalize)',
     severity: 'MEDIUM',
     confidence: 0.7,
-    rationale: 'Detects fake conversation histories used to induce a state where the model ignores system rules.',
+    rationale: 'Detects fake conversation histories used to normalize rule-breaking or ignore system rules.',
     fpRisks: ['Copy-pasting chat logs for context', 'Tutorials on how to use the assistant'],
     hardNegatives: ['User: hello, Assistant: hi']
   },
   TRANSLATION_BYPASS: {
     category: 'PROMPT_INJECTION',
-    pattern: '(translate|çevir).*(ignore|forget|execute|çalıştır)',
+    pattern: '(translate|çevir).*(ignore|forget|execute|çalıştır|wrapper)',
     severity: 'HIGH',
     confidence: 0.8,
-    rationale: 'Detects attempts to hide restricted instructions inside a translation request.',
+    rationale: 'Detects attempts to hide restricted instructions inside a translation request wrapper.',
     fpRisks: ['Language learning apps', 'Legitimate translation of technical terms'],
     hardNegatives: ['Translate this hello to French']
   },
   INDIRECT_RAG_INJECTION: {
     category: 'PROMPT_INJECTION',
-    pattern: '(DOCUMENT START|BELGE BAŞI|RESEARCH NOTE).*(must now|reveal|söyle)',
+    pattern: '(DOCUMENT START|BELGE BAŞI|RESEARCH NOTE|CV|review).*(must now|reveal|söyle|override)',
     severity: 'HIGH',
     confidence: 0.85,
-    rationale: 'Detects instructions embedded within external document markers that attempt to hijack the session.',
+    rationale: 'Detects instructions embedded within external document markers (CVs, reviews) that attempt to hijack the session.',
     fpRisks: ['Document summaries containing instruction-like phrases', 'Citing security policies in a report'],
     hardNegatives: ['The document says the user must login']
   },
   CONTEXT_OVERFLOW_ATTACK: {
     category: 'INSTRUCTION_OVERRIDE',
-    pattern: '(A|B|C|Z| ){50,}.*(ignore|forget)',
+    pattern: '(A|B|C|Z| ){50,}.*(ignore|forget|filler)',
     severity: 'MEDIUM',
     confidence: 0.6,
-    rationale: 'Detects long repetitive patterns followed by a bypass attempt, a technique used for context window overflow.',
+    rationale: 'Detects large filler sequences followed by a bypass attempt, targeting context window overflow.',
     fpRisks: ['ASCII art', 'Formatting tests'],
     hardNegatives: ['Repeating the word hello 5 times']
   },
   SYNTAX_ESCAPE: {
     category: 'PROMPT_INJECTION',
-    pattern: '("}|}\]|-->|--\|).*(ignore|forget|system)',
+    pattern: '("}|}\]|-->|--\||role=system|role=developer).*(ignore|forget|system)',
     severity: 'HIGH',
     confidence: 0.9,
-    rationale: 'Detects common escape sequences used to break out of data formats (JSON/Markdown) into command mode.',
+    rationale: 'Detects role injection or common escape sequences used to break out of data formats into command mode.',
     fpRisks: ['Code snippets showing closing brackets', 'Database query examples'],
     hardNegatives: ['{"name": "test"}', '--> end of comment']
   }
