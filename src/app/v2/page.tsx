@@ -17,7 +17,7 @@ export default function V2PipelineDemo() {
   const [candidates, setCandidates] = useState<CandidateRule[]>([]);
   const [regressionResults, setRegressionResults] = useState<CandidateRuleTestResult[]>([]);
   const [reviewItems, setReviewItems] = useState<RuleReviewItem[]>([]);
-  const [draftPack, setDraftPack] = useState<RulePack | null>(null);
+  const [simulatedApprovedPack, setSimulatedApprovedPack] = useState<RulePack | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -41,32 +41,30 @@ export default function V2PipelineDemo() {
       const results = runRegressionForCandidateRules(allCandidates);
       setRegressionResults(results);
 
-      // 5. Review Queue (Items start as PENDING)
+      // 5. Review Queue (Items remain PENDING by default in the main pipeline)
       const items = allCandidates.map((c, i) => createReviewItem(c, results[i]));
-      
-      // 6. Simulated Human Decisions (FOR DEMO ONLY)
-      // In a real system, this state change happens via human interaction
-      const demoDecisions = items.map(item => {
+      setReviewItems(items);
+
+      // 6. Optional Simulated Approval Preview (Clearly separated from the main pipeline)
+      const simulatedDecisions = items.map(item => {
         if (item.regressionResult.matchedBenign === 0 && item.regressionResult.matchedInjected > 0) {
-          // Simulated approval for rules with perfect regression metrics
+          // Manually simulate an approval for demonstration purposes
           return approveReviewItem(
             item, 
             'local-demo-reviewer', 
             'Simulated Approval: High precision detected in regression testing with zero false positives.'
           );
         }
-        return item; // Remains PENDING
+        return item;
       });
-      setReviewItems(demoDecisions);
-
-      // 7. Build Draft Pack from approved items
-      const newPack = buildDraftRulePackFromApprovedItems({
+      
+      const draftPack = buildDraftRulePackFromApprovedItems({
         baseRulePack: RULE_PACK_V1,
-        approvedReviewItems: demoDecisions,
+        approvedReviewItems: simulatedDecisions,
         newVersion: '1.1.0',
-        changelog: 'Automated V2 pipeline build demo with simulated human review.'
+        changelog: 'Manual simulation of approved rule pack.'
       });
-      setDraftPack(newPack);
+      setSimulatedApprovedPack(draftPack);
 
       setIsLoading(false);
     }, 800);
@@ -96,8 +94,8 @@ export default function V2PipelineDemo() {
           margin: '0 auto'
         }}>
           <strong>Disclaimer:</strong> This V2 workflow does not mutate active detection rules. 
-          It demonstrates a controlled offline update pipeline. <strong>This demo does not auto-approve rules; 
-          approved examples are explicitly marked as simulated reviewer decisions.</strong>
+          It demonstrates a controlled offline update pipeline. <strong>The default pipeline does not approve 
+          anything automatically. All simulated approvals are for demonstration only.</strong>
         </div>
       </header>
 
@@ -202,49 +200,23 @@ export default function V2PipelineDemo() {
             </div>
           </section>
 
-          {/* Stage 5: Review Queue */}
+          {/* Stage 5: Review Queue (Default PENDING) */}
           <section className="card">
-            <h2 className="section-title">5. Human Review Queue</h2>
+            <h2 className="section-title">5. Human Review Queue (Pipeline Default)</h2>
             <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '4px' }}>
-              {reviewItems.slice(0, 5).map(item => (
+              {reviewItems.slice(0, 3).map(item => (
                 <div key={item.id} style={{ 
                   padding: '1.5rem', 
                   borderBottom: '1px solid var(--border)',
                   display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.75rem'
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
                 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ fontWeight: 'bold' }}>{item.id} (Ref: {item.candidateRule.id})</div>
-                    <div className={`badge badge-${item.reviewerDecision === 'APPROVED' ? 'SAFE' : 'PENDING'}`}>
-                      {item.reviewerDecision}
-                    </div>
+                  <div>
+                    <div style={{ fontWeight: 'bold' }}>{item.id}</div>
+                    <div style={{ fontSize: '0.85rem' }}>Pattern: {item.candidateRule.suggestedPattern}</div>
+                    <div className="badge badge-PENDING" style={{ marginTop: '0.5rem' }}>{item.reviewerDecision}</div>
                   </div>
-                  <div style={{ fontSize: '0.85rem' }}>
-                    <strong>Suggested Pattern:</strong> <code style={{ color: '#0f0' }}>{item.candidateRule.suggestedPattern}</code>
-                  </div>
-                  
-                  {item.reviewedBy && (
-                    <div style={{ 
-                      background: 'rgba(0, 255, 157, 0.05)', 
-                      padding: '1rem', 
-                      borderRadius: '4px',
-                      borderLeft: '3px solid var(--safe)',
-                      fontSize: '0.9rem'
-                    }}>
-                      <div style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>
-                        Simulated Decision by: <span style={{ color: 'var(--accent)' }}>{item.reviewedBy}</span>
-                      </div>
-                      <p style={{ margin: 0, fontStyle: 'italic', opacity: 0.9 }}>"{item.reviewerNotes}"</p>
-                    </div>
-                  )}
-
-                  {item.reviewerDecision === 'PENDING' && (
-                    <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                      Await human analyst review... (Buttons disabled in demo flow)
-                    </div>
-                  )}
-                  
                   <div className="button-group" style={{ margin: 0 }}>
                     <button className="btn-primary" disabled style={{ opacity: 0.3 }}>Approve</button>
                     <button className="btn-secondary" disabled style={{ opacity: 0.3 }}>Reject</button>
@@ -252,43 +224,38 @@ export default function V2PipelineDemo() {
                 </div>
               ))}
               <div style={{ textAlign: 'center', padding: '1rem', opacity: 0.5, fontSize: '0.85rem' }}>
-                + {reviewItems.length - 5} more items in queue
+                All rules in the main pipeline remain PENDING until human action.
               </div>
             </div>
           </section>
 
-          {/* Stage 6: Draft Rule Pack */}
-          <section className="card" style={{ borderColor: 'var(--accent)' }}>
-            <h2 className="section-title">6. Draft Rule Pack Preview</h2>
-            <div style={{ marginBottom: '1rem', fontSize: '0.9rem', opacity: 0.8 }}>
-              This draft pack contains approved rules. <strong>Note: All new rules are initialized as "disabled" 
-              and "DRAFT" status for safety.</strong>
+          {/* Stage 6: Optional Simulated Approval Preview */}
+          <section className="card" style={{ borderColor: 'var(--accent)', background: 'rgba(0, 255, 157, 0.02)' }}>
+            <h2 className="section-title">Optional Simulated Approval Preview</h2>
+            <div style={{ marginBottom: '1rem', fontSize: '0.9rem', color: 'var(--accent)' }}>
+              <strong>Demo Section:</strong> This section shows what a Rule Pack would look like 
+              AFTER a human analyst manually approves candidates. This is NOT part of the automatic flow.
             </div>
-            {draftPack && (
+            {simulatedApprovedPack && (
               <div style={{ background: '#000', padding: '1.5rem', borderRadius: '4px', fontFamily: 'monospace', fontSize: '0.85rem' }}>
-                <div style={{ color: 'var(--accent)', marginBottom: '1rem' }}>// SOCGuard Rule Pack v{draftPack.version} (DRAFT)</div>
+                <div style={{ color: 'var(--accent)', marginBottom: '1rem' }}>// SOCGuard Rule Pack v{simulatedApprovedPack.version} (DRAFT)</div>
                 <div style={{ color: '#888' }}>
-                  ID: {draftPack.id}<br />
-                  Created: {draftPack.createdAt}<br />
-                  Rules: {draftPack.rules.length}<br />
-                  Status: {draftPack.status}
+                  ID: {simulatedApprovedPack.id}<br />
+                  Created: {simulatedApprovedPack.createdAt}<br />
+                  Rules: {simulatedApprovedPack.rules.length}<br />
+                  Status: {simulatedApprovedPack.status}
                 </div>
                 <div style={{ marginTop: '1rem', color: '#fff' }}>
-                  {draftPack.rules.filter(r => r.reviewStatus === 'DRAFT').slice(0, 3).map(r => (
-                    <div key={r.id} style={{ marginBottom: '0.75rem', paddingLeft: '1rem', borderLeft: '2px solid #444' }}>
-                      <div style={{ color: 'var(--accent)' }}>{r.id}: {r.pattern}</div>
-                      <div style={{ fontSize: '0.75rem', opacity: 0.6 }}>
-                        Enabled: {r.enabled ? 'true' : 'false'} | Status: {r.reviewStatus} | Source: {r.source}
-                      </div>
+                  {simulatedApprovedPack.rules.filter(r => r.reviewStatus === 'DRAFT').slice(0, 2).map(r => (
+                    <div key={r.id} style={{ marginBottom: '0.5rem', paddingLeft: '1rem', borderLeft: '2px solid #333' }}>
+                      {r.id}: {r.pattern} (Status: {r.reviewStatus})
+                      <div style={{ fontSize: '0.7rem', opacity: 0.5 }}>Created by: {r.createdBy}</div>
                     </div>
                   ))}
-                  <div style={{ opacity: 0.5 }}>... total {draftPack.rules.length} rules in package ...</div>
+                  <div style={{ opacity: 0.5 }}>... simulated pack preview ...</div>
                 </div>
               </div>
             )}
-            <div style={{ marginTop: '1rem', textAlign: 'right' }}>
-              <button className="btn-primary" disabled>Publish Versioned Pack (Locked in Demo)</button>
-            </div>
           </section>
 
         </div>

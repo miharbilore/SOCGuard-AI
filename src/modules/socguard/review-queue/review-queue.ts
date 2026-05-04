@@ -33,6 +33,10 @@ function updateReviewDecision(
   reviewerId: string,
   notes: string
 ): RuleReviewItem {
+  if (!reviewerId || reviewerId.trim().length < 3) {
+    throw new Error(`Audit Failure: Valid reviewer identity is mandatory for decision: ${decision}`);
+  }
+
   if (!notes || notes.trim().length < 5) {
     throw new Error(`Audit Failure: Meaningful reviewer notes are mandatory for decision: ${decision}`);
   }

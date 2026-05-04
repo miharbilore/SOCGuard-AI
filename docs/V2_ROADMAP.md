@@ -7,9 +7,9 @@ While V1 successfully demonstrated the feasibility of detecting indirect prompt 
 
 ## 2. V2 Core Principles
 * **Controlled Evolution**: The system will not "self-learn" from production data. All updates are vetted.
-* **Human-in-the-Loop**: No rule is deployed without explicit human review and approval. Simulated approvals in demos are clearly labeled.
+* **Human-in-the-Loop**: No rule is deployed without explicit human review and approval. **The V2 pipeline does not approve anything automatically.** Simulated approvals in demos are clearly labeled and sequestered.
 * **Predictability over Autonomy**: We prioritize reproducible detection over autonomous "black-box" adaptation. IDs are deterministic for auditability.
-* **Auditability over Speed**: Decisions require mandatory reviewer identities and justification notes.
+* **Auditability over Speed**: Decisions require mandatory reviewer identities and justification notes. Missing identity or notes will block the pipeline.
 * **Safety First**: Maintaining the V1 frozen state as a baseline to ensure no regression in core academic benchmarks.
 
 ## 3. Implemented Modules
