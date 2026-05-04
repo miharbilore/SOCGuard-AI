@@ -1,24 +1,45 @@
-# SOCGuard AI: Dataset Documentation
+# SOCGuard AI: Synthetic Dataset
 
 ## Overview
-This project includes a built-in synthetic dataset designed to demonstrate and test the detection of indirect prompt injection attacks. The dataset consists of SIEM-style log entries derived from various common sources.
+The SOCGuard AI research dataset is a curated collection of synthetic SIEM-style logs designed to evaluate the effectiveness of deterministic guardrails against indirect prompt injection. The dataset contains 30 samples (15 Benign, 15 Injected) covering a variety of formats, languages, and attack vectors.
 
-## Data Characteristics
-- **Type**: Synthetic / Simulated.
-- **Formats**: Includes standard web server logs (Nginx), cloud provider events (AWS CloudTrail), OS events (Windows/Linux), and application-specific logs.
-- **Labels**:
-  - `BENIGN`: Normal, non-malicious log entries.
-  - `INJECTED`: Logs containing adversarial prompt injection attempts.
+## Dataset Construction
+Logs were manually constructed to simulate real-world SIEM environments including:
+- **Web Servers (Nginx, Apache)**: Access and error logs.
+- **Cloud Audit (AWS CloudTrail, Azure Audit)**: API calls and identity events.
+- **System Logs (Syslog, Windows Events)**: Kernel messages and logon events.
+- **Application Logs**: JSON structured data, stack traces, and multi-line debug output.
+- **Security Tools (WAF, Mail Gateway)**: Alerts and traffic metadata.
 
-## Design for Safety
-- **Educational Focus**: The injected samples are designed for testing the semantic analysis capabilities of security tools.
-- **No Harmful Payloads**: The dataset does **not** contain executable malware, real exploit code, or sensitive credentials.
-- **Sandboxed Content**: Injections use instructional phrases (e.g., "Ignore previous instructions") to test boundary detection without posing a risk to the host system.
+## Categories & Coverage
+
+### Benign Logs (SAFE)
+Includes standard operational data and "Hard Negatives"—logs that contain suspicious-looking keywords but are contextually safe.
+- **Hard Negatives**: Documentation quoting injections, legitimate JSON formatting requests, and Turkish text using keywords like "talimat" (instruction) in a benign context.
+
+### Injected Logs (MALICIOUS)
+Includes indirect prompt injections hidden in various metadata fields (User-Agent, headers, log payloads).
+- **Direct Instructions**: "Ignore all previous instructions."
+- **Turkish Variants**: "Önceki talimatları yok say."
+- **Obfuscation**: URL encoding, HTML entities, and Zero-Width characters.
+- **Prompt Leakage**: Attempts to reveal system prompts or developer messages.
+- **Tool Abuse**: Unauthorized attempts to trigger function calls or data exfiltration.
+- **Format Control**: Coercing the analyzer to output specific formats (e.g., "JSON only").
+
+## Dataset Fields
+Each sample includes:
+- `id`: Unique identifier (e.g., `b-001`, `i-001`).
+- `source`: The simulated log source (e.g., `nginx-access`).
+- `raw`: The raw log payload.
+- `difficulty`: `EASY` (obvious), `MEDIUM` (encoded), or `HARD` (contextual/subtle).
+- `attackVector`: The specific technique used for injected logs.
 
 ## Limitations
-- **Not Real Data**: These logs do not originate from a real production environment.
-- **Complexity**: Real-world logs are significantly more verbose and noisy. This dataset focuses on clear, illustrative examples of injection hallmarks.
-- **Static Nature**: The dataset is hardcoded for demo purposes and does not reflect real-time threat landscapes.
+1. **Scale**: The dataset is small (30 samples) and intended for PoC validation.
+2. **Synthetic Nature**: While realistic, these logs do not contain the noise and volume of a production enterprise environment.
+3. **Statelessness**: The samples are isolated and do not simulate stateful multi-stage attacks.
 
-## Usage
-The dataset is accessible via the `getSampleLogs()` helper function in `src/modules/socguard/dataset/sample-logs.ts`.
+## Future Work
+- Expansion to 1000+ samples using automated generation (with human verification).
+- Integration with real-world anonymized SIEM datasets.
+- Addition of stateful attack sequences.
