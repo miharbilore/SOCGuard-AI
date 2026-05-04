@@ -1,2 +1,1 @@
-// TODO: Implement demo module
-export {};
+export * from './analyze-log';
