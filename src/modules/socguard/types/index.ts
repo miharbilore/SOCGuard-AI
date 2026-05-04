@@ -106,3 +106,21 @@ export interface AnalysisResult {
   /** Timestamp of when the analysis was completed */
   createdAt: string;
 }
+
+/**
+ * Represents the result of the preprocessing layer.
+ */
+export interface NormalizedLogInput {
+  /** The original raw input string */
+  original: string;
+  /** Normalized version (NFKC + decoded) */
+  normalized: string;
+  /** Lowercase version of the normalized string */
+  lowercase: string;
+  /** The normalized string split into lines */
+  lines: string[];
+  /** Different decoded versions if multiple layers of encoding are detected */
+  decodedVariants: string[];
+  /** List of suspicious transformations detected (e.g., "URL_ENCODING", "HTML_ENTITY", "ZERO_WIDTH_CHARS") */
+  suspiciousTransforms: string[];
+}
