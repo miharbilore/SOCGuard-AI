@@ -1,4 +1,12 @@
-import { LogEntry, AnalysisResult } from '../types';
+import { 
+  LogEntry, 
+  AnalysisResult, 
+  DatasetEvaluation, 
+  EvaluationMetrics, 
+  DifficultyMetric, 
+  AttackVectorMetric, 
+  CategoryMetric 
+} from '../types';
 import { analyzeLog as detectThreats } from '../detection';
 import { calculateRiskScore } from '../scoring';
 import { evaluatePolicy } from '../policy';
@@ -50,17 +58,27 @@ export function analyzeLog(log: LogEntry): AnalysisResult {
 
 /**
  * Runs the analysis pipeline against the entire sample dataset for evaluation.
+ * Calculates academic metrics including Precision, Recall, F1, and breakdowns.
  */
-export function analyzeSampleDataset() {
+export function analyzeSampleDataset(): DatasetEvaluation {
   const samples = getSampleLogs();
   const results: AnalysisResult[] = [];
   
-  let benignCount = 0;
-  let injectedCount = 0;
-  let detectedInjectedCount = 0;
-  let falsePositives = 0;
-  let falseNegatives = 0;
+  let tp = 0; // True Positive
+  let tn = 0; // True Negative
+  let fp = 0; // False Positive
+  let fn = 0; // False Negative
   let totalLatency = 0;
+
+  // Breakdown aggregators
+  const difficultyMap: Record<string, { total: number, detected: number }> = {
+    'EASY': { total: 0, detected: 0 },
+    'MEDIUM': { total: 0, detected: 0 },
+    'HARD': { total: 0, detected: 0 }
+  };
+  
+  const attackVectorMap: Record<string, { total: number, detected: number }> = {};
+  const categoryMap: Record<string, number> = {};
   
   for (const sample of samples) {
     const log: LogEntry = {
@@ -74,33 +92,92 @@ export function analyzeSampleDataset() {
     results.push(result);
     totalLatency += result.latencyMs;
     
-    // Logic for evaluation:
-    // Decision is "detected" if it's ESCALATE, HUMAN_REVIEW, or BLOCK.
     const isDetected = result.policyDecision !== 'SAFE';
-    
-    if (sample.label === 'BENIGN') {
-      benignCount++;
-      if (isDetected) {
-        falsePositives++;
-      }
+    const isActuallyInjected = sample.label === 'INJECTED';
+
+    // Confusion Matrix Logic
+    if (isActuallyInjected) {
+      if (isDetected) tp++; else fn++;
     } else {
-      injectedCount++;
-      if (isDetected) {
-        detectedInjectedCount++;
-      } else {
-        falseNegatives++;
+      if (isDetected) fp++; else tn++;
+    }
+
+    // Difficulty Breakdown
+    if (difficultyMap[sample.difficulty]) {
+      difficultyMap[sample.difficulty].total++;
+      if (isActuallyInjected && isDetected) {
+        difficultyMap[sample.difficulty].detected++;
       }
     }
+
+    // Attack Vector Breakdown
+    if (sample.attackVector) {
+      if (!attackVectorMap[sample.attackVector]) {
+        attackVectorMap[sample.attackVector] = { total: 0, detected: 0 };
+      }
+      attackVectorMap[sample.attackVector].total++;
+      if (isDetected) {
+        attackVectorMap[sample.attackVector].detected++;
+      }
+    }
+
+    // Category Breakdown (Frequency of findings)
+    result.findings.forEach(f => {
+      categoryMap[f.category] = (categoryMap[f.category] || 0) + 1;
+    });
   }
-  
-  return {
+
+  // Calculate Metrics
+  const precision = tp + fp > 0 ? tp / (tp + fp) : 1;
+  const recall = tp + fn > 0 ? tp / (tp + fn) : 1;
+  const f1 = (precision + recall) > 0 ? (2 * precision * recall) / (precision + recall) : 0;
+  const accuracy = (tp + tn) / samples.length;
+
+  const metrics: EvaluationMetrics = {
     totalLogs: samples.length,
-    benignCount,
-    injectedCount,
-    detectedInjectedCount,
-    falsePositives,
-    falseNegatives,
-    averageLatencyMs: totalLatency / samples.length,
+    benignCount: samples.filter(s => s.label === 'BENIGN').length,
+    injectedCount: samples.filter(s => s.label === 'INJECTED').length,
+    truePositives: tp,
+    trueNegatives: tn,
+    falsePositives: fp,
+    falseNegatives: fn,
+    accuracy,
+    precision,
+    recall,
+    f1Score: f1,
+    detectionRate: recall,
+    falsePositiveRate: tn + fp > 0 ? fp / (tn + fp) : 0,
+    falseNegativeRate: tp + fn > 0 ? fn / (tp + fn) : 0,
+    averageLatencyMs: totalLatency / samples.length
+  };
+
+  // Format breakdowns
+  const perDifficulty: DifficultyMetric[] = Object.entries(difficultyMap).map(([difficulty, stats]) => ({
+    difficulty: difficulty as 'EASY' | 'MEDIUM' | 'HARD',
+    total: stats.total,
+    detected: stats.detected,
+    missed: stats.total - stats.detected,
+    detectionRate: stats.total > 0 ? stats.detected / stats.total : 1
+  }));
+
+  const perAttackVector: AttackVectorMetric[] = Object.entries(attackVectorMap).map(([vector, stats]) => ({
+    attackVector: vector,
+    total: stats.total,
+    detected: stats.detected,
+    missed: stats.total - stats.detected,
+    detectionRate: stats.total > 0 ? stats.detected / stats.total : 1
+  }));
+
+  const perCategory: CategoryMetric[] = Object.entries(categoryMap).map(([cat, count]) => ({
+    category: cat,
+    count
+  }));
+
+  return {
+    metrics,
+    perDifficulty,
+    perAttackVector,
+    perCategory,
     results
   };
 }

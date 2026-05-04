@@ -181,3 +181,56 @@ export interface ExplanationResult {
   /** Known limitations of this specific analysis */
   limitations: string[];
 }
+
+/**
+ * Detailed metrics for academic reporting.
+ */
+export interface EvaluationMetrics {
+  totalLogs: number;
+  benignCount: number;
+  injectedCount: number;
+  truePositives: number;
+  trueNegatives: number;
+  falsePositives: number;
+  falseNegatives: number;
+  accuracy: number;
+  precision: number;
+  recall: number;
+  f1Score: number;
+  detectionRate: number;
+  falsePositiveRate: number;
+  falseNegativeRate: number;
+  averageLatencyMs: number;
+}
+
+export interface DifficultyMetric {
+  difficulty: 'EASY' | 'MEDIUM' | 'HARD';
+  total: number;
+  detected: number;
+  missed: number;
+  detectionRate: number;
+}
+
+export interface AttackVectorMetric {
+  attackVector: string;
+  total: number;
+  detected: number;
+  missed: number;
+  detectionRate: number;
+}
+
+export interface CategoryMetric {
+  category: string;
+  count: number;
+}
+
+/**
+ * Result of the full dataset evaluation benchmark.
+ */
+export interface DatasetEvaluation {
+  metrics: EvaluationMetrics;
+  perDifficulty: DifficultyMetric[];
+  perAttackVector: AttackVectorMetric[];
+  perCategory: CategoryMetric[];
+  results: AnalysisResult[];
+}
