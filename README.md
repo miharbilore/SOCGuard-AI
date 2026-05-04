@@ -1,30 +1,41 @@
 # SOCGuard AI
 
-SOCGuard AI is a research-focused project designed to detect and mitigate **indirect prompt injection attacks** embedded within SIEM-style log entries. Its purpose is to act as a safeguard for downstream automated systems and LLM-based analysis pipelines, preventing them from being manipulated by malicious inputs disguised as ordinary logs.
+SOCGuard AI is a deterministic-first research Proof of Concept (PoC) designed to detect and mitigate **indirect prompt injection attacks** embedded within SIEM-style log entries. 
+
+The system acts as a pre-processing safeguard for downstream LLM-based SOC assistants, ensuring that malicious instructions hidden in logs (e.g., User-Agent headers, process command lines) are identified and blocked before they can manipulate the assistant.
+
+## Key Principles
+- **Deterministic Authority**: Security decisions are based on verifiable regex patterns, context heuristics, and fixed policy thresholds—not probabilistic LLM outputs.
+- **Reproducibility**: Analysis IDs and finding results are derived deterministically from log content, ensuring identical results across forensic re-runs.
+- **Explainability**: Every decision is accompanied by a transparent breakdown of triggered rules, matched evidence, and scoring factors.
 
 ## Project Scope
-- This project is **not** a chatbot.
-- This project is **not** a full SIEM or EDR.
-- The scope is strictly limited to detecting and evaluating indirect prompt injections.
-- It operates using a **hybrid detection** architecture where deterministic rules are the primary authority, while LLM integration acts as a purely supplemental (and heavily distrusted) analysis layer.
-- Final verdicts are strictly controlled by a deterministic Policy Engine.
+SOCGuard is a specialized research tool with a strictly defined scope:
+- **What it is**: A modular pipeline for identifying malicious instruction overrides in log data.
+- **What it is NOT**: 
+    - It is **not** a chatbot or general-purpose AI.
+    - It is **not** a replacement for full SIEM (e.g., Splunk) or EDR (e.g., CrowdStrike).
+    - It does **not** use an LLM for its core security decisions in this prototype.
 
-For more details on the scope, please read [PROJECT_SCOPE.md](docs/PROJECT_SCOPE.md).
+## Pipeline Architecture
+Log entries flow through a sequential deterministic pipeline:
+1. **Preprocessing**: Normalizes input, resolves Unicode anomalies, and performs multi-pass decoding (URL, HTML, Base64).
+2. **Detection**: Applies deterministic signatures and context-aware heuristics.
+3. **Risk Scoring**: Aggregates findings into a 0-100 score based on severity and category diversity.
+4. **Policy Engine**: maps scores to definitive actions (SAFE, ESCALATE, HUMAN_REVIEW, BLOCK).
+5. **Explainability**: Generates a human-readable summary and decision rationale.
 
-## Architecture
-The application uses a modular, pipeline-driven structure. Log entries flow through sequential engines:
-1. **Dataset**: Ingests and parses logs.
-2. **Detection**: Applies deterministic rules (heuristics, regex).
-3. **Scoring & LLM**: Evaluates context and assigns risk scores.
-4. **Policy**: Evaluates scores and issues final blocks/alerts.
-5. **Explainability & Demo**: Summarizes decisions and presents them via a Next.js dashboard.
-
-For more technical details, refer to the [ARCHITECTURE.md](docs/ARCHITECTURE.md).
+## Research Limitations
+As an academic PoC, SOCGuard AI has several known limitations:
+- **Synthetic Dataset**: Benchmark results are based on a small curated set of 30 samples.
+- **Stateless Analysis**: Logs are analyzed in isolation; it does not yet correlate multi-event attack chains.
+- **Signature Bounded**: Like all signature-based systems, it may miss novel semantic attacks that don't trigger existing patterns.
+- **Not Production-Ready**: Designed for academic validation and benchmarking, not for real-world enterprise traffic.
 
 ## Technology Stack
 - **Language**: TypeScript
-- **Framework**: Next.js (App Router)
-- **Design**: Modular, standalone core functions decoupled from the UI
+- **Framework**: Next.js 14 (App Router)
+- **Validation**: Strict Type Safety with no `any` usage in core modules.
 
 ## Getting Started
 
@@ -38,4 +49,4 @@ Then, run the development server:
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to view the interactive demo and [http://localhost:3000/evaluation](http://localhost:3000/evaluation) for the academic benchmark dashboard.

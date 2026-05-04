@@ -1,41 +1,36 @@
 # SOCGuard AI: Analysis Methodology
 
-## Deterministic-First Pipeline
-SOCGuard AI operates on a "Deterministic-First" philosophy. The core analysis pipeline is composed of four strictly deterministic stages:
+## Deterministic-First Philosophy
+SOCGuard AI operates on a "Deterministic-First" security model. The core analysis pipeline is composed of four strictly deterministic stages executed in sequence:
 
-1.  **Preprocessing**: Normalizing and decoding input to reveal obfuscation.
-2.  **Detection**: Pattern-matching against a curated library of adversarial signatures.
-3.  **Risk Scoring**: Aggregating findings into a numeric score with confidence weighting and caps.
-4.  **Policy Enforcement**: Applying final security decisions based on static thresholds and override rules.
+1.  **Preprocessing**: Normalizing input, stripping invisible characters, and multi-pass decoding (URL, HTML, Base64).
+2.  **Detection**: Signature-based pattern matching against a curated library of prompt injection hallmaks (e.g., "ignore instructions", "act as", "reveal prompt").
+3.  **Risk Scoring**: Weighing and aggregating detections into a 0-100 score, applying diversity bonuses for multi-category threats.
+4.  **Policy Enforcement**: Mapping the aggregate score to a final decision (SAFE, ESCALATE, HUMAN_REVIEW, BLOCK) based on fixed thresholds.
 
-## Why LLMs are Excluded from the Core Pipeline
-We intentionally exclude LLMs from the primary decision-making path for several reasons:
+## Exclusion of LLMs from the Core Pipeline
+We intentionally exclude LLMs from the primary security decision path to ensure:
+- **Integrity**: Deterministic engines are immune to the semantic persuasion and "jailbreaking" that target probabilistic models.
+- **Performance**: Sub-millisecond execution times suitable for high-volume SIEM log ingestion.
+- **Reproducibility**: Identical inputs always yield identical outputs, a critical requirement for forensic auditing.
+- **Auditability**: Transparent "if-then" logic that can be explicitly verified by security compliance teams.
 
--   **Integrity**: LLMs can be manipulated by the very prompt injections they are meant to detect. A deterministic engine is immune to semantic persuasion.
--   **Performance**: Deterministic rules execute in sub-millisecond timeframes, whereas LLM inference can take seconds.
--   **Reliability**: Security requires 100% reproducibility. LLMs are probabilistic and may return different results for the same input.
--   **Auditability**: Deterministic rules provide a clear "if-then" logic that can be easily audited by compliance teams.
+## Reproducibility & Forensic Tracking
+To ensure SOCGuard AI is reliable for automated security workflows:
+- **Deterministic IDs**: Every `AnalysisResult` and `DetectionFinding` has an ID derived from the log content using a DJB2-based hash. The same log analyzed twice will always yield the same identifiers.
+- **Aligned Thresholds**: Risk levels (e.g., CRITICAL starting at 80) are perfectly synced with Policy Decisions (e.g., BLOCK starting at 80), eliminating ambiguous "dead zones" in security logic.
 
-## Reproducibility & Deterministic IDs
-To ensure that SOCGuard AI is reliable for forensic analysis and automated workflows:
-- **Analysis IDs**: Every analysis result has an ID derived from the log content using a deterministic hash. The same log analyzed twice will yield the same ID.
-- **Finding IDs**: Findings are identified based on the log, the rule, the line number, and the specific text matched.
-- **Consistent Thresholds**: Risk levels (LOW to CRITICAL) are perfectly aligned with Policy Decisions (SAFE to BLOCK), ensuring no "dead zones" in the logic.
+## Academic Evaluation Metrics
+The system is benchmarked using standard binary classification and security metrics:
+- **Accuracy**: Overall correctness of classification (Safe vs Suspect).
+- **Precision**: Ratio of correctly identified injections to total suspicious flags.
+- **Recall (Recall on Injected)**: The system's ability to identify all malicious injections.
+- **F1 Score**: The harmonic mean of Precision and Recall.
+- **False Positive Rate (on Benign)**: Ratio of benign logs incorrectly flagged as suspicious.
+- **Average Latency**: End-to-end processing time per log entry.
 
-## Evaluation Metrics
-We measure the effectiveness of the orchestrator using standard binary classification metrics:
-
--   **Total Logs**: Number of samples analyzed.
--   **Detection Rate**: Percentage of `INJECTED` logs correctly identified as `ESCALATE`, `HUMAN_REVIEW`, or `BLOCK`.
--   **False Positive Rate**: Percentage of `BENIGN` logs incorrectly flagged as suspicious.
--   **False Negative Rate**: Percentage of `INJECTED` logs that bypassed all deterministic rules.
--   **Average Latency**: The end-to-end processing time for a single log entry.
-
-## Limitations
-
--   **Signature Dependency**: The pipeline is only as good as its rule library. It will not detect novel semantic attacks that do not match existing patterns.
--   **Context Blindness**: The current orchestrator is stateless and analyzes logs in isolation, potentially missing multi-stage attacks.
--   **Semantic Complexity**: Deterministic rules struggle with highly nuanced or conversational prompt injections that do not use "malicious" keywords.
-
-## Implementation Details
-The pipeline is orchestrated in `src/modules/socguard/demo/analyze-log.ts` and provides a unified `AnalysisResult` that includes all intermediate states for full transparency.
+## Research Limitations
+- **Signature Dependency**: Detection is bounded by the current rule library.
+- **Statelessness**: Logs are analyzed in isolation without session correlation.
+- **Bounded Decoding**: Multi-pass decoding is limited to 2 layers to ensure deterministic performance.
+- **Small Synthetic Dataset**: The current benchmark is performed on 30 curated samples for PoC validation.

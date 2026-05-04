@@ -94,6 +94,17 @@ export interface RiskScore {
 }
 
 /**
+ * Ground truth metadata from the dataset for evaluation.
+ */
+export interface GroundTruth {
+  label: 'BENIGN' | 'INJECTED';
+  difficulty: 'EASY' | 'MEDIUM' | 'HARD';
+  attackVector?: string;
+  expectedCategory?: string;
+  shortDescription?: string;
+}
+
+/**
  * Represents the complete end-to-end analysis result for a given log entry.
  */
 export interface AnalysisResult {
@@ -115,6 +126,8 @@ export interface AnalysisResult {
   latencyMs: number;
   /** Timestamp of when the analysis was completed */
   createdAt: string;
+  /** Ground truth metadata if available (for evaluation) */
+  groundTruth?: GroundTruth;
 }
 
 /**
@@ -206,9 +219,14 @@ export interface EvaluationMetrics {
 export interface DifficultyMetric {
   difficulty: 'EASY' | 'MEDIUM' | 'HARD';
   total: number;
-  detected: number;
-  missed: number;
-  detectionRate: number;
+  benignCount: number;
+  injectedCount: number;
+  truePositives: number;
+  trueNegatives: number;
+  falsePositives: number;
+  falseNegatives: number;
+  detectionRateOnInjected: number;
+  falsePositiveRateOnBenign: number;
 }
 
 export interface AttackVectorMetric {
@@ -222,6 +240,8 @@ export interface AttackVectorMetric {
 export interface CategoryMetric {
   category: string;
   count: number;
+  expectedCount: number;
+  coveragePercentage: number;
 }
 
 /**

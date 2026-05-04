@@ -71,14 +71,22 @@ export function analyzeSampleDataset(): DatasetEvaluation {
   let totalLatency = 0;
 
   // Breakdown aggregators
-  const difficultyMap: Record<string, { total: number, detected: number }> = {
-    'EASY': { total: 0, detected: 0 },
-    'MEDIUM': { total: 0, detected: 0 },
-    'HARD': { total: 0, detected: 0 }
+  const difficultyMap: Record<string, { 
+    benign: number, 
+    injected: number, 
+    tp: number, 
+    tn: number, 
+    fp: number, 
+    fn: number 
+  }> = {
+    'EASY': { benign: 0, injected: 0, tp: 0, tn: 0, fp: 0, fn: 0 },
+    'MEDIUM': { benign: 0, injected: 0, tp: 0, tn: 0, fp: 0, fn: 0 },
+    'HARD': { benign: 0, injected: 0, tp: 0, tn: 0, fp: 0, fn: 0 }
   };
   
   const attackVectorMap: Record<string, { total: number, detected: number }> = {};
   const categoryMap: Record<string, number> = {};
+  const expectedCategoryMap: Record<string, number> = {};
   
   for (const sample of samples) {
     const log: LogEntry = {
@@ -89,6 +97,16 @@ export function analyzeSampleDataset(): DatasetEvaluation {
     };
     
     const result = analyzeLog(log);
+    
+    // Attach ground truth for evaluation table
+    result.groundTruth = {
+      label: sample.label,
+      difficulty: sample.difficulty,
+      attackVector: sample.attackVector || undefined,
+      expectedCategory: sample.expectedCategory,
+      shortDescription: sample.shortDescription
+    };
+    
     results.push(result);
     totalLatency += result.latencyMs;
     
@@ -102,11 +120,15 @@ export function analyzeSampleDataset(): DatasetEvaluation {
       if (isDetected) fp++; else tn++;
     }
 
-    // Difficulty Breakdown
-    if (difficultyMap[sample.difficulty]) {
-      difficultyMap[sample.difficulty].total++;
-      if (isActuallyInjected && isDetected) {
-        difficultyMap[sample.difficulty].detected++;
+    // Difficulty Breakdown Logic
+    const diff = sample.difficulty;
+    if (difficultyMap[diff]) {
+      if (isActuallyInjected) {
+        difficultyMap[diff].injected++;
+        if (isDetected) difficultyMap[diff].tp++; else difficultyMap[diff].fn++;
+      } else {
+        difficultyMap[diff].benign++;
+        if (isDetected) difficultyMap[diff].fp++; else difficultyMap[diff].tn++;
       }
     }
 
@@ -116,18 +138,22 @@ export function analyzeSampleDataset(): DatasetEvaluation {
         attackVectorMap[sample.attackVector] = { total: 0, detected: 0 };
       }
       attackVectorMap[sample.attackVector].total++;
-      if (isDetected) {
+      if (isActuallyInjected && isDetected) {
         attackVectorMap[sample.attackVector].detected++;
       }
     }
 
-    // Category Breakdown (Frequency of findings)
+    // Category Tracking
+    if (sample.expectedCategory) {
+      expectedCategoryMap[sample.expectedCategory] = (expectedCategoryMap[sample.expectedCategory] || 0) + 1;
+    }
+    
     result.findings.forEach(f => {
       categoryMap[f.category] = (categoryMap[f.category] || 0) + 1;
     });
   }
 
-  // Calculate Metrics
+  // Calculate Global Metrics
   const precision = tp + fp > 0 ? tp / (tp + fp) : 1;
   const recall = tp + fn > 0 ? tp / (tp + fn) : 1;
   const f1 = (precision + recall) > 0 ? (2 * precision * recall) / (precision + recall) : 0;
@@ -146,18 +172,23 @@ export function analyzeSampleDataset(): DatasetEvaluation {
     recall,
     f1Score: f1,
     detectionRate: recall,
-    falsePositiveRate: tn + fp > 0 ? fp / (tn + fp) : 0,
-    falseNegativeRate: tp + fn > 0 ? fn / (tp + fn) : 0,
+    falsePositiveRate: (tn + fp > 0) ? fp / (tn + fp) : 0,
+    falseNegativeRate: (tp + fn > 0) ? fn / (tp + fn) : 0,
     averageLatencyMs: totalLatency / samples.length
   };
 
-  // Format breakdowns
+  // Format perDifficulty breakdown
   const perDifficulty: DifficultyMetric[] = Object.entries(difficultyMap).map(([difficulty, stats]) => ({
     difficulty: difficulty as 'EASY' | 'MEDIUM' | 'HARD',
-    total: stats.total,
-    detected: stats.detected,
-    missed: stats.total - stats.detected,
-    detectionRate: stats.total > 0 ? stats.detected / stats.total : 1
+    total: stats.benign + stats.injected,
+    benignCount: stats.benign,
+    injectedCount: stats.injected,
+    truePositives: stats.tp,
+    trueNegatives: stats.tn,
+    falsePositives: stats.fp,
+    falseNegatives: stats.fn,
+    detectionRateOnInjected: stats.injected > 0 ? stats.tp / stats.injected : 1,
+    falsePositiveRateOnBenign: stats.benign > 0 ? stats.fp / stats.benign : 0
   }));
 
   const perAttackVector: AttackVectorMetric[] = Object.entries(attackVectorMap).map(([vector, stats]) => ({
@@ -168,10 +199,15 @@ export function analyzeSampleDataset(): DatasetEvaluation {
     detectionRate: stats.total > 0 ? stats.detected / stats.total : 1
   }));
 
-  const perCategory: CategoryMetric[] = Object.entries(categoryMap).map(([cat, count]) => ({
-    category: cat,
-    count
-  }));
+  const perCategory: CategoryMetric[] = Object.entries(expectedCategoryMap).map(([cat, expectedCount]) => {
+    const detectedCount = categoryMap[cat] || 0;
+    return {
+      category: cat,
+      count: detectedCount,
+      expectedCount,
+      coveragePercentage: expectedCount > 0 ? Math.min(100, (detectedCount / expectedCount) * 100) : 100
+    };
+  });
 
   return {
     metrics,

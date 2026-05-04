@@ -1,24 +1,26 @@
 # Architecture: SOCGuard AI
 
 ## Overview
-SOCGuard AI employs a modular, pipeline-driven architecture. The core design philosophy centers around **Hybrid Detection**, ensuring deterministic rules act as the primary gatekeeper, with LLMs providing supplementary semantic context that is strictly governed by a deterministic Policy Engine.
+SOCGuard AI employs a modular, pipeline-driven architecture optimized for sub-millisecond, deterministic log analysis. The core design philosophy centers on **Deterministic Authority**, ensuring that security decisions are based on verifiable code rather than probabilistic LLM outputs.
 
-## Modules
+## Core Modules
 
-- **dataset:** Responsible for loading, parsing, and normalizing mock SIEM-style logs.
-- **detection:** Houses the initial deterministic rule sets (regex, heuristics, keyword matching, length analysis) to flag suspicious anomalies.
-- **llm:** An optional adapter for deeper semantic analysis of the log content. Its outputs are treated as auxiliary signals, never definitive verdicts.
-- **scoring:** Aggregates findings from both the detection engine and the LLM adapter to calculate an overall risk score for each log entry.
-- **policy:** The final decision-maker. Evaluates the risk score against predefined deterministic thresholds and rules to either block, alert, or allow the entry.
-- **explainability:** Transforms the raw scores and rule triggers into human-readable rationale to assist analysts.
-- **demo:** A Next.js App Router-based UI dashboard to visualize the pipeline in action.
-- **types:** Shared TypeScript interfaces and types enforcing strong typing across the entire pipeline.
+- **dataset:** Responsible for loading, parsing, and providing mock SIEM-style logs for research and evaluation.
+- **preprocessing:** Standardizes raw log strings, removes zero-width obfuscation, and performs multi-pass decoding (URL, HTML, Base64).
+- **detection:** Houses the deterministic signature sets (regex, heuristics, keyword matching) to identify known prompt injection hallmarks.
+- **scoring:** Aggregates findings from the detection engine into a 0-100 risk score, applying bonuses for category diversity.
+- **policy:** The final gatekeeper. Maps numeric risk scores to actionable decisions (BLOCK, HUMAN_REVIEW, ESCALATE, SAFE) based on fixed thresholds.
+- **explainability:** Transforms the raw detections and scores into structured evidence and rationales for analyst review.
+- **demo:** A Next.js 14 dashboard providing an interactive playground and academic benchmark interface.
 
-## Flow
-1. Raw Log -> `dataset` -> Normalized LogEntry
-2. LogEntry -> `detection` -> Preliminary Findings
-3. LogEntry (optional) -> `llm` -> Semantic Findings
-4. Preliminary + Semantic Findings -> `scoring` -> RiskScore
-5. RiskScore -> `policy` -> Final Decision
-6. Final Decision + Rules Triggered -> `explainability` -> Analyst Summary
-7. Full Output -> `demo` -> User Interface
+## Data Flow
+1. **Raw Log Input**: String from SIEM source.
+2. **Preprocessing**: Normalized + Decoded variants generated.
+3. **Detection**: Each variant is scanned against the rule library.
+4. **Scoring**: Findings are weighed and aggregated.
+5. **Policy**: Risk score is evaluated against thresholds (e.g., 80+ = BLOCK).
+6. **Explainability**: Summaries and evidence are compiled.
+7. **Output**: `AnalysisResult` returned for UI or downstream API.
+
+## Future Work: Hybrid Integration
+While the current PoC is strictly deterministic, the architecture is designed to support an optional LLM-based semantic analysis layer. In such a configuration, LLM outputs would be treated as additional `DetectionFinding` objects with associated confidence scores, which are then passed to the deterministic Policy Engine for the final verdict.

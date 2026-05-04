@@ -46,8 +46,8 @@ export default function Home() {
         </div>
         <h1>SOCGuard AI</h1>
         <p className="description">
-          This proof of concept detects malicious instructions hidden inside log data 
-          before an LLM-based SOC assistant can treat them as commands.
+          A deterministic-first research PoC designed to identify indirect prompt injection in SIEM logs
+          before they reach LLM-based SOC assistants.
         </p>
       </header>
 
@@ -123,14 +123,14 @@ export default function Home() {
                       result.explanation.suspiciousEvidence.map((ev, i) => (
                         <div key={i} className="finding-item" style={{ background: 'rgba(255,255,255,0.03)', padding: '1rem' }}>
                           <div className="finding-header" style={{ marginBottom: '0.5rem' }}>
-                            <span style={{ fontWeight: 'bold', color: 'var(--accent)' }}>{ev.ruleId}</span>
+                            <span style={{ fontWeight: 'bold', color: 'var(--accent)' }}>{ev.ruleId || 'SIG-000'}</span>
                             <span className={`badge badge-${ev.severity}`} style={{ fontSize: '0.7rem', padding: '2px 8px' }}>
                               {ev.severity}
                             </span>
                             <span style={{ opacity: 0.7, fontSize: '0.8rem' }}>{ev.category}</span>
                           </div>
                           <div style={{ fontSize: '0.8rem', opacity: 0.6, marginBottom: '0.5rem' }}>
-                            Line {ev.lineNumber} | Confidence: {(ev.confidence * 100).toFixed(0)}%
+                            Line {ev.lineNumber || 'N/A'} | Confidence: {(ev.confidence * 100).toFixed(0)}%
                           </div>
                           <code style={{ 
                             display: 'block', 
@@ -141,13 +141,13 @@ export default function Home() {
                             wordBreak: 'break-all',
                             color: '#0f0'
                           }}>
-                            {ev.matchedText}
+                            {ev.matchedText || 'Pattern Match'}
                           </code>
                           <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>{ev.reason}</div>
                         </div>
                       ))
                     ) : (
-                      <p className="rationale">No suspicious evidence identified.</p>
+                      <p className="rationale">No suspicious evidence identified by deterministic signatures.</p>
                     )}
                   </div>
                 </div>
