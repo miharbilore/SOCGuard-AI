@@ -1,2 +1,2 @@
-// TODO: Implement detection module
-export {};
+export * from './patterns';
+export * from './detection-engine';

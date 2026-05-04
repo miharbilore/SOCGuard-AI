@@ -49,6 +49,14 @@ export interface DetectionFinding {
   description: string;
   /** Identifier of the rule or heuristic that triggered this finding */
   ruleId: string;
+  /** The specific text fragment that triggered the detection */
+  matchedText?: string;
+  /** Character offset where the match was found */
+  offset?: number;
+  /** Detailed reason for the detection */
+  reason?: string;
+  /** Confidence level of the detection (0.0 to 1.0) */
+  confidence: number;
 }
 
 /**
