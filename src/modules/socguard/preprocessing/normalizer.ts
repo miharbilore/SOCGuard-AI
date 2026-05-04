@@ -23,42 +23,82 @@ export function normalizeLogInput(raw: string): NormalizedLogInput {
     current = current.replace(zeroWidthRegex, '');
   }
 
-  // 3. Basic URL decoding safely
-  let afterUrl = current;
-  try {
-    // We check if it contains % before trying to decode to be more performant
-    if (current.includes('%')) {
-      const decoded = decodeURIComponent(current.replace(/\+/g, ' '));
-      if (decoded !== current) {
-        suspiciousTransforms.push('URL_ENCODING');
-        afterUrl = decoded;
-        decodedVariants.push(decoded);
+  // 3. Multi-pass URL and HTML Decoding (Max 2 passes)
+  let multiPass = current;
+  let urlPasses = 0;
+  let htmlPasses = 0;
+  const MAX_PASSES = 2;
+
+  while (urlPasses < MAX_PASSES || htmlPasses < MAX_PASSES) {
+    let changed = false;
+    
+    // URL Decoding pass
+    if (urlPasses < MAX_PASSES && multiPass.includes('%')) {
+      try {
+        const decoded = decodeURIComponent(multiPass.replace(/\+/g, ' '));
+        if (decoded !== multiPass) {
+          multiPass = decoded;
+          changed = true;
+          urlPasses++;
+          suspiciousTransforms.push(`URL_DECODE_P${urlPasses}`);
+          if (!decodedVariants.includes(decoded)) decodedVariants.push(decoded);
+        }
+      } catch (e) { /* skip */ }
+    }
+
+    // HTML Entity Decoding pass
+    if (htmlPasses < MAX_PASSES) {
+      const decoded = decodeHtmlEntities(multiPass);
+      if (decoded !== multiPass) {
+        multiPass = decoded;
+        changed = true;
+        htmlPasses++;
+        suspiciousTransforms.push(`HTML_DECODE_P${htmlPasses}`);
+        if (!decodedVariants.includes(decoded)) decodedVariants.push(decoded);
       }
     }
-  } catch (e) {
-    // If decoding fails, we just keep the current version
+
+    if (!changed) break;
   }
 
-  // 4. Basic HTML entity decoding safely
-  let afterHtml = afterUrl;
-  const decodedHtml = decodeHtmlEntities(afterUrl);
-  if (decodedHtml !== afterUrl) {
-    suspiciousTransforms.push('HTML_ENTITY');
-    afterHtml = decodedHtml;
-    if (!decodedVariants.includes(decodedHtml)) {
-      decodedVariants.push(decodedHtml);
-    }
+  // 4. Cautious Base64 and Hex Decoding
+  // We only decode if the result contains suspicious keywords to avoid noise/FPs
+  const potentialEncodedTokens = multiPass.match(/[A-Za-z0-9+/=]{20,500}|[0-9a-fA-F]{40,500}/g) || [];
+  const keywordRegex = /instruction|talimat|ignore|yok say|system|admin|prompt|leak|override/i;
+
+  for (const token of potentialEncodedTokens) {
+    // Try Base64
+    try {
+      if (token.length % 4 === 0) {
+        const decoded = Buffer.from(token, 'base64').toString('utf-8');
+        if (keywordRegex.test(decoded) && decoded.length > 10) {
+          suspiciousTransforms.push('BASE64_OBFUSCATION');
+          if (!decodedVariants.includes(decoded)) decodedVariants.push(decoded);
+        }
+      }
+    } catch (e) { /* skip */ }
+
+    // Try Hex
+    try {
+      if (token.length % 2 === 0 && /^[0-9a-fA-F]+$/.test(token)) {
+        const decoded = Buffer.from(token, 'hex').toString('utf-8');
+        if (keywordRegex.test(decoded) && decoded.length > 10) {
+          suspiciousTransforms.push('HEX_OBFUSCATION');
+          if (!decodedVariants.includes(decoded)) decodedVariants.push(decoded);
+        }
+      }
+    } catch (e) { /* skip */ }
   }
 
   // The final "normalized" version includes all the above
-  const finalNormalized = afterHtml;
+  const finalNormalized = multiPass;
 
   return {
     original: raw,
     normalized: finalNormalized,
     lowercase: finalNormalized.toLowerCase(),
     lines: finalNormalized.split(/\r?\n/),
-    decodedVariants,
+    decodedVariants: Array.from(new Set(decodedVariants)),
     suspiciousTransforms: Array.from(new Set(suspiciousTransforms))
   };
 }

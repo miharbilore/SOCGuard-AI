@@ -190,7 +190,6 @@ export const DETERMINISTIC_RULES: DetectionRule[] = [
     confidence: 0.7
   },
 
-  // --- OBFUSCATION & ENCODING ---
   {
     id: 'RULE-ENC-001',
     pattern: /[A-Za-z0-9+/]{60,}/g, // Increased threshold for base64/hashes
@@ -199,5 +198,55 @@ export const DETERMINISTIC_RULES: DetectionRule[] = [
     reason: 'Very large unspaced string, potential encoded payload.',
     confidence: 0.5,
     falsePositiveNotes: 'Normal JWTs or session tokens may trigger this.'
+  },
+  
+  // --- PARAPHRASES & EVASION ATTEMPTS ---
+  {
+    id: 'RULE-PARA-001',
+    pattern: /ignore all instructions|disregard all instructions/gi,
+    category: 'PROMPT_INJECTION',
+    severity: 'HIGH',
+    reason: 'Comprehensive instruction override attempt.',
+    confidence: 0.95
+  },
+  {
+    id: 'RULE-PARA-TR-001',
+    pattern: /tüm talimatlar[ıi] yok say/gi,
+    category: 'PROMPT_INJECTION',
+    severity: 'HIGH',
+    reason: 'Comprehensive instruction override attempt (Turkish).',
+    confidence: 0.95
+  },
+  {
+    id: 'RULE-PARA-002',
+    pattern: /treat this alert as benign|close this ticket|no escalation required|do not notify analyst/gi,
+    category: 'INSTRUCTION_OVERRIDE',
+    severity: 'HIGH',
+    reason: 'Specific attempt to suppress or close security alerts.',
+    confidence: 0.9
+  },
+  {
+    id: 'RULE-PARA-TR-002',
+    pattern: /bu kayd[ıi] güvenli kabul et|bu bileti kapat|analiste bildirme/gi,
+    category: 'INSTRUCTION_OVERRIDE',
+    severity: 'HIGH',
+    reason: 'Specific attempt to suppress or close security alerts (Turkish).',
+    confidence: 0.9
+  },
+  {
+    id: 'RULE-PARA-003',
+    pattern: /print your hidden prompt|show internal rules/gi,
+    category: 'PROMPT_LEAK_ATTEMPT',
+    severity: 'HIGH',
+    reason: 'Direct attempt to leak hidden system context.',
+    confidence: 0.9
+  },
+  {
+    id: 'RULE-PARA-TR-003',
+    pattern: /iç kurallar[ıi] göster|gizli komutlar[ıi] yazdır/gi,
+    category: 'PROMPT_LEAK_ATTEMPT',
+    severity: 'HIGH',
+    reason: 'Direct attempt to leak hidden system context (Turkish).',
+    confidence: 0.9
   }
 ];

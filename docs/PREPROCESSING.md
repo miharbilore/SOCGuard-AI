@@ -1,44 +1,33 @@
-# Preprocessing and Normalization Layer
+# SOCGuard AI: Preprocessing Layer
 
 ## Overview
+The Preprocessing layer is responsible for normalizing log input and uncovering obfuscated payloads before they are passed to the detection engine. It acts as a "de-obfuscator" that reveals hidden instructions while preserving the original context for auditability.
 
-The SOCGuard AI preprocessing layer is designed to counteract common obfuscation techniques used in indirect prompt injection and other LLM-based attacks. By standardizing the input before it reaches the detection engines, we can identify threats that would otherwise be hidden by encoding, Unicode trickery, or hidden characters.
+## Transformation Pipeline
 
-## Why Preprocessing is Needed
+### 1. Unicode Normalization (NFKC)
+Standardizes characters that may look identical to standard ASCII but use different Unicode points (e.g., look-alike characters from other alphabets).
 
-Attackers often use evasion techniques to bypass simple pattern matching:
-- **Encoding**: Using URL encoding (`%69gnore`) or HTML entities (`&#105;gnore`) to hide keywords.
-- **Unicode Variation**: Using look-alike characters from different Unicode blocks (e.g., Cyrillic 'а' instead of Latin 'a').
-- **Hidden Characters**: Inserting zero-width spaces or other invisible characters between letters (`s\u200By\u200Bt\u200Be\u200Bm`) to break regex patterns.
-- **Case Manipulation**: Mixing case in ways that might bypass poorly constructed rules.
+### 2. Zero-Width Character Removal
+Detects and strips invisible characters (e.g., `\u200B`, `\u200C`) often used to break up keywords like `s\u200By\u200Bs\u200Bt\u200Be\u200Bm` to evade simple regex filters.
 
-## Applied Transformations
+### 3. Multi-Pass Decoding (URL & HTML)
+Attackers sometimes use nested encoding (e.g., URL-encoding an HTML-encoded string).
+- **Strategy**: SOCGuard performs up to **2 passes** of URL and HTML entity decoding.
+- **Safeguard**: Limited to 2 passes to prevent infinite loops and excessive resource consumption.
 
-The `normalizer` applies the following transformations in a deterministic sequence:
+### 4. Cautious Base64 & Hex Decoding
+Decoding every alphanumeric string would lead to massive noise and false positives.
+- **Strategy**: The engine identifies potential encoded tokens (20-500 characters) and attempts to decode them.
+- **Safeguard**: A decoded variant is **only** accepted if it contains known suspicious keywords (e.g., `instruction`, `ignore`, `system`, `talimat`). This ensures that normal session tokens, hashes, and non-textual binary data do not trigger false detections.
 
-1.  **Unicode Normalization (NFKC)**: Converts characters to their "Compatibility Decomposition, followed by Canonical Composition" form. This collapses many visually identical characters into their standard ASCII/Unicode equivalents.
-2.  **Zero-Width Character Removal**: Strips out invisible characters like `\u200B` (Zero Width Space), `\u200C` (ZWNJ), etc.
-3.  **URL Decoding**: Safely decodes URL-encoded components (e.g., `%20` -> ` `).
-4.  **HTML Entity Decoding**: Translates numeric (`&#105;`) and named (`&lt;`) entities into their literal characters.
-5.  **Case Standardization**: Provides a lowercase variant for case-insensitive matching.
-6.  **Line Splitting**: Breaks the input into individual lines for line-based analysis.
+## Transform Tracking
+Every transformation applied is tracked in the `suspiciousTransforms` field. The presence of multiple transformations (e.g., `UNICODE_NORMALIZATION` + `URL_DECODE_P1` + `BASE64_OBFUSCATION`) is itself an indicator of malicious intent and is flagged by the detection engine.
 
-## How This Helps Against Obfuscated Injection
+## Output Variants
+The preprocessor produces multiple "variants" of the input:
+- **Original**: The untouched raw log.
+- **Normalized**: The fully cleaned and multi-pass decoded version.
+- **Decoded Variants**: Individual intermediate versions discovered during decoding passes.
 
-By applying these transforms, a payload like:
-`I&#103;n%6f re p&#114;e vious instructions`
-
-becomes:
-`Ignore previous instructions`
-
-This allows our deterministic rules to match against the "intent" of the text rather than its specific encoding.
-
-## Limitations
-
-- **Loss of Context**: Normalization can sometimes remove information that might be relevant for other types of analysis (though we always preserve the `original` input).
-- **Nested Encoding**: Currently, the normalizer performs one pass of decoding. Highly sophisticated attackers might use multiple layers of encoding (e.g., Base64 inside URL encoding).
-- **Non-Textual Payloads**: This layer is focused on text-based logs and may not be effective against binary or highly structured data formats without further parsers.
-
-## Implementation Details
-
-The preprocessing layer is implemented in `src/modules/socguard/preprocessing/` and is integrated directly into the `DetectionEngine`. It reports `suspiciousTransforms` which can be used by the scoring engine to increase the risk score of an entry even if no specific malicious pattern is matched.
+The Detection Engine analyzes **all** variants to ensure that an attack hidden in any layer is identified.
