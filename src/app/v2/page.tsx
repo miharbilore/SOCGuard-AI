@@ -49,9 +49,10 @@ export default function V2PipelineDemo() {
   return (
     <main className="container">
       <header>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '1rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
           <Link href="/" className="nav-link" style={{ marginBottom: 0 }}>← Home</Link>
           <Link href="/evaluation" className="nav-link" style={{ marginBottom: 0 }}>Evaluation Dashboard →</Link>
+          <Link href="/adversarial-lab" className="nav-link" style={{ marginBottom: 0 }}>V3 Adversarial Lab →</Link>
         </div>
         <h1>SOCGuard AI V2</h1>
         <div className="subtitle">Controlled Rule Pack Pipeline</div>

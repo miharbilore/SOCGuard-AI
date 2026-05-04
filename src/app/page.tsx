@@ -40,10 +40,11 @@ export default function Home() {
   return (
     <main className="container">
       <header>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '1rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
           <div className="subtitle">Cybersecurity Research Tool</div>
           <Link href="/evaluation" className="nav-link" style={{ marginBottom: 0 }}>View Evaluation Dashboard →</Link>
           <Link href="/v2" className="nav-link" style={{ marginBottom: 0, borderLeft: '1px solid var(--border)', paddingLeft: '1rem' }}>V2 Pipeline Demo →</Link>
+          <Link href="/adversarial-lab" className="nav-link" style={{ marginBottom: 0, borderLeft: '1px solid var(--border)', paddingLeft: '1rem' }}>V3 Adversarial Lab →</Link>
         </div>
         <h1>SOCGuard AI</h1>
         <p className="description">
