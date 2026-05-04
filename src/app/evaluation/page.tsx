@@ -200,14 +200,14 @@ export default function EvaluationPage() {
                 <th>Actual Label</th>
                 <th>Policy Decision</th>
                 <th>Risk Score</th>
+                <th>Triggered Rules</th>
                 <th>Latency</th>
               </tr>
             </thead>
             <tbody>
               {results.map((res) => {
-                const isActuallyInjected = results.find(r => r.id === res.id)?.inputLog.id.startsWith('i');
-                const isCorrect = (isActuallyInjected && res.policyDecision !== 'SAFE') || 
-                                 (!isActuallyInjected && res.policyDecision === 'SAFE');
+                const isActuallyInjected = res.inputLog.id.startsWith('i');
+                const triggeredRules = Array.from(new Set(res.findings.map(f => f.ruleId))).join(', ');
                 
                 return (
                   <tr key={res.id}>
@@ -223,9 +223,14 @@ export default function EvaluationPage() {
                       </span>
                     </td>
                     <td>
-                      <span style={{ fontWeight: 'bold', color: res.riskScore.score > 50 ? 'var(--block)' : 'inherit' }}>
+                      <span style={{ fontWeight: 'bold', color: res.riskScore.score >= 51 ? 'var(--block)' : 'inherit' }}>
                         {res.riskScore.score}
                       </span>
+                    </td>
+                    <td>
+                      <div style={{ fontSize: '0.75rem', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {triggeredRules || '-'}
+                      </div>
                     </td>
                     <td>{res.latencyMs}ms</td>
                   </tr>

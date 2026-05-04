@@ -100,39 +100,81 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="info-grid">
+              <div className="info-grid" style={{ gridTemplateColumns: '1fr' }}>
                 <div className="info-item">
-                  <h4>Findings ({result.findings.length})</h4>
-                  {result.findings.length > 0 ? (
-                    <div className="findings-list">
-                      {result.findings.map((f, i) => (
-                        <div key={i} className="finding-item">
-                          <div className="finding-header">
-                            <span>{f.category}</span>
-                            <span>{f.severity}</span>
+                  <h4 style={{ color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Explanation</h4>
+                  <p style={{ fontSize: '1.1rem', fontWeight: 500 }}>{result.explanation.summary}</p>
+                </div>
+
+                <div className="info-item">
+                  <h4 style={{ color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Decision Rationale</h4>
+                  <p className="rationale" style={{ borderLeft: '3px solid var(--border)', paddingLeft: '1rem' }}>
+                    {result.explanation.decisionRationale}
+                  </p>
+                </div>
+
+                {/* Evidence Section */}
+                <div className="info-item">
+                  <h4 style={{ color: 'var(--text-muted)', marginBottom: '1rem' }}>
+                    Suspicious Evidence ({result.explanation.suspiciousEvidence.length})
+                  </h4>
+                  <div className="findings-list">
+                    {result.explanation.suspiciousEvidence.length > 0 ? (
+                      result.explanation.suspiciousEvidence.map((ev, i) => (
+                        <div key={i} className="finding-item" style={{ background: 'rgba(255,255,255,0.03)', padding: '1rem' }}>
+                          <div className="finding-header" style={{ marginBottom: '0.5rem' }}>
+                            <span style={{ fontWeight: 'bold', color: 'var(--accent)' }}>{ev.ruleId}</span>
+                            <span className={`badge badge-${ev.severity}`} style={{ fontSize: '0.7rem', padding: '2px 8px' }}>
+                              {ev.severity}
+                            </span>
+                            <span style={{ opacity: 0.7, fontSize: '0.8rem' }}>{ev.category}</span>
                           </div>
-                          <div className="finding-text">{f.matchedText || 'Obfuscation Pattern'}</div>
-                          <div className="finding-reason">{f.reason}</div>
+                          <div style={{ fontSize: '0.8rem', opacity: 0.6, marginBottom: '0.5rem' }}>
+                            Line {ev.lineNumber} | Confidence: {(ev.confidence * 100).toFixed(0)}%
+                          </div>
+                          <code style={{ 
+                            display: 'block', 
+                            padding: '0.75rem', 
+                            background: '#000', 
+                            borderRadius: '4px',
+                            marginBottom: '0.5rem',
+                            wordBreak: 'break-all',
+                            color: '#0f0'
+                          }}>
+                            {ev.matchedText}
+                          </code>
+                          <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>{ev.reason}</div>
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="rationale">No anomalies identified by deterministic rules.</p>
-                  )}
+                      ))
+                    ) : (
+                      <p className="rationale">No suspicious evidence identified.</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Scoring Breakdown */}
+                <div className="info-item">
+                  <h4 style={{ color: 'var(--text-muted)', marginBottom: '1rem' }}>Scoring Breakdown</h4>
+                  <div className="findings-list">
+                    {result.riskScore.factors.map((f, i) => (
+                      <div key={i} className="finding-item" style={{ borderBottom: '1px solid var(--border)', paddingBottom: '0.75rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                          <span style={{ fontWeight: 'bold' }}>{f.factor}</span>
+                          <span style={{ color: 'var(--block)', fontWeight: 'bold' }}>+{f.points} pts</span>
+                        </div>
+                        <div style={{ fontSize: '0.85rem', opacity: 0.8 }}>{f.reason}</div>
+                        {f.relatedRuleIds && f.relatedRuleIds.length > 0 && (
+                          <div style={{ fontSize: '0.7rem', opacity: 0.5, marginTop: '0.25rem' }}>
+                            Rule(s): {f.relatedRuleIds.join(', ')}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="info-item">
-                  <h4>Explanation</h4>
-                  <p>{result.explanation.summary}</p>
-                </div>
-
-                <div className="info-item">
-                  <h4>Decision Rationale</h4>
-                  <p className="rationale">{result.explanation.decisionRationale}</p>
-                </div>
-
-                <div className="info-item">
-                  <h4>Recommended Action</h4>
+                  <h4 style={{ color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Recommended Action</h4>
                   <div className="guidance">
                     {result.explanation.recommendedAction}
                   </div>
