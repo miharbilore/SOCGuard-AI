@@ -96,10 +96,10 @@ export function calculateRiskScore(findings: DetectionFinding[]): RiskScore {
     });
   }
 
-  // Critical Finding Floor: Ensure a single CRITICAL finding pushes score to HIGH range (50+)
-  if (hasCriticalFinding && rawTotalScore < 50) {
-    const boost = 50 - rawTotalScore;
-    rawTotalScore = 50;
+  // Critical Finding Floor: Ensure a single CRITICAL finding pushes score to HIGH range (51+)
+  if (hasCriticalFinding && rawTotalScore < 51) {
+    const boost = 51 - rawTotalScore;
+    rawTotalScore = 51;
     factors.push({
       factor: 'Critical Finding Boost',
       points: boost,
@@ -113,8 +113,8 @@ export function calculateRiskScore(findings: DetectionFinding[]): RiskScore {
   // Determine risk level
   let level: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' = 'LOW';
   if (finalScore >= 80) level = 'CRITICAL';
-  else if (finalScore >= 50) level = 'HIGH';
-  else if (finalScore >= 20) level = 'MEDIUM';
+  else if (finalScore >= 51) level = 'HIGH';
+  else if (finalScore >= 21) level = 'MEDIUM';
 
   return {
     score: finalScore,

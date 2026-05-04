@@ -4,6 +4,7 @@ import { calculateRiskScore } from '../scoring';
 import { evaluatePolicy } from '../policy';
 import { generateExplanation } from '../explainability';
 import { getSampleLogs } from '../dataset/sample-logs';
+import { createAnalysisId } from '../utils/crypto';
 
 /**
  * Main Analysis Orchestrator.
@@ -31,8 +32,8 @@ export function analyzeLog(log: LogEntry): AnalysisResult {
   const endTime = Date.now();
   const latencyMs = endTime - startTime;
   
-  // Generate a deterministic-ish ID based on log ID and timestamp
-  const analysisId = `analysis-${log.id}-${startTime.toString(36)}`;
+  // Generate a deterministic ID based on log content for reproducibility
+  const analysisId = createAnalysisId(log.id, log.payload);
 
   return {
     id: analysisId,

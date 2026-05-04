@@ -1,6 +1,7 @@
 import { LogEntry, DetectionFinding } from '../types';
 import { DETERMINISTIC_RULES } from './patterns';
 import { normalizeLogInput } from '../preprocessing';
+import { createFindingId } from '../utils/crypto';
 
 /**
  * Analyzes a LogEntry using deterministic rule patterns and normalized variants.
@@ -48,7 +49,7 @@ export function analyzeLog(entry: LogEntry): DetectionFinding[] {
           ruleCounts[rule.id] = (ruleCounts[rule.id] || 0) + 1;
 
           findings.push({
-            id: `finding-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+            id: createFindingId(entry.id, rule.id, lineNum, match[0], target.label),
             category: rule.category,
             severity: rule.severity,
             description: `[Rule ${rule.id}] ${rule.reason}`,
@@ -70,7 +71,7 @@ export function analyzeLog(entry: LogEntry): DetectionFinding[] {
   // Also flag the suspicious transformations themselves as OBFUSCATION
   if (normalizedInput.suspiciousTransforms.length > 0) {
     findings.push({
-      id: `finding-obf-${Date.now()}`,
+      id: createFindingId(entry.id, 'PREPROC-001', 0, normalizedInput.suspiciousTransforms.join(','), 'meta'),
       category: 'OBFUSCATION',
       severity: 'LOW',
       description: `Suspicious obfuscation detected: ${normalizedInput.suspiciousTransforms.join(', ')}`,

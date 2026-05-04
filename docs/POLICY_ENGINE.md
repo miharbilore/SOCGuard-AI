@@ -12,8 +12,8 @@ The base decision is derived from the aggregate `RiskScore`:
 
 | Score Range | Decision | Description |
 | :--- | :--- | :--- |
-| 81 - 100 | `BLOCK` | Critical risk; immediate blocking required. |
-| 51 - 80 | `HUMAN_REVIEW` | High risk; manual analyst verification required. |
+| 80 - 100 | `BLOCK` | Critical risk; immediate blocking required. |
+| 51 - 79 | `HUMAN_REVIEW` | High risk; manual analyst verification required. |
 | 21 - 50 | `ESCALATE` | Medium risk; suspicious activity to be monitored. |
 | 0 - 20 | `SAFE` | Low risk; no action required. |
 

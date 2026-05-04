@@ -36,16 +36,16 @@ To prevent artificial score inflation from duplicate or low-confidence findings:
 
 ## Special Logic
 
-- **Critical Single Finding Boost**: Any log entry containing at least one **CRITICAL** finding is automatically pushed to the **HIGH** risk range (minimum score of 50).
+- **Critical Single Finding Boost**: Any log entry containing at least one **CRITICAL** finding is automatically pushed to the **HIGH** risk range (minimum score of 51).
 - **Category Diversity Bonus**: Multiple distinct threat categories (e.g., an instruction override combined with data exfiltration) add a diversity bonus of **5 points per additional category**.
 
 ## Risk Levels
 
 | Score Range | Risk Level | Description |
 | :--- | :--- | :--- |
-| 0 - 19 | `LOW` | Benign or low-confidence anomalies. |
-| 20 - 49 | `MEDIUM` | Suspicious behavior requiring investigation. |
-| 50 - 79 | `HIGH` | Probable attack attempt; immediate review recommended. |
+| 0 - 20 | `LOW` | Benign or low-confidence anomalies. |
+| 21 - 50 | `MEDIUM` | Suspicious behavior requiring investigation. |
+| 51 - 79 | `HIGH` | Probable attack attempt; immediate review recommended. |
 | 80 - 100 | `CRITICAL` | Confirmed high-impact threat; automated block/escalation likely. |
 
 ## Explainability

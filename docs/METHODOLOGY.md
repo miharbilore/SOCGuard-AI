@@ -14,7 +14,13 @@ We intentionally exclude LLMs from the primary decision-making path for several 
 -   **Integrity**: LLMs can be manipulated by the very prompt injections they are meant to detect. A deterministic engine is immune to semantic persuasion.
 -   **Performance**: Deterministic rules execute in sub-millisecond timeframes, whereas LLM inference can take seconds.
 -   **Reliability**: Security requires 100% reproducibility. LLMs are probabilistic and may return different results for the same input.
--   **Auditability**: Security policies must be clear and auditable. Deterministic logic provides a transparent "if-then" audit trail.
+-   **Auditability**: Deterministic rules provide a clear "if-then" logic that can be easily audited by compliance teams.
+
+## Reproducibility & Deterministic IDs
+To ensure that SOCGuard AI is reliable for forensic analysis and automated workflows:
+- **Analysis IDs**: Every analysis result has an ID derived from the log content using a deterministic hash. The same log analyzed twice will yield the same ID.
+- **Finding IDs**: Findings are identified based on the log, the rule, the line number, and the specific text matched.
+- **Consistent Thresholds**: Risk levels (LOW to CRITICAL) are perfectly aligned with Policy Decisions (SAFE to BLOCK), ensuring no "dead zones" in the logic.
 
 ## Evaluation Metrics
 We measure the effectiveness of the orchestrator using standard binary classification metrics:

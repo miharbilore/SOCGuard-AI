@@ -27,9 +27,9 @@ export function evaluatePolicy(input: {
   // 1. Base decision by risk score thresholds
   let decision: PolicyDecision = 'SAFE';
   
-  if (riskScore.score >= 81) {
+  if (riskScore.score >= 80) {
     decision = 'BLOCK';
-    reasons.push(`Risk score ${riskScore.score} reached CRITICAL threshold (>=81).`);
+    reasons.push(`Risk score ${riskScore.score} reached CRITICAL threshold (>=80).`);
   } else if (riskScore.score >= 51) {
     decision = 'HUMAN_REVIEW';
     reasons.push(`Risk score ${riskScore.score} reached HIGH threshold (>=51).`);
