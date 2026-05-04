@@ -11,30 +11,36 @@ While V1 successfully demonstrated the feasibility of detecting indirect prompt 
 * **Predictability over Autonomy**: We prioritize reproducible detection over autonomous "black-box" adaptation.
 * **Safety First**: Maintaining the V1 frozen state as a baseline to ensure no regression in core academic benchmarks.
 
-## 3. Planned Modules
+## 3. Implemented Modules
 
-### 3.1 Threat Intelligence (`threat-intel`)
-* Repository for external threat feeds and identified prompt injection trends.
-* Centralized intake for new attack signatures found in the wild.
+### 3.1 Threat Intelligence (`threat-intel`) [COMPLETED]
+*   Structured intake for research notes from OWASP, MITRE, and internal labs.
+*   Deterministic parsing of raw intelligence into structured records with stable IDs.
 
-### 3.2 Attack Variants (`attack-variants`)
-* Logic to generate paraphrased, encoded, and multi-lingual variants of known attacks for testing purposes.
-* Focuses on polyglot injections and tool-abuse scenarios.
+### 3.2 Attack Variants (`attack-variants`) [COMPLETED]
+*   Deterministic generation of 8+ transformation types (URL encoding, HTML entities, Zero-width obfuscation, etc.).
+*   Offline test case expansion without LLM dependency.
 
-### 3.3 Rule Candidates (`rule-candidates`)
-* A staging area for proposed detection signatures (regex, keyword clusters, logic-based rules) before they are promoted to the active rule pack.
+### 3.3 Rule Candidates (`rule-candidates`) [COMPLETED]
+*   Automated proposing of new detection signatures from threat intel.
+*   Severity assignment and false positive risk assessment based on attack categories.
 
-### 3.4 Regression Runner (`regression-runner`)
-* Offline testing framework that validates rule candidates against historical logs and "known-good" datasets to prevent false positives.
+### 3.4 Regression Runner (`regression-runner`) [COMPLETED]
+*   Offline validation of candidate rules against the core research dataset.
+*   Advisory recommendations (`APPROVE`, `REVISE`, `REJECT`) based on TP/FP metrics.
 
-### 3.5 Review Queue (`review-queue`)
-* Administrative interface for security analysts to inspect, modify, and approve/reject candidate rules.
+### 3.5 Review Queue (`review-queue`) [COMPLETED]
+*   Governance layer for human-in-the-loop validation.
+*   Audit trail for security analyst decisions and notes.
 
-### 3.6 Rule Pack (`rule-pack`)
-* The finalized, versioned, and immutable collection of rules ready for deployment to the detection engine.
+### 3.6 Rule Pack (`rule-pack`) [COMPLETED]
+*   Versioned, immutable rule pack builder.
+*   Supports semantic versioning and safe rollback capability.
 
-## 4. Development Phases
-1. **Phase 1: Pipeline Infrastructure** - Setting up the `threat-intel` and `rule-pack` schemas.
-2. **Phase 2: Offline Learning Model** - Implementing the `attack-variants` and `regression-runner`.
-3. **Phase 3: Governance Layer** - Building the `review-queue` and versioning logic.
-4. **Phase 4: Integration** - Connecting the rule pack to the V1 detection engine without breaking legacy functionality.
+## 4. Current Progress: V2 Pipeline Demo
+The complete controlled update pipeline is now viewable at the `/v2` route. This demo orchestrates all modules above to show how a new research note is safely transformed into a versioned rule pack draft.
+
+## 5. Next Steps
+1. **Integration**: Update the `DetectionEngine` to optionally consume versioned Rule Packs while maintaining V1 legacy support.
+2. **Persistence**: Transition from in-memory/static records to a lightweight database for long-term tracking.
+3. **Advanced Variants**: Introduce bounded LLM usage for semantic paraphrase generation in the `attack-variants` module (offline only).

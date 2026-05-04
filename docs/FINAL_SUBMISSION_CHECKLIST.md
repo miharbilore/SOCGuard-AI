@@ -32,3 +32,12 @@
 - [x] Strict TypeScript usage with **zero `any`** in core logic.
 - [x] Project passes `npx tsc --noEmit`.
 - [x] Project builds successfully with `npm run build`.
+
+## 7. SOCGuard AI V2 (Controlled Rule Packs)
+- [x] Implemented Threat Intel intake with deterministic parsing.
+- [x] Implemented offline Attack Variant Generator for test expansion.
+- [x] Implemented Candidate Rule Generator with human review status.
+- [x] Implemented Offline Regression Runner to detect false positive regressions.
+- [x] Implemented Governance Review Queue for human-in-the-loop approval.
+- [x] Implemented Versioned Rule Pack Builder for product-oriented updates.
+- [x] V2 Pipeline Demo page (`/v2`) provides end-to-end visualization.

@@ -25,11 +25,28 @@ Log entries flow through a sequential deterministic pipeline:
 4. **Policy Engine**: maps scores to definitive actions (SAFE, ESCALATE, HUMAN_REVIEW, BLOCK).
 5. **Explainability**: Generates a human-readable summary and decision rationale.
 
+## SOCGuard AI V2: Controlled Rule Pack Pipeline
+SOCGuard AI V2 evolves the project from a static PoC into a product-oriented, versioned rule pack system. It introduces a human-governed update pipeline that allows the system to adapt to new prompt injection techniques without the risks of uncontrolled online learning.
+
+### V2 Key Features:
+* **Threat Intel Intake**: Converts trusted research notes (OWASP, MITRE) into structured records.
+* **Attack Variant Generation**: Automatically generates deterministic variants (encoding, obfuscation) for offline testing.
+* **Candidate Rule Proposing**: Suggests new detection signatures based on new threat intelligence.
+* **Offline Regression Testing**: Validates candidate rules against historical datasets to prevent false positives before they reach production.
+* **Human-in-the-Loop Governance**: Mandatory review queue for all rule updates to prevent rule poisoning and DoS.
+* **Versioned Rule Packs**: Immutable, versioned bundles of security logic that support safe rollbacks and productization.
+
+### V2 Design Constraints (Safety First):
+* **No Uncontrolled Learning**: The system does not automatically learn or update from production logs.
+* **No Automatic Deployment**: Rule updates must be manually built and promoted to APPROVED status.
+* **Deterministic Only**: Like V1, the V2 pipeline remains non-LLM centered to ensure performance and auditability.
+
 ## Research Limitations
 As an academic PoC, SOCGuard AI has several known limitations:
 - **Synthetic Dataset**: Benchmark results are based on a small curated set of 30 samples.
 - **Stateless Analysis**: Logs are analyzed in isolation; it does not yet correlate multi-event attack chains.
 - **Signature Bounded**: Like all signature-based systems, it may miss novel semantic attacks that don't trigger existing patterns.
+- **V2 Automation**: The V2 pipeline is currently a demonstration of the workflow; it does not yet automatically scrape threat feeds or use LLMs for semantic variant generation.
 - **Not Production-Ready**: Designed for academic validation and benchmarking, not for real-world enterprise traffic.
 
 ## Technology Stack
@@ -49,4 +66,7 @@ Then, run the development server:
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view the interactive demo and [http://localhost:3000/evaluation](http://localhost:3000/evaluation) for the academic benchmark dashboard.
+### Available Pages:
+* [Interactive Demo (V1)](http://localhost:3000): Test the deterministic detection engine.
+* [Evaluation Dashboard](http://localhost:3000/evaluation): View academic benchmark metrics and confusion matrix.
+* [V2 Pipeline Demo](http://localhost:3000/v2): Explore the controlled rule update and regression testing workflow.
