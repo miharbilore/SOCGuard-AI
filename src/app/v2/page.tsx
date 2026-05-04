@@ -6,10 +6,7 @@ import { SAMPLE_THREAT_RECORDS, ThreatIntelRecord } from '../../modules/socguard
 import { generateVariantSetForThreatIntel, AttackVariant } from '../../modules/socguard/attack-variants';
 import { generateCandidateRulesFromThreatIntel, CandidateRule } from '../../modules/socguard/rule-candidates';
 import { runRegressionForCandidateRules, CandidateRuleTestResult } from '../../modules/socguard/regression-runner';
-import { createReviewItem, RuleReviewItem, approveReviewItem } from '../../modules/socguard/review-queue';
-import { buildDraftRulePackFromApprovedItems } from '../../modules/socguard/rule-pack/rule-pack-builder';
-import { RULE_PACK_V1 } from '../../modules/socguard/rule-pack/rule-pack-v1';
-import { RulePack } from '../../modules/socguard/rule-pack/rule-pack-types';
+import { createReviewItem, RuleReviewItem } from '../../modules/socguard/review-queue';
 
 export default function V2PipelineDemo() {
   const [threatRecords, setThreatRecords] = useState<ThreatIntelRecord[]>([]);
@@ -17,7 +14,6 @@ export default function V2PipelineDemo() {
   const [candidates, setCandidates] = useState<CandidateRule[]>([]);
   const [regressionResults, setRegressionResults] = useState<CandidateRuleTestResult[]>([]);
   const [reviewItems, setReviewItems] = useState<RuleReviewItem[]>([]);
-  const [simulatedApprovedPack, setSimulatedApprovedPack] = useState<RulePack | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -42,29 +38,9 @@ export default function V2PipelineDemo() {
       setRegressionResults(results);
 
       // 5. Review Queue (Items remain PENDING by default in the main pipeline)
+      // MANDATORY: Every item in the pipeline starts as PENDING to enforce human-in-the-loop governance.
       const items = allCandidates.map((c, i) => createReviewItem(c, results[i]));
       setReviewItems(items);
-
-      // 6. Optional Simulated Approval Preview (Clearly separated from the main pipeline)
-      const simulatedDecisions = items.map(item => {
-        if (item.regressionResult.matchedBenign === 0 && item.regressionResult.matchedInjected > 0) {
-          // Manually simulate an approval for demonstration purposes
-          return approveReviewItem(
-            item, 
-            'local-demo-reviewer', 
-            'Simulated Approval: High precision detected in regression testing with zero false positives.'
-          );
-        }
-        return item;
-      });
-      
-      const draftPack = buildDraftRulePackFromApprovedItems({
-        baseRulePack: RULE_PACK_V1,
-        approvedReviewItems: simulatedDecisions,
-        newVersion: '1.1.0',
-        changelog: 'Manual simulation of approved rule pack.'
-      });
-      setSimulatedApprovedPack(draftPack);
 
       setIsLoading(false);
     }, 800);
@@ -93,9 +69,9 @@ export default function V2PipelineDemo() {
           maxWidth: '800px',
           margin: '0 auto'
         }}>
-          <strong>Disclaimer:</strong> This V2 workflow does not mutate active detection rules. 
-          It demonstrates a controlled offline update pipeline. <strong>The default pipeline does not approve 
-          anything automatically. All simulated approvals are for demonstration only.</strong>
+          <strong>Governance Notice:</strong> This V2 pipeline does not mutate active detection rules. 
+          <strong> No rule is approved automatically.</strong> Every candidate rule requires explicit 
+          human analyst action before it can enter a draft rule pack.
         </div>
       </header>
 
@@ -154,6 +130,9 @@ export default function V2PipelineDemo() {
           {/* Stage 3: Candidate Rules */}
           <section className="card">
             <h2 className="section-title">3. Candidate Rule Generation</h2>
+            <div style={{ marginBottom: '1rem', fontSize: '0.9rem', opacity: 0.7 }}>
+              Candidate rules are generated based on threat intel but are <strong>not active</strong>.
+            </div>
             <div className="info-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
               {candidates.map(c => (
                 <div key={c.id} className="finding-item" style={{ border: '1px solid var(--border)', padding: '1rem' }}>
@@ -177,32 +156,31 @@ export default function V2PipelineDemo() {
             <div className="info-grid" style={{ gridTemplateColumns: '1fr' }}>
               {regressionResults.map(res => (
                 <div key={res.candidateRuleId} className="finding-item" style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center',
                   padding: '1rem',
                   borderLeft: `4px solid ${res.recommendation === 'APPROVE_FOR_REVIEW' ? '#28a745' : '#dc3545'}`
                 }}>
-                  <div>
-                    <div style={{ fontWeight: 'bold' }}>Rule ID: {res.candidateRuleId}</div>
-                    <div style={{ fontSize: '0.9rem', opacity: 0.8 }}>
-                      TP: {res.matchedInjected} | FP: {res.matchedBenign} | Precision: {(res.precisionEstimate * 100).toFixed(1)}%
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <div style={{ fontWeight: 'bold' }}>Rule ID: {res.candidateRuleId}</div>
+                      <div style={{ fontSize: '0.9rem', opacity: 0.8 }}>
+                        TP: {res.matchedInjected} | FP: {res.matchedBenign} | Precision: {(res.precisionEstimate * 100).toFixed(1)}%
+                      </div>
                     </div>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div className={`badge badge-${res.recommendation === 'APPROVE_FOR_REVIEW' ? 'SAFE' : 'BLOCK'}`} style={{ marginBottom: '0.25rem' }}>
-                      {res.recommendation}
+                    <div style={{ textAlign: 'right' }}>
+                      <div className={`badge badge-${res.recommendation === 'APPROVE_FOR_REVIEW' ? 'SAFE' : 'BLOCK'}`} style={{ marginBottom: '0.25rem' }}>
+                        {res.recommendation}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', opacity: 0.6 }}>{res.reasons[0]}</div>
                     </div>
-                    <div style={{ fontSize: '0.75rem', opacity: 0.6 }}>{res.reasons[0]}</div>
                   </div>
                 </div>
               ))}
             </div>
           </section>
 
-          {/* Stage 5: Review Queue (Default PENDING) */}
+          {/* Stage 5: Review Queue */}
           <section className="card">
-            <h2 className="section-title">5. Human Review Queue (Pipeline Default)</h2>
+            <h2 className="section-title">5. Human Review Queue (Mandatory)</h2>
             <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '4px' }}>
               {reviewItems.slice(0, 3).map(item => (
                 <div key={item.id} style={{ 
@@ -224,38 +202,36 @@ export default function V2PipelineDemo() {
                 </div>
               ))}
               <div style={{ textAlign: 'center', padding: '1rem', opacity: 0.5, fontSize: '0.85rem' }}>
-                All rules in the main pipeline remain PENDING until human action.
+                All rules in the pipeline remain PENDING. Human reviewer action is required.
               </div>
             </div>
           </section>
 
-          {/* Stage 6: Optional Simulated Approval Preview */}
-          <section className="card" style={{ borderColor: 'var(--accent)', background: 'rgba(0, 255, 157, 0.02)' }}>
-            <h2 className="section-title">Optional Simulated Approval Preview</h2>
-            <div style={{ marginBottom: '1rem', fontSize: '0.9rem', color: 'var(--accent)' }}>
-              <strong>Demo Section:</strong> This section shows what a Rule Pack would look like 
-              AFTER a human analyst manually approves candidates. This is NOT part of the automatic flow.
+          {/* Stage 6: Draft Rule Pack */}
+          <section className="card" style={{ borderColor: 'var(--accent)', background: 'rgba(255, 255, 255, 0.02)' }}>
+            <h2 className="section-title">6. Draft Rule Pack Generation</h2>
+            <div style={{ 
+              padding: '2rem', 
+              textAlign: 'center', 
+              border: '2px dashed var(--border)',
+              borderRadius: '8px',
+              opacity: 0.8
+            }}>
+              <div style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>No Draft Rule Pack Generated</div>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                Rule pack construction is blocked because no reviewer decisions have been made.
+              </p>
             </div>
-            {simulatedApprovedPack && (
-              <div style={{ background: '#000', padding: '1.5rem', borderRadius: '4px', fontFamily: 'monospace', fontSize: '0.85rem' }}>
-                <div style={{ color: 'var(--accent)', marginBottom: '1rem' }}>// SOCGuard Rule Pack v{simulatedApprovedPack.version} (DRAFT)</div>
-                <div style={{ color: '#888' }}>
-                  ID: {simulatedApprovedPack.id}<br />
-                  Created: {simulatedApprovedPack.createdAt}<br />
-                  Rules: {simulatedApprovedPack.rules.length}<br />
-                  Status: {simulatedApprovedPack.status}
-                </div>
-                <div style={{ marginTop: '1rem', color: '#fff' }}>
-                  {simulatedApprovedPack.rules.filter(r => r.reviewStatus === 'DRAFT').slice(0, 2).map(r => (
-                    <div key={r.id} style={{ marginBottom: '0.5rem', paddingLeft: '1rem', borderLeft: '2px solid #333' }}>
-                      {r.id}: {r.pattern} (Status: {r.reviewStatus})
-                      <div style={{ fontSize: '0.7rem', opacity: 0.5 }}>Created by: {r.createdBy}</div>
-                    </div>
-                  ))}
-                  <div style={{ opacity: 0.5 }}>... simulated pack preview ...</div>
-                </div>
-              </div>
-            )}
+          </section>
+
+          {/* Optional Simulation Notice */}
+          <section className="card" style={{ background: 'rgba(0, 0, 0, 0.2)', border: '1px solid #444' }}>
+            <h3 style={{ fontSize: '1rem', marginBottom: '0.75rem' }}>Simulated Approval Preview</h3>
+            <p style={{ fontSize: '0.85rem', opacity: 0.7, margin: 0 }}>
+              Optional simulated approval preview is intentionally disabled in this build to avoid 
+              implying automatic approval in the update pipeline. Real rule packs require 
+              authenticated human analyst authorization.
+            </p>
           </section>
 
         </div>
