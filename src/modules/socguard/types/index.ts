@@ -132,3 +132,19 @@ export interface NormalizedLogInput {
   /** List of suspicious transformations detected (e.g., "URL_ENCODING", "HTML_ENTITY", "ZERO_WIDTH_CHARS") */
   suspiciousTransforms: string[];
 }
+
+/**
+ * Represents the detailed output of the Policy Engine.
+ */
+export interface PolicyEvaluation {
+  /** The final decision made by the policy engine */
+  decision: PolicyDecision;
+  /** List of reasons for the final decision */
+  reasons: string[];
+  /** List of specific rule IDs that triggered policy overrides */
+  triggeredRules: string[];
+  /** The minimum action required based on the most severe finding */
+  minimumRequiredAction: PolicyDecision;
+  /** Guidance for SOC analysts on how to handle this case */
+  analystGuidance: string;
+}
