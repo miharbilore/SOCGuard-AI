@@ -272,6 +272,74 @@ button {
   font-size: 0.95rem;
 }
 
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.metric-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  padding: 1rem;
+  border-radius: 0.75rem;
+  text-align: center;
+}
+
+.metric-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.metric-label {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  margin-top: 0.25rem;
+}
+
+.results-table-container {
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+th {
+  text-align: left;
+  padding: 1rem;
+  border-bottom: 2px solid var(--border);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  font-size: 0.7rem;
+}
+
+td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.nav-link:hover {
+  text-decoration: underline;
+}
+
 .placeholder {
   height: 400px;
   display: flex;

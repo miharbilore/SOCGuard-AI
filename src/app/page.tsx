@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { analyzeLog } from '../modules/socguard/demo';
 import { getSampleLogs } from '../modules/socguard/dataset/sample-logs';
 import { AnalysisResult, LogEntry } from '../modules/socguard/types';
@@ -39,7 +40,10 @@ export default function Home() {
   return (
     <main className="container">
       <header>
-        <div className="subtitle">Cybersecurity Research Tool</div>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '1rem' }}>
+          <div className="subtitle">Cybersecurity Research Tool</div>
+          <Link href="/evaluation" className="nav-link" style={{ marginBottom: 0 }}>View Evaluation Dashboard →</Link>
+        </div>
         <h1>SOCGuard AI</h1>
         <p className="description">
           This proof of concept detects malicious instructions hidden inside log data 
