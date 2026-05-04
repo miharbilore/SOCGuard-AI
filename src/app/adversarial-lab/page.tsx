@@ -6,7 +6,11 @@ import {
   createDefaultAdversarialLabRecords, 
   applyHumanReviewDecision,
   AdversarialLabRecord,
-  HumanDecisionType
+  HumanDecisionType,
+  promoteToBenchmarkCandidate,
+  promoteToRuleCandidate,
+  isApprovedForBenchmark,
+  isApprovedForRuleCandidate
 } from '@/modules/socguard/adversarial-lab';
 
 export default function AdversarialLabPage() {
@@ -256,6 +260,70 @@ export default function AdversarialLabPage() {
                   </div>
                 )}
               </div>
+
+              {/* Promotion Preview Section */}
+              {selectedRecord.humanReviewDecision && (
+                <div className="info-item" style={{ borderTop: '2px solid var(--border)', paddingTop: '1.5rem', marginTop: '1.5rem' }}>
+                  <h4 style={{ color: 'var(--accent)' }}>Promotion Preview</h4>
+                  
+                  {isApprovedForBenchmark(selectedRecord) || isApprovedForRuleCandidate(selectedRecord) ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      
+                      {/* Benchmark Candidate Preview */}
+                      {isApprovedForBenchmark(selectedRecord) && (() => {
+                        try {
+                          const bench = promoteToBenchmarkCandidate(selectedRecord);
+                          return (
+                            <div style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid var(--accent)', padding: '1rem', borderRadius: '8px' }}>
+                              <div style={{ fontWeight: 'bold', fontSize: '0.85rem', marginBottom: '0.5rem', color: 'var(--accent)' }}>BENCHMARK CANDIDATE: {bench.id}</div>
+                              <div style={{ fontSize: '0.75rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                                <div><strong>Category:</strong> {bench.expectedCategory}</div>
+                                <div><strong>Difficulty:</strong> {bench.difficulty}</div>
+                                <div><strong>Vector:</strong> {bench.attackVector}</div>
+                                <div><strong>Status:</strong> {bench.status}</div>
+                              </div>
+                              <div style={{ fontSize: '0.75rem', marginTop: '0.5rem' }}><strong>Description:</strong> {bench.shortDescription}</div>
+                            </div>
+                          );
+                        } catch (e: any) {
+                          return <div style={{ color: 'var(--block)', fontSize: '0.8rem' }}>Error generating benchmark preview: {e.message}</div>;
+                        }
+                      })()}
+
+                      {/* Rule Candidate Preview */}
+                      {isApprovedForRuleCandidate(selectedRecord) && (() => {
+                        try {
+                          const rule = promoteToRuleCandidate(selectedRecord);
+                          return (
+                            <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid var(--safe)', padding: '1rem', borderRadius: '8px' }}>
+                              <div style={{ fontWeight: 'bold', fontSize: '0.85rem', marginBottom: '0.5rem', color: 'var(--safe)' }}>CANDIDATE RULE: {rule.id}</div>
+                              <div style={{ fontSize: '0.75rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                                <div><strong>Proposed ID:</strong> {rule.proposedRuleId}</div>
+                                <div><strong>Category:</strong> {rule.category}</div>
+                                <div><strong>Severity:</strong> {rule.severity}</div>
+                                <div><strong>Status:</strong> {rule.status}</div>
+                              </div>
+                              <div style={{ fontSize: '0.75rem', marginTop: '0.5rem' }}>
+                                <strong>Pattern:</strong> <code style={{ color: 'var(--safe)' }}>{rule.suggestedPattern}</code>
+                              </div>
+                            </div>
+                          );
+                        } catch (e: any) {
+                          return <div style={{ color: 'var(--block)', fontSize: '0.8rem' }}>Error generating rule preview: {e.message}</div>;
+                        }
+                      })()}
+
+                      <p style={{ fontSize: '0.7rem', opacity: 0.6, fontStyle: 'italic' }}>
+                        ⚠ Promotion preview does not modify the production dataset, active detection rules, or rule packs.
+                      </p>
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: '0.85rem', opacity: 0.7, fontStyle: 'italic' }}>
+                      No promotion preview available. This record is either pending, rejected, or requires revision.
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}
