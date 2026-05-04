@@ -5,3 +5,4 @@ export * from './blue-team-defender';
 export * from './judge-evaluator';
 export * from './lab-record-builder';
 export * from './human-review-workflow';
+export * from './benchmark-promotion';
