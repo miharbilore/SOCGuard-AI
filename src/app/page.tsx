@@ -43,6 +43,7 @@ export default function Home() {
         <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '1rem' }}>
           <div className="subtitle">Cybersecurity Research Tool</div>
           <Link href="/evaluation" className="nav-link" style={{ marginBottom: 0 }}>View Evaluation Dashboard →</Link>
+          <Link href="/v2" className="nav-link" style={{ marginBottom: 0, borderLeft: '1px solid var(--border)', paddingLeft: '1rem' }}>V2 Pipeline Demo →</Link>
         </div>
         <h1>SOCGuard AI</h1>
         <p className="description">

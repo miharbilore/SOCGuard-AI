@@ -24,7 +24,10 @@ export default function EvaluationPage() {
   return (
     <main className="container">
       <header>
-        <Link href="/" className="nav-link">← Back to Demo</Link>
+        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+          <Link href="/" className="nav-link" style={{ marginBottom: 0 }}>← Back to Demo</Link>
+          <Link href="/v2" className="nav-link" style={{ marginBottom: 0 }}>V2 Pipeline Demo →</Link>
+        </div>
         <div className="subtitle">Academic Benchmark Results</div>
         <h1>SOCGuard AI Evaluation</h1>
         <p className="description">
