@@ -64,10 +64,10 @@ export interface JudgeRecommendation {
   redTeamCandidateId: string;
   blueTeamProposalId: string;
   recommendation: JudgeRecommendationType;
-  realismScore: number; // 0.0 to 1.0
-  coverageScore: number; // 0.0 to 1.0
-  falsePositiveRiskScore: number; // 0.0 to 1.0
-  safetyScore: number; // 0.0 to 1.0
+  realismScore: number; // 0 to 100
+  coverageScore: number; // 0 to 100
+  falsePositiveRiskScore: number; // 0 to 100
+  safetyScore: number; // 0 to 100
   reasons: string[];
   limitations: string[];
   createdAt: string;
