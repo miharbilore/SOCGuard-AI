@@ -6,3 +6,4 @@ export * from './judge-evaluator';
 export * from './lab-record-builder';
 export * from './human-review-workflow';
 export * from './benchmark-promotion';
+export * from './rule-candidate-promotion';

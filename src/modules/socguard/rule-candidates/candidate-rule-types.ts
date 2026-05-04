@@ -15,5 +15,13 @@ export interface CandidateRule {
   sourceThreatIntelId: string;
   status: CandidateRuleStatus;
   rationale: string;
+  provenance?: {
+    sourceLabRecordId?: string;
+    redTeamCandidateId?: string;
+    blueTeamProposalId?: string;
+    judgeRecommendationId?: string;
+    reviewerId?: string;
+    reviewerNotes?: string;
+  };
   createdAt: string;
 }
