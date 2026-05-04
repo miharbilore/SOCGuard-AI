@@ -73,6 +73,10 @@ export interface ScoringFactor {
   points: number;
   /** Reason for this factor's contribution */
   reason: string;
+  /** List of rule IDs associated with this scoring factor */
+  relatedRuleIds?: string[];
+  /** List of finding IDs associated with this scoring factor */
+  relatedFindingIds?: string[];
 }
 
 /**
