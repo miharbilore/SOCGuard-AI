@@ -4,3 +4,4 @@ export * from './red-team-generator';
 export * from './blue-team-defender';
 export * from './judge-evaluator';
 export * from './lab-record-builder';
+export * from './human-review-workflow';
