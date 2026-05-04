@@ -12,18 +12,25 @@ V1 relied on a deterministic set of signatures that were highly effective for th
 ## 2. Rule Pack Concept
 In V2, SOCGuard AI transitions to a **Rule Pack** model. A Rule Pack is a versioned bundle of detection signatures that can be updated independently of the core detection engine logic.
 
-### 2.1 Key Characteristics
-* **Versioned**: Every update is tracked (e.g., v2.0.1, v2.1.0).
+### 2.1 Core Principles
+* **Immutability**: Once a rule pack is built, it cannot be modified. New rules require a new pack version.
+* **Traceability**: Every rule in a pack must be linked to a `ThreatIntelRecord` and a human `RuleReviewItem` with mandatory justification.
+* **Staging**: Rule packs move through `DRAFT -> REVIEW -> APPROVED -> DEPRECATED`. 
+* **Safety Defaults**: New rules in draft packs are disabled (`enabled: false`) and require explicit activation.
+* **No Uncontrolled Learning**: No rules are automatically learned or deployed from live traffic.
+
+### 2.2 Key Characteristics
+* **Versioned**: Every update is tracked (e.g., v1.1.0, v1.2.0).
 * **Rollback-ready**: Previous rule packs are archived, allowing for immediate rollbacks if an update causes issues.
-* **Structured**: Rules are categorized by attack type (e.g., `OOD` - Out of Domain, `PI` - Prompt Injection, `LKP` - Leakage).
+* **Structured**: Rules are categorized by attack type (e.g., `PROMPT_INJECTION`, `DATA_EXFILTRATION`).
 
 ## 3. Candidate Attack Variants
-To keep signatures ahead of attackers, V2 will use a system to generate and test **Candidate Attack Variants**.
+To keep signatures ahead of attackers, V2 uses a system to generate and test **Candidate Attack Variants**.
 * These are hypothetical versions of known attacks (paraphrased, translated, or encoded).
 * These variants are used to test the robustness of **Rule Candidates** before they are finalized.
 
 ## 4. Offline Evaluation
 Rules are never deployed directly to production. They must undergo:
 1. **Detection Validation**: Does the rule catch the intended attack variants?
-2. **False Positive Check**: Does the rule incorrectly flag benign, legitimate logs from historical production-like datasets?
+2. **False Positive Check**: Does the rule incorrectly flag benign, legitimate logs from historical datasets?
 3. **Performance Impact**: Does the new rule significantly slow down the detection pipeline?

@@ -9,6 +9,7 @@ export interface RuleReviewItem {
   regressionResult: CandidateRuleTestResult;
   reviewerDecision: ReviewerDecision;
   reviewerNotes: string;
+  reviewedBy?: string; // Identity of the human reviewer
   createdAt: string;
   reviewedAt?: string;
 }

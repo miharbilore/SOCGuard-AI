@@ -1,6 +1,7 @@
 import { DetectionCategory, DetectionSeverity } from '../types';
 import { CandidateRule } from './candidate-rule-types';
 import { ThreatIntelRecord } from '../threat-intel';
+import { deterministicHash } from '../utils/crypto';
 
 /**
  * Escapes special characters for use in a regular expression.
@@ -20,7 +21,7 @@ function getSeverityForCategory(category: DetectionCategory): DetectionSeverity 
       return 'HIGH';
     case 'PROMPT_INJECTION':
     case 'INSTRUCTION_OVERRIDE':
-      return 'HIGH'; // User suggested MEDIUM/HIGH
+      return 'HIGH';
     case 'FORMAT_CONTROL':
     case 'OBFUSCATION':
     case 'SUSPICIOUS_ENCODING':
@@ -52,6 +53,7 @@ function getFalsePositiveRisks(category: DetectionCategory): string[] {
 
 /**
  * Proposes new detection rules based on verified Threat Intel records.
+ * Uses deterministic IDs to ensure auditability and deduplication.
  */
 export function generateCandidateRulesFromThreatIntel(record: ThreatIntelRecord): CandidateRule[] {
   const candidates: CandidateRule[] = [];
@@ -59,19 +61,22 @@ export function generateCandidateRulesFromThreatIntel(record: ThreatIntelRecord)
   record.examplePhrases.forEach((phrase, index) => {
     const category = record.attackCategories[0] || 'BENIGN';
     const escaped = escapeRegExp(phrase);
-    
-    // Suggest a conservative case-insensitive regex
     const suggestedPattern = `/${escaped}/gi`;
     
-    const id = `CAND-${record.id.substring(3)}-${index + 1}`;
-    const proposedRuleId = `RULE-PROP-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    // Deterministic identity for the candidate
+    const idHash = deterministicHash(`${record.id}:${phrase}:${category}`);
+    const id = `CAND-${idHash.toUpperCase().substring(0, 8)}`;
+    
+    // Deterministic proposed rule ID (what it would be called if approved)
+    const ruleIdHash = deterministicHash(`${suggestedPattern}:${category}`);
+    const proposedRuleId = `RULE-PROP-${ruleIdHash.toUpperCase().substring(0, 6)}`;
 
     candidates.push({
       id,
       proposedRuleId,
       category,
       severity: getSeverityForCategory(category),
-      confidence: 0.7, // Candidates start with lower confidence until verified
+      confidence: 0.7,
       patternSource: phrase,
       suggestedPattern,
       exampleMatches: [phrase],

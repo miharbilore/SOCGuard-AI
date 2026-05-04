@@ -14,16 +14,16 @@ By requiring human approval, we create a circuit breaker against **Rule Poisonin
 
 ## 4. Auditability
 Every decision in the review queue is tracked:
-* **Who**: The analyst who reviewed the rule (in future multi-user versions).
-* **When**: Timestamp of the review.
-* **Why**: Mandatory notes explaining the decision (Approval, Rejection, or Revision request).
-* **What**: The exact state of the rule and the evidence (regression results) at the time of the decision.
+* **Who**: The mandatory identity of the analyst who reviewed the rule (`reviewedBy`).
+* **When**: Deterministic timestamp of the review.
+* **Why**: Mandatory, non-empty notes explaining the decision rationale. Empty notes result in an audit failure (Error).
+* **What**: The exact state of the rule and the evidence (regression results) at the time of the decision, tied to a deterministic ID.
 
 ## 5. No Live Mutation
 Decisions made in the Review Queue do not immediately modify the active detection engine. Approval simply marks a rule as "ready for inclusion" in the next versioned **Rule Pack** release. This maintains the principle of immutable and versioned security logic.
 
 ## 6. Review Statuses
-* **PENDING**: New items awaiting analysis.
-* **APPROVED**: Rule is validated and ready for the next pack release.
+* **PENDING**: New items awaiting analysis. No rule can bypass this stage automatically.
+* **APPROVED**: Rule is validated and ready for inclusion in the next draft pack (initialized as disabled).
 * **REJECTED**: Rule is discarded due to high false positives or poor logic.
 * **NEEDS_REVISION**: Rule has potential but requires manual refinement of the pattern or logic.

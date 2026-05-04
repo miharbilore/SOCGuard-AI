@@ -7,8 +7,9 @@ While V1 successfully demonstrated the feasibility of detecting indirect prompt 
 
 ## 2. V2 Core Principles
 * **Controlled Evolution**: The system will not "self-learn" from production data. All updates are vetted.
-* **Human-in-the-Loop**: No rule is deployed without explicit human review and approval.
-* **Predictability over Autonomy**: We prioritize reproducible detection over autonomous "black-box" adaptation.
+* **Human-in-the-Loop**: No rule is deployed without explicit human review and approval. Simulated approvals in demos are clearly labeled.
+* **Predictability over Autonomy**: We prioritize reproducible detection over autonomous "black-box" adaptation. IDs are deterministic for auditability.
+* **Auditability over Speed**: Decisions require mandatory reviewer identities and justification notes.
 * **Safety First**: Maintaining the V1 frozen state as a baseline to ensure no regression in core academic benchmarks.
 
 ## 3. Implemented Modules
@@ -42,5 +43,6 @@ The complete controlled update pipeline is now viewable at the `/v2` route. This
 
 ## 5. Next Steps
 1. **Integration**: Update the `DetectionEngine` to optionally consume versioned Rule Packs while maintaining V1 legacy support.
-2. **Persistence**: Transition from in-memory/static records to a lightweight database for long-term tracking.
-3. **Advanced Variants**: Introduce bounded LLM usage for semantic paraphrase generation in the `attack-variants` module (offline only).
+2. **Persistence & RBAC**: Transition to a database with Role-Based Access Control to ensure only authorized analysts can approve rules.
+3. **Cryptographic Signing**: Implement signed rule packs to prevent unauthorized rule injection.
+4. **Advanced Variants**: Introduce bounded LLM usage for semantic paraphrase generation in the `attack-variants` module (offline only).

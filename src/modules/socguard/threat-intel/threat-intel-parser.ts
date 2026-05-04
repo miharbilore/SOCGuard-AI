@@ -8,6 +8,16 @@ import { ThreatIntelInput, ThreatIntelRecord } from './threat-intel-types';
 export function parseThreatIntelNote(input: ThreatIntelInput): ThreatIntelRecord {
   const { title, sourceName, rawNotes, sourceUrl, sourceType } = input;
 
+  // Audit Check: External sources MUST have a reference URL or source indicator
+  const externalTypes = ['OWASP', 'MITRE_ATLAS', 'RESEARCH_PAPER', 'TOOL_OUTPUT'];
+  if (externalTypes.includes(sourceType) && !sourceUrl) {
+    throw new Error(`Audit Failure: External threat intel from ${sourceType} must include a sourceUrl for traceability.`);
+  }
+
+  if (!sourceName || sourceName.trim().length < 3) {
+    throw new Error(`Audit Failure: sourceName is mandatory for all threat intel records.`);
+  }
+
   // 1. Generate Deterministic ID from hash of (title + sourceName + rawNotes)
   const hash = crypto.createHash('sha256')
     .update(`${title}|${sourceName}|${rawNotes}`)
@@ -43,7 +53,6 @@ export function parseThreatIntelNote(input: ThreatIntelInput): ThreatIntelRecord
   }
 
   // 4. Extract Summary, Affected Components, and Recommended Defenses
-  // Simple deterministic extraction based on line labels
   const lines = rawNotes.split('\n');
   let summary = '';
   const affectedComponents: string[] = [];
@@ -60,7 +69,6 @@ export function parseThreatIntelNote(input: ThreatIntelInput): ThreatIntelRecord
     }
   });
 
-  // Fallback for summary if label is missing
   if (!summary) {
     summary = rawNotes.substring(0, 100).split('\n')[0] + '...';
   }
@@ -76,7 +84,7 @@ export function parseThreatIntelNote(input: ThreatIntelInput): ThreatIntelRecord
     examplePhrases,
     affectedComponents: affectedComponents.length > 0 ? affectedComponents : ['Unknown LLM Agent'],
     recommendedDefenses: recommendedDefenses.length > 0 ? recommendedDefenses : ['Enhanced Regex Monitoring'],
-    confidence: 0.8, // Default confidence for manual intake
+    confidence: 0.8,
     createdAt: new Date().toISOString()
   };
 }

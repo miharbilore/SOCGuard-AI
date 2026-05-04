@@ -32,6 +32,7 @@ Defense: Output Filtering
   {
     title: 'Tool Abuse for Data Exfiltration',
     sourceName: 'Research Paper: LLM Agent Vulnerabilities',
+    sourceUrl: 'https://arxiv.org/abs/2301.00000',
     sourceType: 'RESEARCH_PAPER',
     rawNotes: `
 Summary: Exploiting tool calling to send data to external URLs.

@@ -1,6 +1,6 @@
 import { RulePack, RulePackRule } from './rule-pack-types';
 import { RuleReviewItem } from '../review-queue';
-import { DetectionCategory, DetectionSeverity } from '../types';
+import { deterministicHash } from '../utils/crypto';
 
 export interface BuildInput {
   baseRulePack: RulePack;
@@ -11,6 +11,7 @@ export interface BuildInput {
 
 /**
  * Builds a new versioned Rule Pack (in DRAFT status) by incorporating approved candidate rules.
+ * Rules inside a draft pack are NOT active production rules (enabled: false).
  */
 export function buildDraftRulePackFromApprovedItems(input: BuildInput): RulePack {
   const { baseRulePack, approvedReviewItems, newVersion, changelog } = input;
@@ -28,9 +29,11 @@ export function buildDraftRulePackFromApprovedItems(input: BuildInput): RulePack
     reason: item.candidateRule.rationale,
     falsePositiveNotes: item.candidateRule.falsePositiveRisks.join(', '),
     source: item.candidateRule.sourceThreatIntelId,
-    enabled: true,
-    createdBy: 'system-builder',
-    reviewStatus: 'APPROVED'
+    // SAFETY: Rules in draft packs are disabled by default
+    enabled: false,
+    createdBy: `review-${item.reviewedBy || 'unknown'}`,
+    // SAFETY: Status in draft pack remains DRAFT until full pack approval
+    reviewStatus: 'DRAFT'
   }));
 
   // Combine with existing rules (avoiding duplicates by proposedRuleId)
@@ -41,21 +44,23 @@ export function buildDraftRulePackFromApprovedItems(input: BuildInput): RulePack
     }
   });
 
-  // Extract new source references
   const newReferences = Array.from(new Set([
     ...baseRulePack.sourceReferences,
     ...validItems.map(item => item.candidateRule.sourceThreatIntelId)
   ]));
 
+  // Deterministic ID for the Rule Pack based on version and changelog
+  const packHash = deterministicHash(`${newVersion}:${changelog}:${newRules.length}`);
+
   return {
-    id: `RP-${newVersion.replace(/\./g, '-')}-${Date.now()}`,
+    id: `RP-${newVersion.replace(/\./g, '-')}-${packHash.toUpperCase().substring(0, 8)}`,
     name: baseRulePack.name,
     version: newVersion,
     createdAt: new Date().toISOString(),
     status: 'DRAFT',
     sourceReferences: newReferences,
     rules: combinedRules,
-    testCases: [...baseRulePack.testCases], // In future, we could add new test cases from the items
-    changelog: `${changelog}\n\nAdded ${newRules.length} new approved rules.`
+    testCases: [...baseRulePack.testCases],
+    changelog: `${changelog}\n\nAdded ${newRules.length} new rules (Initial Status: DRAFT, Disabled).`
   };
 }
