@@ -12,6 +12,10 @@ export type DetectionCategory =
   | 'DATA_EXFILTRATION'
   | 'ROLE_CONFUSION'
   | 'SUSPICIOUS_ENCODING'
+  | 'PROMPT_LEAK_ATTEMPT'
+  | 'TOOL_ABUSE'
+  | 'FORMAT_CONTROL'
+  | 'OBFUSCATION'
   | 'BENIGN';
 
 /**

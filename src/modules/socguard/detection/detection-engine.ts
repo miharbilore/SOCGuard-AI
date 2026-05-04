@@ -10,12 +10,14 @@ import { normalizeLogInput } from '../preprocessing';
 export function analyzeLog(entry: LogEntry): DetectionFinding[] {
   const findings: DetectionFinding[] = [];
   const normalizedInput = normalizeLogInput(entry.payload);
+  const ruleCounts: Record<string, number> = {};
+  const MAX_FINDINGS_PER_RULE = 5;
+  const findingKeys = new Set<string>();
 
   // We check multiple variants to catch obfuscated attacks
   const analysisTargets = [
     { text: normalizedInput.original, label: 'original' },
-    { text: normalizedInput.normalized, label: 'normalized' },
-    { text: normalizedInput.lowercase, label: 'lowercase' }
+    { text: normalizedInput.normalized, label: 'normalized' }
   ];
 
   // Add decoded variants if any
@@ -23,47 +25,57 @@ export function analyzeLog(entry: LogEntry): DetectionFinding[] {
     analysisTargets.push({ text: variant, label: `decoded_variant_${index}` });
   });
 
-  const findingKeys = new Set<string>();
-
   for (const target of analysisTargets) {
-    for (const rule of DETERMINISTIC_RULES) {
-      // Reset regex index for global flags
-      rule.pattern.lastIndex = 0;
-      
-      let match;
-      while ((match = rule.pattern.exec(target.text)) !== null) {
-        // Create a unique key to avoid duplicate findings for the same rule/match
-        const key = `${rule.id}-${match[0]}-${target.label}`;
-        if (findingKeys.has(key)) continue;
-        findingKeys.add(key);
+    const lines = target.text.split(/\r?\n/);
+    
+    for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
+      const lineText = lines[lineIdx];
+      const lineNum = lineIdx + 1;
 
-        findings.push({
-          id: `finding-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
-          category: rule.category,
-          severity: rule.severity,
-          description: `Triggered by rule ${rule.id} in ${target.label}: ${rule.reason}`,
-          ruleId: rule.id,
-          matchedText: match[0],
-          offset: match.index,
-          reason: rule.reason + (target.label !== 'original' ? ` (Detected via ${target.label} variant)` : ''),
-          confidence: rule.confidence
-        });
+      for (const rule of DETERMINISTIC_RULES) {
+        // Skip if we've reached the cap for this rule in this log entry
+        if ((ruleCounts[rule.id] || 0) >= MAX_FINDINGS_PER_RULE) continue;
 
-        // Avoid infinite loops with non-global regex
-        if (!rule.pattern.global) break;
+        rule.pattern.lastIndex = 0;
+        let match;
+        
+        while ((match = rule.pattern.exec(lineText)) !== null) {
+          // Deduplication key: rule + text + line number + variant label
+          const key = `${rule.id}|${match[0]}|${lineNum}|${target.label}`;
+          if (findingKeys.has(key)) continue;
+          findingKeys.add(key);
+
+          ruleCounts[rule.id] = (ruleCounts[rule.id] || 0) + 1;
+
+          findings.push({
+            id: `finding-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+            category: rule.category,
+            severity: rule.severity,
+            description: `[Rule ${rule.id}] ${rule.reason}`,
+            ruleId: rule.id,
+            matchedText: match[0],
+            offset: match.index,
+            reason: `${rule.reason} (Detected in ${target.label} variant at line ${lineNum})`,
+            confidence: rule.confidence
+          });
+
+          if (!rule.pattern.global) break;
+          // Avoid infinite loops if rule cap reached mid-line
+          if (ruleCounts[rule.id] >= MAX_FINDINGS_PER_RULE) break;
+        }
       }
     }
   }
 
-  // Also flag the suspicious transformations themselves
+  // Also flag the suspicious transformations themselves as OBFUSCATION
   if (normalizedInput.suspiciousTransforms.length > 0) {
     findings.push({
-      id: `finding-transform-${Date.now()}`,
-      category: 'SUSPICIOUS_ENCODING',
+      id: `finding-obf-${Date.now()}`,
+      category: 'OBFUSCATION',
       severity: 'LOW',
       description: `Suspicious obfuscation detected: ${normalizedInput.suspiciousTransforms.join(', ')}`,
       ruleId: 'PREPROC-001',
-      reason: 'Input used encoding or Unicode tricks often associated with evasion.',
+      reason: 'The input underwent normalization or decoding that changed its content, indicating potential evasion.',
       confidence: 0.6
     });
   }
