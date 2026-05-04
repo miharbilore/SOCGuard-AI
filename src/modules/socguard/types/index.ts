@@ -60,6 +60,18 @@ export interface DetectionFinding {
 }
 
 /**
+ * Represents a single factor contributing to the total risk score.
+ */
+export interface ScoringFactor {
+  /** The name of the scoring factor (e.g., severity, category) */
+  factor: string;
+  /** Points added or subtracted by this factor */
+  points: number;
+  /** Reason for this factor's contribution */
+  reason: string;
+}
+
+/**
  * Represents the aggregated risk assessment for a given log entry.
  */
 export interface RiskScore {
@@ -67,6 +79,10 @@ export interface RiskScore {
   score: number;
   /** Confidence level of the score calculation (e.g., 0.0 - 1.0) */
   confidence: number;
+  /** Categorical risk level derived from the numeric score */
+  level: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  /** Breakdown of contributing factors for explainability */
+  factors: ScoringFactor[];
 }
 
 /**
