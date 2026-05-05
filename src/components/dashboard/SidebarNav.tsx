@@ -19,6 +19,7 @@ const navItems = [
   ]},
   { group: 'Governance', items: [
     { name: 'Rule Packs', href: '/rule-packs', icon: '📦' },
+    { name: 'Rule Vault', href: '/rule-vault', icon: '🏦' },
     { name: 'Audit Trail', href: '/audit', icon: '📋' },
   ]},
 ];

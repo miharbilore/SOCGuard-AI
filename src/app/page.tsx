@@ -139,6 +139,12 @@ export default function CommandCenter() {
               href="/agent-lab" 
               icon="🤖" 
             />
+            <ActionCard 
+              title="Rule Vault" 
+              description="Candidate registry for human audit." 
+              href="/rule-vault" 
+              icon="🏦" 
+            />
           </div>
         </section>
 
