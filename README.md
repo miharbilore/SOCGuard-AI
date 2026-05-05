@@ -68,6 +68,9 @@ SOCGuard AI is built on a "Human-in-the-loop" governance model:
 - **No Production Mutation**: Ajanlar üretim kurallarını doğrudan değiştiremez.
 - **Safety Sanitization**: Generated adversarial prompts are sanitized to be non-operational; raw harmful payloads are never stored in production paths.
 
+> [!NOTE]
+> All documentation examples are sanitized and non-operational. The project uses placeholders (e.g., `[REDACTED]`) to represent unsafe intent without providing actionable harmful content.
+
 ## Installation & Setup
 
 1. Clone the repository.

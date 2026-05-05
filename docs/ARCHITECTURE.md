@@ -1,5 +1,8 @@
 # Architecture: SOCGuard AI
 
+> [!NOTE]
+> All documentation examples are sanitized and non-operational. The project uses placeholders (e.g., `[REDACTED]`) to represent unsafe intent without providing actionable harmful content.
+
 ## Overview
 SOCGuard AI employs a modular, pipeline-driven architecture optimized for sub-millisecond, deterministic log analysis. The core design philosophy centers on **Deterministic Authority**, ensuring that security decisions are based on verifiable code rather than probabilistic LLM outputs.
 
