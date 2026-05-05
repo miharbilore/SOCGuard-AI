@@ -3,10 +3,8 @@ import { RedTeamCandidate, BlueTeamProposal } from '../adversarial-lab/adversari
 import { generateBlueTeamProposal } from '../adversarial-lab/blue-team-defender';
 
 export class MockBlueTeamAgent implements BlueTeamAgent {
-  async propose(candidate: RedTeamCandidate): Promise<BlueTeamProposal> {
+  async propose(input: { candidate: RedTeamCandidate }): Promise<BlueTeamProposal> {
     await new Promise(resolve => setTimeout(resolve, 600));
-    
-    // Uses deterministic defense proposal logic
-    return generateBlueTeamProposal(candidate);
+    return generateBlueTeamProposal(input.candidate);
   }
 }

@@ -3,7 +3,7 @@ import { RedTeamCandidate } from '../adversarial-lab/adversarial-types';
 import { generateDefaultRedTeamSet } from '../adversarial-lab/red-team-generator';
 
 export class MockRedTeamAgent implements RedTeamAgent {
-  async generate(_input: string): Promise<RedTeamCandidate[]> {
+  async generate(input: { sourceId: string; maxCandidates?: number }): Promise<RedTeamCandidate[]> {
     // Artificial delay to simulate network/LLM latency
     await new Promise(resolve => setTimeout(resolve, 800));
     

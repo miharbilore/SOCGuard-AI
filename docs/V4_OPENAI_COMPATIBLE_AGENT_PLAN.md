@@ -1,7 +1,7 @@
 # V4 Plan: OpenAI-Compatible API Integration
 
-## Architecture
-Future V4.x updates will introduce real LLM-backed agents using an adapter pattern. This allows the system to switch between `MOCK` research mode and `LLM` synthesis mode.
+## Status: IMPLEMENTED (Mock & Adapter Framework)
+Future V4.x updates will add advanced features, but the core OpenAI-compatible adapter and server-side plumbing are now live. This allows the system to switch between `MOCK` research mode and `LLM` synthesis mode.
 
 ### Planned Agents
 - **Red Team (LLM)**: Prompted to generate diverse indirect injection variants based on the `sanitizer` safety profile.

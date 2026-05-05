@@ -3,10 +3,10 @@ import { RedTeamCandidate, BlueTeamProposal, JudgeRecommendation } from '../adve
 import { evaluateRedBluePair } from '../adversarial-lab/judge-evaluator';
 
 export class MockJudgeAgent implements JudgeAgent {
-  async evaluate(candidate: RedTeamCandidate, proposal: BlueTeamProposal): Promise<JudgeRecommendation> {
-    await new Promise(resolve => setTimeout(resolve, 500));
+  async evaluate(input: { candidate: RedTeamCandidate; proposal: BlueTeamProposal }): Promise<JudgeRecommendation> {
+    await new Promise(resolve => setTimeout(resolve, 700));
     
     // Uses deterministic heuristic judge logic
-    return evaluateRedBluePair(candidate, proposal);
+    return evaluateRedBluePair(input.candidate, input.proposal);
   }
 }

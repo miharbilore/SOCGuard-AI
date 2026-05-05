@@ -29,16 +29,23 @@ export default function AgentLabRunnerPage() {
 
   const handleRunSingle = async () => {
     setIsRunning(true);
-    setStatusMessage('Running single agent research cycle...');
+    setStatusMessage('Initiating server-side research cycle...');
     setResults(null);
     setSelectedRecord(null);
 
     try {
-      const cycleResult = await runSingleAgentLabCycle(
-        DEFAULT_AGENT_CONFIG, 
-        'manual-ui-run', 
-        candidatesPerCycle
-      );
+      const response = await fetch('/api/agent-lab/run-cycle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ maxCandidates: candidatesPerCycle })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.details || 'Server error during cycle');
+      }
+
+      const cycleResult: AgentLabCycleResult = await response.json();
       
       // Wrap in session result for consistent UI
       const sessionResult: AgentLabSessionResult = {
@@ -55,9 +62,9 @@ export default function AgentLabRunnerPage() {
       
       setResults(sessionResult);
       setStatusMessage('Cycle completed.');
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setStatusMessage('Error running cycle.');
+      setStatusMessage(`Error: ${err.message}`);
     } finally {
       setIsRunning(false);
     }
@@ -97,11 +104,23 @@ export default function AgentLabRunnerPage() {
       </div>
 
       <header style={{ marginBottom: '2.5rem' }}>
-        <div className="subtitle">Agent Pipeline (V4)</div>
-        <h1>Agent Lab Runner</h1>
-        <p className="description" style={{ margin: 0 }}>
-          Orchestrate automated research cycles where agents synthesize attacks and propose defenses.
-        </p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <div className="subtitle">Agent Pipeline (V4)</div>
+            <h1>Agent Lab Runner</h1>
+            <p className="description" style={{ margin: 0 }}>
+              Orchestrate automated research cycles where agents synthesize attacks and propose defenses.
+            </p>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+             <div style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Security Status</div>
+             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                <span className="badge" style={{ background: 'rgba(59, 130, 246, 0.1)', color: 'var(--accent)', border: '1px solid var(--accent)', fontSize: '0.7rem' }}>
+                  KEY: SECURE (SERVER-ONLY)
+                </span>
+             </div>
+          </div>
+        </div>
       </header>
 
       <div className="main-grid" style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '2rem' }}>

@@ -43,4 +43,4 @@ The system enforces the following safety limits when real agents are enabled:
 - **Max Candidates**: 3 per cycle (default).
 - **Max Cycles**: 5 per session (default).
 
-If a rate limit is reached, the system will apply exponential backoff or halt execution. Do not attempt to bypass these controls.
+If a rate limit is reached, the system will apply exponential backoff (capped at 120s) or halt execution. Do not attempt to bypass these controls. The factory logic (`agent-factory.ts`) ensures that if `ENABLE_LLM_AGENTS` is false or the key is missing, the system gracefully falls back to `MOCK` mode.

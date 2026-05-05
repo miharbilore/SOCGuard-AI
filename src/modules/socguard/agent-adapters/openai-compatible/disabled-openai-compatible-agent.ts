@@ -23,29 +23,29 @@ const DISABLED_ERROR = "OpenAI-compatible LLM agents are not enabled in this res
  */
 
 export class DisabledRedTeamAgent implements RedTeamAgent {
-  async generate(_input: string): Promise<RedTeamCandidate[]> {
+  async generate(_input: { sourceId: string; maxCandidates?: number }): Promise<RedTeamCandidate[]> {
     throw new Error(DISABLED_ERROR);
   }
 }
 
 export class DisabledBlueTeamAgent implements BlueTeamAgent {
-  async propose(_candidate: RedTeamCandidate): Promise<BlueTeamProposal> {
+  async propose(_input: { candidate: RedTeamCandidate }): Promise<BlueTeamProposal> {
     throw new Error(DISABLED_ERROR);
   }
 }
 
 export class DisabledJudgeAgent implements JudgeAgent {
-  async evaluate(_candidate: RedTeamCandidate, _proposal: BlueTeamProposal): Promise<JudgeRecommendation> {
+  async evaluate(_input: { candidate: RedTeamCandidate; proposal: BlueTeamProposal }): Promise<JudgeRecommendation> {
     throw new Error(DISABLED_ERROR);
   }
 }
 
 export class DisabledCuratorAgent implements CuratorAgent {
-  async curate(
-    _candidate: RedTeamCandidate, 
-    _proposal: BlueTeamProposal, 
-    _judge: JudgeRecommendation
-  ): Promise<CuratedRuleVaultEntry> {
+  async curate(_input: {
+    candidate: RedTeamCandidate, 
+    proposal: BlueTeamProposal, 
+    judge: JudgeRecommendation
+  }): Promise<CuratedRuleVaultEntry> {
     throw new Error(DISABLED_ERROR);
   }
 }

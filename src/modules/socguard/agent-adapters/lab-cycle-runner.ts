@@ -1,11 +1,8 @@
 import { 
   AgentRuntimeConfig, 
-  MockRedTeamAgent, 
-  MockBlueTeamAgent, 
-  MockJudgeAgent, 
-  MockCuratorAgent,
   CuratedRuleVaultEntry
 } from './index';
+import { createAgentSet } from './agent-factory';
 import { analyzeLog } from '../demo/analyze-log';
 import { 
   RedTeamCandidate, 
@@ -69,12 +66,13 @@ export async function runSingleAgentLabCycle(
   sourceId: string,
   maxCandidates: number = 3
 ): Promise<AgentLabCycleResult> {
-  const redAgent = new MockRedTeamAgent();
-  const blueAgent = new MockBlueTeamAgent();
-  const judgeAgent = new MockJudgeAgent();
-  const curatorAgent = new MockCuratorAgent();
+  const agents = createAgentSet(config);
+  const redAgent = agents.redTeam;
+  const blueAgent = agents.blueTeam;
+  const judgeAgent = agents.judge;
+  const curatorAgent = agents.curator;
 
-  const candidates = await redAgent.generate(sourceId);
+    const candidates = await redAgent.generate({ sourceId, maxCandidates });
   const limitedCandidates = candidates.slice(0, maxCandidates);
   
   const records: AgentLabCycleRecord[] = [];
@@ -99,13 +97,13 @@ export async function runSingleAgentLabCycle(
     const analysisResult = analyzeLog(logEntry);
 
     // 3. Blue Team Defense Proposal
-    const proposal = await blueAgent.propose(sanitizedCandidate);
+    const proposal = await blueAgent.propose({ candidate: sanitizedCandidate });
 
     // 4. Judge Advisory Evaluation
-    const judge = await judgeAgent.evaluate(sanitizedCandidate, proposal);
+    const judge = await judgeAgent.evaluate({ candidate: sanitizedCandidate, proposal });
 
     // 5. Curator Vault Entry Creation
-    const vaultEntry = await curatorAgent.curate(sanitizedCandidate, proposal, judge);
+    const vaultEntry = await curatorAgent.curate({ candidate: sanitizedCandidate, proposal, judge });
     curatedEntries.push(vaultEntry);
 
     // 6. Analytics

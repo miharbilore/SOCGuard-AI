@@ -24,27 +24,34 @@ export interface AgentRuntimeConfig {
   requireHumanReview: true;
   allowProductionMutation: false;
   allowAutoApproval: false;
+  openai?: {
+    enabled: boolean;
+    baseUrl: string;
+    model: string;
+    apiKey?: string;
+    timeoutMs: number;
+    maxTokens: number;
+    temperature: number;
+  };
 }
 
 export interface RedTeamAgent {
-  generate(input: string): Promise<RedTeamCandidate[]>;
+  generate(input: { sourceId: string; maxCandidates?: number }): Promise<RedTeamCandidate[]>;
 }
 
 export interface BlueTeamAgent {
-  propose(candidate: RedTeamCandidate): Promise<BlueTeamProposal>;
+  propose(input: { candidate: RedTeamCandidate }): Promise<BlueTeamProposal>;
 }
 
 export interface JudgeAgent {
-  evaluate(candidate: RedTeamCandidate, proposal: BlueTeamProposal): Promise<JudgeRecommendation>;
+  evaluate(input: { candidate: RedTeamCandidate; proposal: BlueTeamProposal }): Promise<JudgeRecommendation>;
 }
 
 export type VaultEntryStatus = 'NEEDS_REVIEW' | 'APPROVED' | 'REJECTED' | 'NEEDS_REVISION';
 
 export interface CuratedRuleVaultEntry {
   id: string;
-  sourceCandidateId: string;
-  sourceProposalId: string;
-  sourceJudgeRecommendationId: string;
+  sourceType: 'AGENT_LAB';
   attackType: string;
   sanitizedLog: string;
   proposedCategory: DetectionCategory;
@@ -58,9 +65,9 @@ export interface CuratedRuleVaultEntry {
 }
 
 export interface CuratorAgent {
-  curate(
+  curate(input: {
     candidate: RedTeamCandidate, 
     proposal: BlueTeamProposal, 
     judge: JudgeRecommendation
-  ): Promise<CuratedRuleVaultEntry>;
+  }): Promise<CuratedRuleVaultEntry>;
 }
