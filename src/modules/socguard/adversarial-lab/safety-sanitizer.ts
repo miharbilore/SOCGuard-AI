@@ -131,3 +131,16 @@ export function createSafeRedTeamCandidate(input: CreateCandidateInput): RedTeam
     createdAt: new Date().toISOString()
   };
 }
+/**
+ * Re-validates a RedTeamCandidate to ensure NO raw harmful prompt escaped.
+ * Useful for auditing untrusted agent outputs.
+ */
+export function sanitizeRedTeamCandidate(candidate: RedTeamCandidate): RedTeamCandidate {
+  const result = sanitizeAdversarialPrompt(candidate.sanitizedPrompt);
+  return {
+    ...candidate,
+    sanitizedPrompt: result.sanitizedPrompt,
+    redactedTerms: Array.from(new Set([...candidate.redactedTerms, ...result.redactedTerms])),
+    safetyStatus: result.safetyStatus === 'REJECTED' ? 'REJECTED' : candidate.safetyStatus
+  };
+}
