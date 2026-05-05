@@ -133,6 +133,12 @@ export default function CommandCenter() {
               href="/rule-packs" 
               icon="📦" 
             />
+            <ActionCard 
+              title="Agent Lab Runner" 
+              description="Orchestrate automated agent research." 
+              href="/agent-lab" 
+              icon="🤖" 
+            />
           </div>
         </section>
 
@@ -246,7 +252,7 @@ export default function CommandCenter() {
         .promo-label {
           font-size: 0.85rem;
           font-weight: 700;
-          color: white;
+          color: var(--text);
         }
         .promo-sub {
           font-size: 0.65rem;
@@ -325,7 +331,7 @@ function ActionCard({ title, description, href, icon, badge }: { title: string, 
         }
         .action-title {
           margin: 0;
-          color: white;
+          color: var(--text);
           font-size: 0.95rem;
           font-weight: 700;
           letter-spacing: -0.01em;

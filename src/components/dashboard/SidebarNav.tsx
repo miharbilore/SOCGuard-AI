@@ -15,6 +15,7 @@ const navItems = [
     { name: 'Evaluation', href: '/evaluation', icon: '📈' },
     { name: 'Rule Intelligence', href: '/v2', icon: '🧠' },
     { name: 'Adversarial Lab', href: '/adversarial-lab', icon: '🧪' },
+    { name: 'Agent Lab Runner', href: '/agent-lab', icon: '🤖' },
   ]},
   { group: 'Governance', items: [
     { name: 'Rule Packs', href: '/rule-packs', icon: '📦' },
