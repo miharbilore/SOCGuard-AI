@@ -3,6 +3,12 @@ import {
   BlueTeamProposal, 
   JudgeRecommendation 
 } from '../adversarial-lab/adversarial-types';
+
+export type { 
+  RedTeamCandidate, 
+  BlueTeamProposal, 
+  JudgeRecommendation 
+};
 import { DetectionCategory } from '../types';
 
 export type AgentProvider = 'MOCK' | 'GROQ' | 'OPENAI_COMPATIBLE';

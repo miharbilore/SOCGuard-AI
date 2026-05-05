@@ -96,7 +96,8 @@ SOCGuard AI is built on a "Human-in-the-loop" governance model:
 
 ## Generative AI / API Usage
 - **Current Version**: Uses deterministic/mock agents only. No external API calls to LLM providers are made.
-- **V4 Planned**: Will introduce optional Groq/OpenAI-compatible adapters. API keys will be handled server-side only. `ENABLE_LLM_AGENTS` will be `false` by default, requiring explicit administrator activation.
+- **V4 API Adapters**: Placeholder architecture for Groq/OpenAI-compatible adapters is included but **disabled by default**. 
+- **Security**: API keys are never stored in the frontend or version control. V4 implementation requires server-side environment variables.
 
 ## Limitations
 - **Synthetic Dataset**: Current evaluation metrics use a curated research dataset.
