@@ -70,16 +70,16 @@ export default function RulePacksPage() {
 
   return (
     <DashboardShell>
-      <header style={{ marginBottom: '2rem' }}>
+      <header style={{ marginBottom: '2.5rem' }}>
         <div className="subtitle">Detection Assets & Versioning</div>
         <h1>Rule Packs</h1>
-        <p className="description">
+        <p className="description" style={{ margin: 0 }}>
           Versioned governance layer for candidate detection rules. Rule packs bundle validated rules for staged deployment.
         </p>
       </header>
 
       {/* Metrics Grid */}
-      <section className="metrics-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+      <section className="metrics-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
         <MetricCard label="Total Packs" value={metrics.totalPacks} />
         <MetricCard label="Draft Packs" value={metrics.draftPacks} color="var(--escalate)" />
         <MetricCard label="Approved Packs" value={metrics.approvedPacks} color="var(--safe)" />
@@ -88,12 +88,12 @@ export default function RulePacksPage() {
         <MetricCard label="Candidate Rules" value={metrics.candidateRules} color="var(--accent)" />
       </section>
 
-      <div className="dashboard-content-layout" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '2rem' }}>
-        <div className="left-column" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      <div className="dashboard-content-layout" style={{ display: 'grid', gridTemplateColumns: '1.4fr 0.6fr', gap: '2rem' }}>
+        <div className="left-column" style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
           {/* Rule Pack Table */}
           <SectionCard title="Registered Rule Packs" subtitle="History of versioned signature bundles">
-            <div style={{ background: 'rgba(245, 158, 11, 0.05)', border: '1px solid var(--escalate)', padding: '0.75rem', borderRadius: '4px', marginBottom: '1rem', fontSize: '0.8rem', color: 'var(--escalate)' }}>
-              <strong>Governance Notice:</strong> Draft packs are inactive. New draft rules are disabled by default and are not deployed.
+            <div style={{ background: 'rgba(217, 119, 6, 0.05)', border: '1px solid rgba(217, 119, 6, 0.1)', padding: '0.875rem', borderRadius: '8px', marginBottom: '1.25rem', fontSize: '0.8rem', color: 'var(--escalate)', fontWeight: 600 }}>
+              <strong>Governance Notice:</strong> Draft packs are inactive. New draft rules are disabled by default and require human activation.
             </div>
             <div className="results-table-container">
               <table>
@@ -111,11 +111,8 @@ export default function RulePacksPage() {
                     <tr 
                       key={pack.id} 
                       onClick={() => setSelectedPackId(pack.id)}
-                      style={{ 
-                        cursor: 'pointer', 
-                        background: selectedPackId === pack.id ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-                        borderLeft: selectedPackId === pack.id ? '4px solid var(--accent)' : 'none'
-                      }}
+                      className={selectedPackId === pack.id ? 'selected' : ''}
+                      style={{ cursor: 'pointer' }}
                     >
                       <td><code>{pack.id}</code></td>
                       <td><strong>{pack.version}</strong></td>
@@ -126,7 +123,7 @@ export default function RulePacksPage() {
                         />
                       </td>
                       <td>{pack.rules.length}</td>
-                      <td><span style={{ fontSize: '0.8rem', opacity: 0.7 }}>{new Date(pack.createdAt).toLocaleDateString()}</span></td>
+                      <td><span style={{ fontSize: '0.75rem', opacity: 0.7, fontWeight: 500 }}>{new Date(pack.createdAt).toLocaleDateString()}</span></td>
                     </tr>
                   ))}
                 </tbody>
@@ -136,7 +133,7 @@ export default function RulePacksPage() {
 
           {/* Rule Preview */}
           {selectedPack && (
-            <SectionCard title={`Rules in ${selectedPack.version}`} subtitle={`Detailed list of signatures included in ${selectedPack.id}`}>
+            <SectionCard title={`Rules in ${selectedPack.version}`} subtitle={`Detailed signatures included in ${selectedPack.id}`}>
               <div className="results-table-container">
                 <table>
                   <thead>
@@ -152,11 +149,11 @@ export default function RulePacksPage() {
                     {selectedPack.rules.map(rule => (
                       <tr key={rule.id}>
                         <td><code>{rule.id}</code></td>
-                        <td><span style={{ fontSize: '0.8rem' }}>{rule.category}</span></td>
+                        <td><span style={{ fontSize: '0.75rem', fontWeight: 600 }}>{rule.category}</span></td>
                         <td>
                           <span style={{ 
-                            fontSize: '0.75rem', 
-                            fontWeight: 'bold', 
+                            fontSize: '0.7rem', 
+                            fontWeight: 800, 
                             color: rule.severity === 'CRITICAL' || rule.severity === 'HIGH' ? 'var(--block)' : 'var(--text-muted)' 
                           }}>
                             {rule.severity}
@@ -167,7 +164,7 @@ export default function RulePacksPage() {
                             {rule.enabled ? 'ENABLED' : 'DISABLED'}
                           </span>
                         </td>
-                        <td><span style={{ fontSize: '0.75rem', opacity: 0.7 }}>{rule.source}</span></td>
+                        <td><span style={{ fontSize: '0.7rem', opacity: 0.7, fontWeight: 500 }}>{rule.source}</span></td>
                       </tr>
                     ))}
                   </tbody>
@@ -177,37 +174,37 @@ export default function RulePacksPage() {
           )}
         </div>
 
-        <div className="right-column" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <div className="right-column" style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
           {/* Pack Details */}
           {selectedPack && (
             <SectionCard title="Pack Intelligence" subtitle="Metadata and audit information">
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 <div className="detail-row">
-                  <h4 style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Status</h4>
+                  <h4 style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem', fontWeight: 700 }}>Status</h4>
                   <StatusBadge 
                     status={selectedPack.status} 
                     type={selectedPack.status === 'APPROVED' ? 'success' : 'warning'} 
                   />
                 </div>
                 <div className="detail-row">
-                  <h4 style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Source References</h4>
-                  <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                  <h4 style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem', fontWeight: 700 }}>Source References</h4>
+                  <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.85rem', color: 'var(--text-soft)', lineHeight: 1.6 }}>
                     {selectedPack.sourceReferences.map((ref, i) => (
                       <li key={i}>{ref}</li>
                     ))}
                   </ul>
                 </div>
                 <div className="detail-row">
-                  <h4 style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Changelog</h4>
-                  <p style={{ fontSize: '0.85rem', background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '4px', border: '1px solid var(--border)', lineHeight: '1.5' }}>
+                  <h4 style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem', fontWeight: 700 }}>Changelog</h4>
+                  <p style={{ fontSize: '0.85rem', background: 'rgba(0,0,0,0.02)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border)', lineHeight: '1.5', color: 'var(--text-soft)' }}>
                     {selectedPack.changelog}
                   </p>
                 </div>
                 
-                <div className="governance-alert" style={{ background: 'rgba(239, 68, 68, 0.05)', border: '1px solid var(--block)', padding: '1rem', borderRadius: '4px' }}>
-                  <h4 style={{ color: 'var(--block)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>⚠ Governance Disclaimer</h4>
-                  <p style={{ fontSize: '0.75rem', margin: 0, opacity: 0.8 }}>
-                    Rule packs are not automatically deployed. Every transition from DRAFT to APPROVED requires signed administrative authorization. This dashboard does not modify active production detection rules.
+                <div className="governance-alert" style={{ background: 'rgba(220, 38, 38, 0.04)', border: '1px solid rgba(220, 38, 38, 0.1)', padding: '1rem', borderRadius: '8px' }}>
+                  <h4 style={{ color: 'var(--block)', fontSize: '0.8rem', marginBottom: '0.5rem', fontWeight: 800 }}>⚠ Governance Disclaimer</h4>
+                  <p style={{ fontSize: '0.75rem', margin: 0, opacity: 0.8, color: 'var(--text-soft)', lineHeight: 1.4 }}>
+                    Rule packs are not automatically deployed. Every transition requires human-in-the-loop validation. This dashboard is a simulation layer.
                   </p>
                 </div>
               </div>
@@ -215,8 +212,8 @@ export default function RulePacksPage() {
           )}
 
           {/* Lifecycle Visualization */}
-          <SectionCard title="Rule Lifecycle" subtitle="From Intelligence to Production">
-            <div className="lifecycle-viz" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <SectionCard title="Rule Lifecycle" subtitle="Intelligence to Production">
+            <div className="lifecycle-viz" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <LifecycleStep label="Threat Intelligence" sub="Adversarial patterns intake" />
               <LifecycleArrow />
               <LifecycleStep label="Candidate Rule" sub="Deterministic signature draft" />
@@ -227,18 +224,18 @@ export default function RulePacksPage() {
               <LifecycleArrow />
               <LifecycleStep label="Draft Rule Pack" sub="Versioned bundle (Disabled)" />
               <LifecycleArrow />
-              <LifecycleStep label="Future: Signed Release" sub="Production deployment" active />
+              <LifecycleStep label="Staged Release" sub="Production deployment simulation" active />
             </div>
           </SectionCard>
 
           {/* Future Work */}
-          <SectionCard title="Roadmap: Signed Packs" subtitle="V4 Governance Preview">
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.6' }}>
+          <SectionCard title="V4 Roadmap" subtitle="Governance Evolution">
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-soft)', lineHeight: '1.6', margin: 0 }}>
               Future iterations will introduce:
-              <br/>• <strong>Signed Packs:</strong> Cryptographically verified rule bundles.
-              <br/>• <strong>RBAC:</strong> Role-based access for pack approval.
-              <br/>• <strong>Persistence:</strong> SQLite/PostgreSQL storage.
-              <br/>• <strong>CI Gates:</strong> Automatic rejection if regression fails.
+              <br/>• <strong>Signed Packs:</strong> Cryptographic verification.
+              <br/>• <strong>RBAC:</strong> Role-based approval gates.
+              <br/>• <strong>Persistence:</strong> PostgreSQL storage integration.
+              <br/>• <strong>CI Gates:</strong> Auto-rejection on regression fail.
             </p>
           </SectionCard>
         </div>
@@ -251,18 +248,19 @@ function LifecycleStep({ label, sub, active }: { label: string, sub: string, act
   return (
     <div style={{ 
       padding: '0.75rem 1rem', 
-      background: active ? 'rgba(59, 130, 246, 0.1)' : 'rgba(255,255,255,0.03)', 
+      background: active ? 'rgba(37, 99, 235, 0.05)' : 'white', 
       border: `1px solid ${active ? 'var(--accent)' : 'var(--border)'}`,
-      borderRadius: '0.5rem'
+      borderRadius: '8px',
+      boxShadow: active ? '0 2px 8px rgba(37, 99, 235, 0.1)' : 'none'
     }}>
-      <div style={{ fontWeight: 'bold', fontSize: '0.85rem', color: active ? 'var(--accent)' : 'white' }}>{label}</div>
-      <div style={{ fontSize: '0.7rem', opacity: 0.6 }}>{sub}</div>
+      <div style={{ fontWeight: 800, fontSize: '0.8rem', color: active ? 'var(--accent)' : 'var(--text)' }}>{label}</div>
+      <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 600 }}>{sub}</div>
     </div>
   );
 }
 
 function LifecycleArrow() {
   return (
-    <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.8rem', opacity: 0.5 }}>↓</div>
+    <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.75rem', opacity: 0.4 }}>↓</div>
   );
 }

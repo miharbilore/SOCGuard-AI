@@ -19,6 +19,7 @@ export default function DashboardShell({ children }: DashboardShellProps) {
           </div>
           <div className="header-right">
             <div className="system-status">
+              <span className="status-label">Operational Status:</span>
               <span className="status-dot"></span>
               <span className="status-text">Engine Online</span>
             </div>
@@ -26,13 +27,19 @@ export default function DashboardShell({ children }: DashboardShellProps) {
         </header>
 
         <main className="dashboard-content">
-          {children}
+          <div className="content-inner">
+            {children}
+          </div>
         </main>
 
         <footer className="dashboard-footer">
           <div className="footer-content">
-            <p><strong>SOCGuard AI</strong> - Deterministic-first research prototype. Not a SIEM/EDR replacement.</p>
-            <p className="copyright">© 2026 SOCGuard Research Lab. All AI outputs are ADVISORY.</p>
+            <div className="footer-main">
+              <strong>SOCGuard AI</strong> — Deterministic-first research prototype. Not a SIEM/EDR replacement.
+            </div>
+            <div className="footer-sub">
+              © 2026 SOCGuard Research Lab. All AI outputs are ADVISORY. Immutable provenance enabled.
+            </div>
           </div>
         </footer>
       </div>
@@ -41,14 +48,14 @@ export default function DashboardShell({ children }: DashboardShellProps) {
         .dashboard-shell {
           display: flex;
           min-height: 100vh;
-          background: #0B0E14;
+          background: var(--bg);
           color: var(--text);
         }
         .main-container {
           flex: 1;
           display: flex;
           flex-direction: column;
-          min-width: 0; /* Prevents flex items from overflowing */
+          min-width: 0;
         }
         .dashboard-header {
           height: 64px;
@@ -57,63 +64,79 @@ export default function DashboardShell({ children }: DashboardShellProps) {
           align-items: center;
           justify-content: space-between;
           padding: 0 2rem;
-          background: rgba(11, 14, 20, 0.8);
-          backdrop-filter: blur(8px);
+          background: rgba(255, 255, 255, 0.8);
+          backdrop-filter: blur(12px);
           position: sticky;
           top: 0;
-          z-index: 10;
+          z-index: 50;
         }
         .poc-badge {
-          background: rgba(59, 130, 246, 0.1);
+          background: rgba(37, 99, 235, 0.05);
           color: var(--accent);
           padding: 0.25rem 0.75rem;
-          border-radius: 9999px;
-          font-size: 0.75rem;
-          font-weight: 600;
-          border: 1px solid rgba(59, 130, 246, 0.2);
+          border-radius: 6px;
+          font-size: 0.7rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          border: 1px solid rgba(37, 99, 235, 0.1);
         }
         .system-status {
           display: flex;
           align-items: center;
-          gap: 0.5rem;
+          gap: 0.625rem;
+        }
+        .status-label {
+          font-size: 0.7rem;
+          color: var(--text-muted);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          font-weight: 600;
         }
         .status-dot {
           width: 8px;
           height: 8px;
           background: var(--safe);
           border-radius: 50%;
-          box-shadow: 0 0 8px var(--safe);
+          box-shadow: 0 0 10px var(--safe);
         }
         .status-text {
-          font-size: 0.85rem;
-          color: var(--text-muted);
-          font-weight: 500;
+          font-size: 0.8rem;
+          color: var(--text);
+          font-weight: 600;
         }
         .dashboard-content {
           flex: 1;
-          padding: 2rem;
-          max-width: 1600px;
+          padding: 2.5rem 2rem;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+        .content-inner {
+          max-width: 1440px;
           width: 100%;
-          margin: 0 auto;
         }
         .dashboard-footer {
-          padding: 2rem;
+          padding: 2.5rem 2rem;
           border-top: 1px solid var(--border);
-          background: rgba(0, 0, 0, 0.2);
+          background: rgba(0, 0, 0, 0.02);
         }
         .footer-content {
-          max-width: 1600px;
+          max-width: 1440px;
           margin: 0 auto;
           display: flex;
           flex-direction: column;
           gap: 0.5rem;
           text-align: center;
-          font-size: 0.85rem;
-          color: var(--text-muted);
         }
-        .copyright {
+        .footer-main {
+          font-size: 0.85rem;
+          color: var(--text-soft);
+        }
+        .footer-sub {
           font-size: 0.75rem;
-          opacity: 0.6;
+          color: var(--text-muted);
+          opacity: 0.8;
         }
       `}</style>
     </div>

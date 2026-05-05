@@ -1,15 +1,18 @@
 :root {
-  --bg: #0a0c10;
-  --card-bg: rgba(255, 255, 255, 0.05);
-  --border: rgba(255, 255, 255, 0.1);
-  --accent: #3b82f6;
-  --accent-glow: rgba(59, 130, 246, 0.2);
-  --text: #e2e8f0;
-  --text-dim: #94a3b8;
-  --safe: #10b981;
-  --escalate: #f59e0b;
-  --human: #ec4899;
-  --block: #ef4444;
+  --bg: #F1F5F9;
+  --sidebar-bg: #FFFFFF;
+  --card-bg: #FFFFFF;
+  --border: rgba(0, 0, 0, 0.08);
+  --accent: #2563EB;
+  --accent-glow: rgba(37, 99, 235, 0.1);
+  --text: #0F172A;
+  --text-soft: #475569;
+  --text-muted: #64748B;
+  --safe: #059669;
+  --escalate: #D97706;
+  --human: #DB2777;
+  --block: #DC2626;
+  --sidebar-width: 260px;
 }
 
 * {
@@ -302,27 +305,48 @@ button {
 
 .results-table-container {
   overflow-x: auto;
-  margin-top: 1rem;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
 }
 
 table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 0.85rem;
 }
 
 th {
   text-align: left;
-  padding: 1rem;
-  border-bottom: 2px solid var(--border);
-  color: var(--text-dim);
+  padding: 0.75rem 1rem;
+  background: rgba(0, 0, 0, 0.02);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
   text-transform: uppercase;
   font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
 }
 
 td {
-  padding: 1rem;
+  padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--border);
+  color: var(--text-soft);
+  vertical-align: middle;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:hover {
+  background: rgba(0, 0, 0, 0.01);
+}
+
+tr.selected {
+  background: rgba(37, 99, 235, 0.04) !important;
+  border-left: 2px solid var(--accent);
 }
 
 .nav-link {

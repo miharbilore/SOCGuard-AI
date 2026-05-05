@@ -71,16 +71,16 @@ export default function AuditTrailPage() {
 
   return (
     <DashboardShell>
-      <header style={{ marginBottom: '2rem' }}>
+      <header style={{ marginBottom: '2.5rem' }}>
         <div className="subtitle">System Governance & Traceability</div>
         <h1>Audit Trail</h1>
-        <p className="description">
+        <p className="description" style={{ margin: '0' }}>
           Governance log for Red Team, Blue Team, Judge, and Human Review actions. Trace every candidate from synthesis to review.
         </p>
       </header>
 
       {/* Metrics Section */}
-      <section className="metrics-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+      <section className="metrics-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
         <MetricCard label="Total Audit Events" value={metrics.total} />
         <MetricCard label="Red Team" value={metrics.red} color="var(--block)" />
         <MetricCard label="Blue Team" value={metrics.blue} color="var(--safe)" />
@@ -89,7 +89,7 @@ export default function AuditTrailPage() {
         <MetricCard label="Records Tracked" value={metrics.records} color="var(--accent)" />
       </section>
 
-      <div className="dashboard-content-layout" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+      <div className="dashboard-content-layout" style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '2rem' }}>
         {/* Left Column: List and Filters */}
         <div className="list-column" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           <SectionCard title="Event History" subtitle="Centralized provenance log">
@@ -98,7 +98,7 @@ export default function AuditTrailPage() {
               <select 
                 value={actorFilter} 
                 onChange={(e) => setActorFilter(e.target.value)}
-                style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border)', color: 'white', padding: '0.5rem', borderRadius: '4px' }}
+                className="filter-input"
               >
                 <option value="All">All Actors</option>
                 <option value="RedTeamAgent">Red Team Agent</option>
@@ -111,18 +111,18 @@ export default function AuditTrailPage() {
                 placeholder="Search action..." 
                 value={actionSearch}
                 onChange={(e) => setActionSearch(e.target.value)}
-                style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border)', color: 'white', padding: '0.5rem', borderRadius: '4px' }}
+                className="filter-input"
               />
               <input 
                 type="text" 
                 placeholder="Search record ID..." 
                 value={recordIdSearch}
                 onChange={(e) => setRecordIdSearch(e.target.value)}
-                style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border)', color: 'white', padding: '0.5rem', borderRadius: '4px' }}
+                className="filter-input"
               />
             </div>
 
-            <div className="results-table-container" style={{ maxHeight: '600px', overflowY: 'auto' }}>
+            <div className="results-table-container" style={{ maxHeight: '640px', overflowY: 'auto' }}>
               <table>
                 <thead>
                   <tr>
@@ -133,28 +133,23 @@ export default function AuditTrailPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredEvents.map((event, i) => (
+                  {filteredEvents.map((event) => (
                     <tr 
                       key={`${event.recordId}|${event.timestamp}`} 
                       onClick={() => setSelectedEventId(`${event.recordId}|${event.timestamp}`)}
-                      style={{ 
-                        cursor: 'pointer', 
-                        background: selectedEventId === `${event.recordId}|${event.timestamp}` ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-                        borderLeft: selectedEventId === `${event.recordId}|${event.timestamp}` ? '4px solid var(--accent)' : 'none'
-                      }}
+                      className={selectedEventId === `${event.recordId}|${event.timestamp}` ? 'selected' : ''}
+                      style={{ cursor: 'pointer' }}
                     >
-                      <td><span style={{ fontSize: '0.75rem', opacity: 0.7 }}>{new Date(event.timestamp).toLocaleTimeString()}</span></td>
+                      <td><span style={{ fontSize: '0.75rem', fontWeight: 600 }}>{new Date(event.timestamp).toLocaleTimeString()}</span></td>
                       <td><code>{event.recordId}</code></td>
                       <td>
-                        <span style={{ 
-                          fontSize: '0.7rem', 
-                          fontWeight: 'bold',
-                          color: event.actor === 'HumanReviewer' ? 'var(--human)' : 'var(--text-muted)'
-                        }}>
+                        <span className={`actor-badge actor-${event.actor}`}>
                           {event.actor.replace('Agent', '').replace('Reviewer', '')}
                         </span>
                       </td>
-                      <td style={{ fontSize: '0.85rem' }}>{event.action.replace(/_/g, ' ')}</td>
+                      <td>
+                        <span className="action-text">{event.action.replace(/_/g, ' ')}</span>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -170,51 +165,54 @@ export default function AuditTrailPage() {
             {selectedEvent ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 <div className="detail-row">
-                  <h4 style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Full Timestamp</h4>
-                  <div style={{ fontSize: '0.95rem', fontFamily: 'monospace' }}>{selectedEvent.timestamp}</div>
+                  <h4 className="detail-label">Full Timestamp</h4>
+                  <div className="detail-value mono">{selectedEvent.timestamp}</div>
                 </div>
                 <div className="detail-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   <div>
-                    <h4 style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Actor</h4>
-                    <div style={{ fontWeight: 'bold' }}>{selectedEvent.actor}</div>
+                    <h4 className="detail-label">Actor</h4>
+                    <div className="detail-value strong">{selectedEvent.actor}</div>
                   </div>
                   <div>
-                    <h4 style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Action</h4>
-                    <div style={{ color: 'var(--accent)' }}>{selectedEvent.action}</div>
+                    <h4 className="detail-label">Action</h4>
+                    <div className="detail-value accent">{selectedEvent.action}</div>
                   </div>
                 </div>
                 <div className="detail-row">
-                  <h4 style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Notes</h4>
-                  <p style={{ fontSize: '0.9rem', background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '4px', border: '1px solid var(--border)' }}>
+                  <h4 className="detail-label">Notes</h4>
+                  <p className="notes-box">
                     {selectedEvent.notes}
                   </p>
                 </div>
                 <div className="detail-row" style={{ borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-                  <h4 style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Related Record Context</h4>
-                  <div style={{ fontSize: '0.85rem' }}>
-                    <div><strong>ID:</strong> {selectedEvent.recordId}</div>
-                    <div><strong>Attack Vector:</strong> {selectedEvent.attackType}</div>
+                  <h4 className="detail-label">Related Record Context</h4>
+                  <div className="context-box">
+                    <div className="context-item"><strong>ID:</strong> {selectedEvent.recordId}</div>
+                    <div className="context-item"><strong>Attack Vector:</strong> {selectedEvent.attackType}</div>
                     {selectedEvent.recommendation && (
-                      <div style={{ marginTop: '0.25rem' }}><strong>Judge Recommendation:</strong> {selectedEvent.recommendation}</div>
+                      <div className="context-item recommendation">
+                        <strong>Judge Recommendation:</strong> {selectedEvent.recommendation}
+                      </div>
                     )}
                   </div>
                 </div>
               </div>
             ) : (
-              <div className="placeholder" style={{ padding: '4rem', textAlign: 'center', opacity: 0.5 }}>
-                Select an audit entry to view full details.
+              <div className="empty-selection">
+                <div className="empty-icon">📋</div>
+                <p>Select an audit entry to view full provenance details.</p>
               </div>
             )}
           </SectionCard>
 
           {/* Governance Section */}
           <SectionCard title="Governance Notice" subtitle="Security & Trust Model">
-            <div style={{ background: 'rgba(239, 68, 68, 0.05)', border: '1px solid var(--block)', padding: '1rem', borderRadius: '4px', marginBottom: '1rem' }}>
-              <h4 style={{ color: 'var(--block)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>⚠ Academic Demo Data</h4>
-              <ul style={{ fontSize: '0.75rem', paddingLeft: '1.25rem', margin: 0, opacity: 0.8 }}>
+            <div className="gov-notice">
+              <h4 className="gov-title">⚠ Academic Demo Data</h4>
+              <ul className="gov-list">
                 <li>Audit entries are volatile demo data stored in-memory.</li>
-                <li>Production versions require immutable, tamper-evident logs (e.g., Blockchain or signed WORM storage).</li>
-                <li>No active rule mutation occurs from audit events in this research build.</li>
+                <li>Production versions require immutable, tamper-evident logs.</li>
+                <li>No active rule mutation occurs in this research build.</li>
                 <li>Full RBAC and cryptographic signatures are future requirements.</li>
               </ul>
             </div>
@@ -222,27 +220,141 @@ export default function AuditTrailPage() {
 
           {/* Importance Section */}
           <SectionCard title="Why Auditability Matters" subtitle="Research & Integrity Pillars">
-             <div className="info-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '0.75rem', borderRadius: '4px' }}>
-                  <div style={{ fontWeight: 'bold', fontSize: '0.8rem', color: 'var(--accent)' }}>Accountability</div>
-                  <div style={{ fontSize: '0.7rem', opacity: 0.7 }}>Clear visibility into who authorized which detection rule.</div>
-                </div>
-                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '0.75rem', borderRadius: '4px' }}>
-                  <div style={{ fontWeight: 'bold', fontSize: '0.8rem', color: 'var(--accent)' }}>Traceability</div>
-                  <div style={{ fontSize: '0.7rem', opacity: 0.7 }}>Linking every rule back to its threat intelligence source.</div>
-                </div>
-                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '0.75rem', borderRadius: '4px' }}>
-                  <div style={{ fontWeight: 'bold', fontSize: '0.8rem', color: 'var(--accent)' }}>Anti-Poisoning</div>
-                  <div style={{ fontSize: '0.7rem', opacity: 0.7 }}>Preventing adversarial patterns from polluting production.</div>
-                </div>
-                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '0.75rem', borderRadius: '4px' }}>
-                  <div style={{ fontWeight: 'bold', fontSize: '0.8rem', color: 'var(--accent)' }}>Forensics</div>
-                  <div style={{ fontSize: '0.7rem', opacity: 0.7 }}>Reconstructing decision chains after a missed detection.</div>
-                </div>
+             <div className="info-grid-compact">
+                <ImportanceItem title="Accountability" desc="Clear visibility into rule authorization." />
+                <ImportanceItem title="Traceability" desc="Linking rules to threat intelligence." />
+                <ImportanceItem title="Anti-Poisoning" desc="Preventing adversarial pattern pollution." />
+                <ImportanceItem title="Forensics" desc="Reconstructing decision chains." />
              </div>
           </SectionCard>
         </div>
       </div>
+
+      <style jsx>{`
+        .filter-input {
+          background: rgba(0, 0, 0, 0.2);
+          border: 1px solid var(--border);
+          color: white;
+          padding: 0.625rem 0.75rem;
+          borderRadius: 6px;
+          font-size: 0.85rem;
+          transition: all 0.2s;
+        }
+        .filter-input:focus {
+          outline: none;
+          border-color: var(--accent);
+          background: rgba(0, 0, 0, 0.3);
+        }
+        .actor-badge {
+          display: inline-flex;
+          padding: 0.125rem 0.5rem;
+          border-radius: 4px;
+          font-size: 0.65rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          border: 1px solid transparent;
+        }
+        .actor-RedTeamAgent { background: rgba(220, 38, 38, 0.08); color: var(--block); border-color: rgba(220, 38, 38, 0.1); }
+        .actor-BlueTeamAgent { background: rgba(5, 150, 105, 0.08); color: var(--safe); border-color: rgba(5, 150, 105, 0.1); }
+        .actor-JudgeAgent { background: rgba(217, 119, 6, 0.08); color: var(--escalate); border-color: rgba(217, 119, 6, 0.1); }
+        .actor-HumanReviewer { background: rgba(219, 39, 119, 0.08); color: var(--human); border-color: rgba(219, 39, 119, 0.1); }
+        
+        .action-text {
+          font-size: 0.85rem;
+          color: var(--text-soft);
+          font-weight: 500;
+        }
+
+        .detail-label {
+          font-size: 0.7rem;
+          text-transform: uppercase;
+          color: var(--text-muted);
+          margin-bottom: 0.375rem;
+          letter-spacing: 0.05em;
+          font-weight: 700;
+        }
+        .detail-value {
+          font-size: 0.95rem;
+          color: white;
+        }
+        .detail-value.mono { font-family: 'Fira Code', monospace; font-size: 0.85rem; }
+        .detail-value.strong { font-weight: 700; }
+        .detail-value.accent { color: var(--accent); font-weight: 700; }
+
+        .notes-box {
+          font-size: 0.9rem;
+          background: rgba(0, 0, 0, 0.02);
+          padding: 1.25rem;
+          border-radius: 8px;
+          border: 1px solid var(--border);
+          line-height: 1.6;
+          color: var(--text-soft);
+        }
+
+        .context-box {
+          font-size: 0.85rem;
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+          color: var(--text-soft);
+        }
+        .context-item strong {
+          color: var(--text-muted);
+          margin-right: 0.5rem;
+          font-size: 0.75rem;
+          text-transform: uppercase;
+        }
+        .recommendation {
+          margin-top: 0.5rem;
+          padding: 0.75rem;
+          background: rgba(37, 99, 235, 0.04);
+          border-radius: 6px;
+          border: 1px solid rgba(37, 99, 235, 0.1);
+        }
+
+        .empty-selection {
+          padding: 5rem 2rem;
+          text-align: center;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 1.5rem;
+          color: var(--text-muted);
+        }
+        .empty-icon {
+          font-size: 3rem;
+          opacity: 0.2;
+        }
+        .empty-selection p {
+          font-size: 0.9rem;
+          max-width: 200px;
+        }
+
+        .gov-notice {
+          background: rgba(239, 68, 68, 0.03);
+          border: 1px solid rgba(239, 68, 68, 0.15);
+          padding: 1.25rem;
+          border-radius: 8px;
+        }
+        .gov-title { color: var(--block); font-size: 0.85rem; margin-bottom: 0.75rem; font-weight: 700; }
+        .gov-list { font-size: 0.75rem; padding-left: 1.25rem; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; color: var(--text-soft); }
+
+        .info-grid-compact {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1rem;
+        }
+      `}</style>
     </DashboardShell>
+  );
+}
+
+function ImportanceItem({ title, desc }: { title: string, desc: string }) {
+  return (
+    <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '0.875rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
+      <div style={{ fontWeight: 'bold', fontSize: '0.8rem', color: 'var(--accent)', marginBottom: '0.25rem' }}>{title}</div>
+      <div style={{ fontSize: '0.7rem', color: 'var(--text-soft)', lineHeight: '1.4' }}>{desc}</div>
+    </div>
   );
 }

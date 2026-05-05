@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { analyzeSampleDataset } from '../../modules/socguard/demo';
 import { DatasetEvaluation } from '../../modules/socguard/types';
 import DashboardShell from '@/components/dashboard/DashboardShell';
+import MetricCard from '@/components/dashboard/MetricCard';
+import SectionCard from '@/components/dashboard/SectionCard';
 
 export default function EvaluationPage() {
   const [evaluation, setEvaluation] = useState<DatasetEvaluation | null>(null);
@@ -15,7 +16,7 @@ export default function EvaluationPage() {
   }, []);
 
   if (!evaluation) {
-    return <DashboardShell><div className="container placeholder">Running academic benchmark pipeline...</div></DashboardShell>;
+    return <DashboardShell><div className="placeholder">Running academic benchmark pipeline...</div></DashboardShell>;
   }
 
   const { metrics, perDifficulty, perAttackVector, perCategory, results } = evaluation;
@@ -24,92 +25,70 @@ export default function EvaluationPage() {
 
   return (
     <DashboardShell>
-      <header style={{ marginBottom: '2rem' }}>
+      <header style={{ marginBottom: '2.5rem' }}>
         <div className="subtitle">Academic Benchmark Results</div>
         <h1>Evaluation Dashboard</h1>
-        <p className="description">
-          Deterministic benchmark on synthetic SIEM prompt injection dataset.
+        <p className="description" style={{ margin: '0' }}>
+          Deterministic benchmark on synthetic SIEM prompt injection dataset. Results represent performance across multiple threat vectors.
         </p>
-        <div className="alert alert-info" style={{ marginTop: '1rem', borderLeft: '4px solid var(--accent)', background: 'rgba(59, 130, 246, 0.05)', padding: '1rem', borderRadius: '4px' }}>
-          <strong>Academic Disclaimer:</strong> Metrics are calculated on a small synthetic research dataset ({metrics.totalLogs} samples). 
-          SOCGuard is a deterministic-first proof of concept; it does not use LLMs in its core pipeline.
-        </div>
       </header>
 
       {/* Primary Metrics */}
-      <section className="card" style={{ marginBottom: '2rem' }}>
-        <h2 className="section-title">Core Performance Metrics</h2>
-        <div className="metrics-grid">
-          <div className="metric-card">
-            <div className="metric-value">{toPct(metrics.accuracy)}</div>
-            <div className="metric-label">Accuracy</div>
-          </div>
-          <div className="metric-card">
-            <div className="metric-value" style={{ color: 'var(--safe)' }}>{toPct(metrics.precision)}</div>
-            <div className="metric-label">Precision</div>
-          </div>
-          <div className="metric-card">
-            <div className="metric-value" style={{ color: 'var(--escalate)' }}>{toPct(metrics.recall)}</div>
-            <div className="metric-label">Recall (Sensitivity)</div>
-          </div>
-          <div className="metric-card">
-            <div className="metric-value" style={{ color: 'var(--block)' }}>{toPct(metrics.f1Score)}</div>
-            <div className="metric-label">F1 Score</div>
-          </div>
-        </div>
+      <section className="metrics-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
+        <MetricCard label="Accuracy" value={toPct(metrics.accuracy)} trend="neutral" />
+        <MetricCard label="Precision" value={toPct(metrics.precision)} color="var(--safe)" trend="up" />
+        <MetricCard label="Recall (Sensitivity)" value={toPct(metrics.recall)} color="var(--escalate)" trend="down" />
+        <MetricCard label="F1 Score" value={toPct(metrics.f1Score)} color="var(--block)" trend="neutral" />
       </section>
 
-      {/* Confusion Matrix */}
-      <section className="card" style={{ marginBottom: '2rem' }}>
-        <h2 className="section-title">Confusion Matrix</h2>
-        <div className="results-table-container">
-          <table className="confusion-matrix">
-            <thead>
-              <tr>
-                <th></th>
-                <th>Predicted: BENIGN (Safe)</th>
-                <th>Predicted: INJECTED (Suspect)</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <th>Actual: BENIGN</th>
-                <td className="matrix-cell safe-cell">
-                  <strong>{metrics.trueNegatives}</strong>
-                  <span>True Negatives</span>
-                </td>
-                <td className="matrix-cell error-cell">
-                  <strong>{metrics.falsePositives}</strong>
-                  <span>False Positives (Type I)</span>
-                </td>
-              </tr>
-              <tr>
-                <th>Actual: INJECTED</th>
-                <td className="matrix-cell error-cell">
-                  <strong>{metrics.falseNegatives}</strong>
-                  <span>False Negatives (Type II)</span>
-                </td>
-                <td className="matrix-cell threat-cell">
-                  <strong>{metrics.truePositives}</strong>
-                  <span>True Positives</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
+      <div className="dashboard-content-layout" style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '2rem', marginBottom: '2rem' }}>
+        {/* Left: Confusion Matrix */}
+        <SectionCard title="Confusion Matrix" subtitle="Type I and Type II Error analysis">
+          <div className="results-table-container">
+            <table className="confusion-matrix">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Predicted: BENIGN</th>
+                  <th>Predicted: INJECTED</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th>Actual: BENIGN</th>
+                  <td className="matrix-cell safe-cell">
+                    <strong>{metrics.trueNegatives}</strong>
+                    <span>True Negatives</span>
+                  </td>
+                  <td className="matrix-cell error-cell">
+                    <strong>{metrics.falsePositives}</strong>
+                    <span>False Positives (Type I)</span>
+                  </td>
+                </tr>
+                <tr>
+                  <th>Actual: INJECTED</th>
+                  <td className="matrix-cell error-cell">
+                    <strong>{metrics.falseNegatives}</strong>
+                    <span>False Negatives (Type II)</span>
+                  </td>
+                  <td className="matrix-cell threat-cell">
+                    <strong>{metrics.truePositives}</strong>
+                    <span>True Positives</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </SectionCard>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
-        {/* Difficulty Breakdown */}
-        <section className="card">
-          <h2 className="section-title">Analysis by Difficulty</h2>
+        {/* Right: Difficulty Breakdown */}
+        <SectionCard title="Analysis by Difficulty" subtitle="Performance across complexity levels">
           <div className="results-table-container">
             <table>
               <thead>
                 <tr>
                   <th>Difficulty</th>
-                  <th>TP/FN (Inj)</th>
-                  <th>TN/FP (Ben)</th>
+                  <th>Inj (TP/FN)</th>
                   <th>Det Rate</th>
                 </tr>
               </thead>
@@ -118,8 +97,7 @@ export default function EvaluationPage() {
                   <tr key={d.difficulty}>
                     <td><strong>{d.difficulty}</strong></td>
                     <td>{d.truePositives} / {d.falseNegatives}</td>
-                    <td>{d.trueNegatives} / {d.falsePositives}</td>
-                    <td style={{ color: d.detectionRateOnInjected > 0.8 ? 'var(--safe)' : 'var(--block)', fontWeight: 'bold' }}>
+                    <td style={{ color: d.detectionRateOnInjected > 0.8 ? 'var(--safe)' : 'var(--escalate)', fontWeight: 'bold' }}>
                       {toPct(d.detectionRateOnInjected)}
                     </td>
                   </tr>
@@ -127,18 +105,18 @@ export default function EvaluationPage() {
               </tbody>
             </table>
           </div>
-        </section>
+        </SectionCard>
+      </div>
 
+      <div className="dashboard-content-layout" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '2rem' }}>
         {/* Category Coverage */}
-        <section className="card">
-          <h2 className="section-title">Category Coverage</h2>
+        <SectionCard title="Category Coverage" subtitle="Recall by threat category">
           <div className="results-table-container">
             <table>
               <thead>
                 <tr>
                   <th>Category</th>
-                  <th>Expected</th>
-                  <th>Detected</th>
+                  <th>Exp / Det</th>
                   <th>Coverage</th>
                 </tr>
               </thead>
@@ -146,19 +124,16 @@ export default function EvaluationPage() {
                 {perCategory.map(c => (
                   <tr key={c.category}>
                     <td><code>{c.category}</code></td>
-                    <td>{c.expectedCount}</td>
-                    <td>{c.count}</td>
+                    <td>{c.expectedCount} / {c.count}</td>
                     <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <div style={{ flex: 1, height: '8px', background: 'var(--card-bg)', borderRadius: '4px', width: '50px' }}>
-                          <div style={{ 
-                            height: '100%', 
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <div className="progress-bar">
+                          <div className="progress-fill" style={{ 
                             width: `${c.coveragePercentage}%`, 
-                            background: c.coveragePercentage >= 100 ? 'var(--safe)' : 'var(--escalate)',
-                            borderRadius: '4px'
+                            background: c.coveragePercentage >= 100 ? 'var(--safe)' : 'var(--escalate)'
                           }} />
                         </div>
-                        <span style={{ fontSize: '0.8rem' }}>{c.coveragePercentage.toFixed(0)}%</span>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>{c.coveragePercentage.toFixed(0)}%</span>
                       </div>
                     </td>
                   </tr>
@@ -166,54 +141,46 @@ export default function EvaluationPage() {
               </tbody>
             </table>
           </div>
-        </section>
+        </SectionCard>
+
+        {/* Attack Vector */}
+        <SectionCard title="Per Attack Vector" subtitle="Recall by specific vector">
+          <div className="results-table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Attack Vector</th>
+                  <th>Detected</th>
+                  <th>Recall</th>
+                </tr>
+              </thead>
+              <tbody>
+                {perAttackVector.map(v => (
+                  <tr key={v.attackVector}>
+                    <td><code>{v.attackVector}</code></td>
+                    <td>{v.detected} / {v.total}</td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <div className="progress-bar">
+                          <div className="progress-fill" style={{ 
+                            width: toPct(v.detectionRate), 
+                            background: v.detectionRate > 0.8 ? 'var(--safe)' : 'var(--escalate)'
+                          }} />
+                        </div>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>{toPct(v.detectionRate)}</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </SectionCard>
       </div>
 
-      {/* Attack Vector Breakdown */}
-      <section className="card" style={{ marginBottom: '2rem' }}>
-        <h2 className="section-title">Per Attack Vector (Recall)</h2>
-        <div className="results-table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>Attack Vector</th>
-                <th>Injected Samples</th>
-                <th>Detected (TP)</th>
-                <th>Missed (FN)</th>
-                <th>Recall</th>
-              </tr>
-            </thead>
-            <tbody>
-              {perAttackVector.map(v => (
-                <tr key={v.attackVector}>
-                  <td><code>{v.attackVector}</code></td>
-                  <td>{v.total}</td>
-                  <td>{v.detected}</td>
-                  <td>{v.missed}</td>
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <div style={{ flex: 1, height: '8px', background: 'var(--card-bg)', borderRadius: '4px' }}>
-                        <div style={{ 
-                          height: '100%', 
-                          width: toPct(v.detectionRate), 
-                          background: v.detectionRate > 0.8 ? 'var(--safe)' : 'var(--escalate)',
-                          borderRadius: '4px'
-                        }} />
-                      </div>
-                      <span>{toPct(v.detectionRate)}</span>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* Detailed Results */}
-      <section className="card">
-        <h2 className="section-title">Detailed Analysis Log</h2>
-        <div className="results-table-container">
+      {/* Detailed Log */}
+      <SectionCard title="Detailed Analysis Log" subtitle="Sample-by-sample decision traceability">
+        <div className="results-table-container" style={{ maxHeight: '600px', overflowY: 'auto' }}>
           <table>
             <thead>
               <tr>
@@ -235,31 +202,31 @@ export default function EvaluationPage() {
                     <td><code>{res.inputLog.id}</code></td>
                     <td>
                       <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ color: gt?.label === 'INJECTED' ? 'var(--block)' : 'var(--safe)', fontWeight: 'bold' }}>
+                        <span style={{ color: gt?.label === 'INJECTED' ? 'var(--block)' : 'var(--safe)', fontWeight: 700, fontSize: '0.75rem' }}>
                           {gt?.label}
                         </span>
-                        <span style={{ fontSize: '0.7rem', opacity: 0.7 }}>
+                        <span style={{ fontSize: '0.65rem', opacity: 0.6 }}>
                           {gt?.difficulty} | {gt?.attackVector}
                         </span>
                       </div>
                     </td>
                     <td>
-                      <span className={`badge badge-${res.policyDecision}`}>
+                      <span className={`status-badge status-${res.policyDecision === 'SAFE' ? 'success' : res.policyDecision === 'BLOCK' ? 'error' : 'warning'}`}>
                         {res.policyDecision}
                       </span>
                     </td>
                     <td>
-                      <span style={{ fontWeight: 'bold', color: res.riskScore.score >= 51 ? 'var(--block)' : 'inherit' }}>
+                      <span style={{ fontWeight: 800, color: res.riskScore.score >= 51 ? 'var(--block)' : 'white' }}>
                         {res.riskScore.score}
                       </span>
                     </td>
                     <td>
-                      <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-soft)' }}>
                         {gt?.expectedCategory || '-'}
                       </div>
                     </td>
                     <td>
-                      <div style={{ fontSize: '0.75rem', maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {triggeredRules || '-'}
                       </div>
                     </td>
@@ -269,49 +236,73 @@ export default function EvaluationPage() {
             </tbody>
           </table>
         </div>
-      </section>
-
-      <section className="card" style={{ marginTop: '2rem', background: 'rgba(255,255,255,0.02)' }}>
-        <h2 className="section-title">Research Limitations</h2>
-        <ul className="rationale" style={{ fontSize: '0.9rem', lineHeight: '1.6' }}>
-          <li><strong>Synthetic Dataset:</strong> Benchmark is conducted on a small, curated set of samples. Real-world SIEM traffic is significantly noisier.</li>
-          <li><strong>Stateless Analysis:</strong> Each log is analyzed in isolation. Correlation across multiple events is not yet implemented.</li>
-          <li><strong>Deterministic Rules:</strong> Detection relies on regex-based signatures. It may miss novel semantic injections.</li>
-          <li><strong>No LLM in Core:</strong> This prototype purposefully avoids LLM calls in the decision path to maintain sub-millisecond latency.</li>
-        </ul>
-      </section>
+      </SectionCard>
 
       <style jsx>{`
         .confusion-matrix {
           width: 100%;
           border-collapse: separate;
-          border-spacing: 8px;
+          border-spacing: 12px;
         }
         .confusion-matrix th {
           background: transparent;
           text-align: center;
-          font-size: 0.8rem;
+          font-size: 0.7rem;
           color: var(--text-muted);
+          text-transform: uppercase;
+          font-weight: 700;
+          letter-spacing: 0.05em;
         }
         .matrix-cell {
           padding: 1.5rem;
           text-align: center;
           border-radius: 8px;
           border: 1px solid var(--border);
+          width: 50%;
+          background: white;
         }
         .matrix-cell strong {
           display: block;
-          font-size: 1.5rem;
+          font-size: 1.75rem;
           margin-bottom: 0.25rem;
+          letter-spacing: -0.02em;
         }
         .matrix-cell span {
-          font-size: 0.7rem;
+          font-size: 0.65rem;
           text-transform: uppercase;
           opacity: 0.7;
+          font-weight: 700;
         }
-        .safe-cell { background: rgba(0, 255, 157, 0.05); border-color: rgba(0, 255, 157, 0.2); }
-        .threat-cell { background: rgba(255, 78, 78, 0.05); border-color: rgba(255, 78, 78, 0.2); }
-        .error-cell { background: rgba(255, 166, 0, 0.05); border-color: rgba(255, 166, 0, 0.2); }
+        .safe-cell { background: rgba(5, 150, 105, 0.05); border-color: rgba(5, 150, 105, 0.1); color: var(--safe); }
+        .threat-cell { background: rgba(220, 38, 38, 0.05); border-color: rgba(220, 38, 38, 0.1); color: var(--block); }
+        .error-cell { background: rgba(217, 119, 6, 0.05); border-color: rgba(217, 119, 6, 0.1); color: var(--escalate); }
+
+        .progress-bar {
+          flex: 1;
+          height: 6px;
+          background: rgba(0, 0, 0, 0.05);
+          border-radius: 3px;
+          overflow: hidden;
+          min-width: 60px;
+        }
+        .progress-fill {
+          height: 100%;
+          border-radius: 3px;
+          transition: width 0.5s ease;
+        }
+
+        .status-badge {
+          display: inline-flex;
+          padding: 0.125rem 0.5rem;
+          border-radius: 4px;
+          font-size: 0.65rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          border: 1px solid transparent;
+        }
+        .status-success { background: rgba(16, 185, 129, 0.1); color: var(--safe); border-color: rgba(16, 185, 129, 0.2); }
+        .status-warning { background: rgba(245, 158, 11, 0.1); color: var(--escalate); border-color: rgba(245, 158, 11, 0.2); }
+        .status-error { background: rgba(239, 68, 68, 0.1); color: var(--block); border-color: rgba(239, 68, 68, 0.2); }
       `}</style>
     </DashboardShell>
   );

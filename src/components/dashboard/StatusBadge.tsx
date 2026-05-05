@@ -8,44 +8,60 @@ interface StatusBadgeProps {
 export default function StatusBadge({ status, type = 'default' }: StatusBadgeProps) {
   return (
     <span className={`status-badge status-${type}`}>
+      <span className="badge-dot"></span>
       {status}
       <style jsx>{`
         .status-badge {
           display: inline-flex;
           align-items: center;
-          padding: 0.125rem 0.625rem;
-          border-radius: 9999px;
-          font-size: 0.75rem;
-          font-weight: 600;
+          gap: 0.375rem;
+          padding: 0.125rem 0.5rem;
+          border-radius: 4px;
+          font-size: 0.7rem;
+          font-weight: 700;
           text-transform: uppercase;
-          letter-spacing: 0.025em;
+          letter-spacing: 0.05em;
           border: 1px solid transparent;
         }
+        .badge-dot {
+          width: 5px;
+          height: 5px;
+          border-radius: 50%;
+        }
         .status-default {
-          background: rgba(255, 255, 255, 0.05);
-          color: var(--text-muted);
+          background: rgba(0, 0, 0, 0.05);
+          color: var(--text-soft);
           border-color: var(--border);
         }
+        .status-default .badge-dot { background: var(--text-muted); }
+
         .status-success {
-          background: rgba(34, 197, 94, 0.1);
-          color: #4ade80;
-          border-color: rgba(34, 197, 94, 0.2);
+          background: rgba(5, 150, 105, 0.08);
+          color: var(--safe);
+          border-color: rgba(5, 150, 105, 0.2);
         }
+        .status-success .badge-dot { background: var(--safe); box-shadow: 0 0 5px var(--safe); }
+
         .status-warning {
-          background: rgba(234, 179, 8, 0.1);
-          color: #fde047;
-          border-color: rgba(234, 179, 8, 0.2);
+          background: rgba(217, 119, 6, 0.08);
+          color: var(--escalate);
+          border-color: rgba(217, 119, 6, 0.2);
         }
+        .status-warning .badge-dot { background: var(--escalate); box-shadow: 0 0 5px var(--escalate); }
+
         .status-error {
-          background: rgba(239, 68, 68, 0.1);
-          color: #f87171;
-          border-color: rgba(239, 68, 68, 0.2);
+          background: rgba(220, 38, 38, 0.08);
+          color: var(--block);
+          border-color: rgba(220, 38, 38, 0.2);
         }
+        .status-error .badge-dot { background: var(--block); box-shadow: 0 0 5px var(--block); }
+
         .status-info {
-          background: rgba(59, 130, 246, 0.1);
-          color: #60a5fa;
-          border-color: rgba(59, 130, 246, 0.2);
+          background: rgba(37, 99, 235, 0.08);
+          color: var(--accent);
+          border-color: rgba(37, 99, 235, 0.2);
         }
+        .status-info .badge-dot { background: var(--accent); box-shadow: 0 0 5px var(--accent); }
       `}</style>
     </span>
   );

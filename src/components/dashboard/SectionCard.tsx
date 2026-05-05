@@ -7,14 +7,18 @@ interface SectionCardProps {
   subtitle?: string;
   children: ReactNode;
   footer?: ReactNode;
+  rightAction?: ReactNode;
 }
 
-export default function SectionCard({ title, subtitle, children, footer }: SectionCardProps) {
+export default function SectionCard({ title, subtitle, children, footer, rightAction }: SectionCardProps) {
   return (
     <div className="section-card">
       <div className="section-header">
-        <h3 className="section-title">{title}</h3>
-        {subtitle && <p className="section-subtitle">{subtitle}</p>}
+        <div className="header-text">
+          <h3 className="section-title">{title}</h3>
+          {subtitle && <p className="section-subtitle">{subtitle}</p>}
+        </div>
+        {rightAction && <div className="header-action">{rightAction}</div>}
       </div>
       <div className="section-content">
         {children}
@@ -29,25 +33,32 @@ export default function SectionCard({ title, subtitle, children, footer }: Secti
         .section-card {
           background: var(--card-bg);
           border: 1px solid var(--border);
-          border-radius: 0.75rem;
+          border-radius: 12px;
           display: flex;
           flex-direction: column;
           overflow: hidden;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
         .section-header {
           padding: 1.25rem 1.5rem;
+          background: rgba(0, 0, 0, 0.01);
           border-bottom: 1px solid var(--border);
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
         }
         .section-title {
           font-size: 1rem;
           font-weight: 700;
-          color: white;
+          color: var(--text);
           margin: 0;
+          letter-spacing: -0.01em;
         }
         .section-subtitle {
-          font-size: 0.85rem;
-          color: var(--text-muted);
+          font-size: 0.8rem;
+          color: var(--text-soft);
           margin: 0.25rem 0 0 0;
+          font-weight: 500;
         }
         .section-content {
           padding: 1.5rem;
@@ -55,7 +66,7 @@ export default function SectionCard({ title, subtitle, children, footer }: Secti
         }
         .section-footer {
           padding: 1rem 1.5rem;
-          background: rgba(255, 255, 255, 0.02);
+          background: rgba(0, 0, 0, 0.02);
           border-top: 1px solid var(--border);
         }
       `}</style>
