@@ -93,7 +93,7 @@ export default function AgentLabRunnerPage() {
     <DashboardShell>
       {/* Governance Banner */}
       <div style={{ background: 'rgba(217, 119, 6, 0.05)', border: '1px solid var(--escalate)', color: 'var(--escalate)', padding: '1rem', borderRadius: '8px', marginBottom: '2rem', fontSize: '0.85rem', fontWeight: 800 }}>
-        ⚠ Controlled research runner. Mock agents only. Generated candidates are untrusted, sanitized, and never auto-approved or deployed to production.
+        ⚠ Controlled demo runner. Mock agents only. This is not uncontrolled learning. Generated candidates are advisory, sanitized, and never auto-approved, auto-deployed, or used to mutate production rules.
       </div>
 
       <header style={{ marginBottom: '2.5rem' }}>

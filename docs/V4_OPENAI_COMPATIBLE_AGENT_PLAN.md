@@ -33,7 +33,7 @@ ENABLE_LLM_AGENTS=false
 # Provider
 LLM_PROVIDER=GROQ
 LLM_BASE_URL=https://api.groq.com/openai/v1
-LLM_API_KEY=gsk_...
+LLM_API_KEY=<server-side-api-key-placeholder>
 LLM_MODEL=llama3-70b-8192
 
 # Safety & Cost
