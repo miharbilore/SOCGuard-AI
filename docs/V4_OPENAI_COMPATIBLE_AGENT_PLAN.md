@@ -42,6 +42,12 @@ MAX_CYCLES_PER_RUN=5
 MIN_INTERVAL_MS=10000
 ```
 
+## Implementation & Safety
+- **Local Setup**: See [LOCAL_LLM_SETUP.md](LOCAL_LLM_SETUP.md) for configuring `.env.local`.
+- **Safety Policy**: All provider usage must adhere to [PROVIDER_SAFETY_POLICY.md](PROVIDER_SAFETY_POLICY.md).
+- **Rate Limits**: The system enforces a minimum 10s interval and exponential backoff.
+- **No Evasion**: Key rotation for rate-limit evasion is strictly prohibited.
+
 ## Governance Reminder
 - LLM outputs are **untrusted**.
 - No auto-approval is possible.
