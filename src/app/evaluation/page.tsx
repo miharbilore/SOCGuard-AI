@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { analyzeSampleDataset } from '../../modules/socguard/demo';
 import { DatasetEvaluation } from '../../modules/socguard/types';
+import DashboardShell from '@/components/dashboard/DashboardShell';
 
 export default function EvaluationPage() {
   const [evaluation, setEvaluation] = useState<DatasetEvaluation | null>(null);
@@ -14,7 +15,7 @@ export default function EvaluationPage() {
   }, []);
 
   if (!evaluation) {
-    return <div className="container placeholder">Running academic benchmark pipeline...</div>;
+    return <DashboardShell><div className="container placeholder">Running academic benchmark pipeline...</div></DashboardShell>;
   }
 
   const { metrics, perDifficulty, perAttackVector, perCategory, results } = evaluation;
@@ -22,21 +23,16 @@ export default function EvaluationPage() {
   const toPct = (val: number) => (val * 100).toFixed(1) + '%';
 
   return (
-    <main className="container">
-      <header>
-        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-          <Link href="/" className="nav-link" style={{ marginBottom: 0 }}>← Back to Demo</Link>
-          <Link href="/v2" className="nav-link" style={{ marginBottom: 0 }}>V2 Pipeline Demo →</Link>
-          <Link href="/adversarial-lab" className="nav-link" style={{ marginBottom: 0 }}>V3 Adversarial Lab →</Link>
-        </div>
+    <DashboardShell>
+      <header style={{ marginBottom: '2rem' }}>
         <div className="subtitle">Academic Benchmark Results</div>
-        <h1>SOCGuard AI Evaluation</h1>
+        <h1>Evaluation Dashboard</h1>
         <p className="description">
           Deterministic benchmark on synthetic SIEM prompt injection dataset.
         </p>
-        <div className="alert alert-info" style={{ marginTop: '1rem', borderLeft: '4px solid var(--accent)' }}>
-          <strong>Academic Disclaimer:</strong> Metrics are calculated on a small synthetic research dataset (30 samples). 
-          SOCGuard is a deterministic-first proof of concept; it does not use LLMs in its core pipeline and is not intended for production enterprise deployment as a standalone replacement for SIEM or EDR systems.
+        <div className="alert alert-info" style={{ marginTop: '1rem', borderLeft: '4px solid var(--accent)', background: 'rgba(59, 130, 246, 0.05)', padding: '1rem', borderRadius: '4px' }}>
+          <strong>Academic Disclaimer:</strong> Metrics are calculated on a small synthetic research dataset ({metrics.totalLogs} samples). 
+          SOCGuard is a deterministic-first proof of concept; it does not use LLMs in its core pipeline.
         </div>
       </header>
 
@@ -103,7 +99,7 @@ export default function EvaluationPage() {
         </div>
       </section>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
         {/* Difficulty Breakdown */}
         <section className="card">
           <h2 className="section-title">Analysis by Difficulty</h2>
@@ -278,12 +274,10 @@ export default function EvaluationPage() {
       <section className="card" style={{ marginTop: '2rem', background: 'rgba(255,255,255,0.02)' }}>
         <h2 className="section-title">Research Limitations</h2>
         <ul className="rationale" style={{ fontSize: '0.9rem', lineHeight: '1.6' }}>
-          <li><strong>Synthetic Dataset:</strong> Benchmark is conducted on a small, curated set of 30 log samples. Real-world SIEM traffic is significantly noisier and higher volume.</li>
-          <li><strong>Stateless Analysis:</strong> Each log is analyzed in isolation. Correlation across multiple events (session tracking) is not yet implemented.</li>
-          <li><strong>Deterministic Rules:</strong> Detection relies on regex-based signatures and context heuristics. It may miss novel or highly creative semantic injections that do not match existing patterns.</li>
-          <li><strong>Bounded Decoding:</strong> Multi-pass decoding is capped at 2 layers to ensure deterministic performance and prevent recursion attacks.</li>
-          <li><strong>Language Support:</strong> Core rules focus on English and Turkish. Other languages or non-Latin scripts have limited coverage.</li>
-          <li><strong>No LLM in Core:</strong> This prototype purposefully avoids LLM calls in the decision path to maintain sub-millisecond latency and auditability.</li>
+          <li><strong>Synthetic Dataset:</strong> Benchmark is conducted on a small, curated set of samples. Real-world SIEM traffic is significantly noisier.</li>
+          <li><strong>Stateless Analysis:</strong> Each log is analyzed in isolation. Correlation across multiple events is not yet implemented.</li>
+          <li><strong>Deterministic Rules:</strong> Detection relies on regex-based signatures. It may miss novel semantic injections.</li>
+          <li><strong>No LLM in Core:</strong> This prototype purposefully avoids LLM calls in the decision path to maintain sub-millisecond latency.</li>
         </ul>
       </section>
 
@@ -319,6 +313,6 @@ export default function EvaluationPage() {
         .threat-cell { background: rgba(255, 78, 78, 0.05); border-color: rgba(255, 78, 78, 0.2); }
         .error-cell { background: rgba(255, 166, 0, 0.05); border-color: rgba(255, 166, 0, 0.2); }
       `}</style>
-    </main>
+    </DashboardShell>
   );
 }
