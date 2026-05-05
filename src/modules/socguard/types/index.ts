@@ -36,7 +36,7 @@ export interface LogEntry {
   /** The actual text content or payload of the log entry */
   payload: string;
   /** Additional metadata attached to the log (e.g., user context) */
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**

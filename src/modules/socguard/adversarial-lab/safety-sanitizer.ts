@@ -96,12 +96,14 @@ export function sanitizeAdversarialPrompt(raw: string): SanitizedPromptResult {
   };
 }
 
+import { DetectionCategory } from '../types';
+
 interface CreateCandidateInput {
   sourceId: string;
   attackType: AdversarialAttackType;
   rawPrompt: string;
   targetWeakness: string;
-  expectedDetectionCategory: string;
+  expectedDetectionCategory: DetectionCategory;
   difficulty: DifficultyLevel;
 }
 
@@ -123,7 +125,7 @@ export function createSafeRedTeamCandidate(input: CreateCandidateInput): RedTeam
     sanitizedPrompt: safetyResult.sanitizedPrompt,
     redactedTerms: safetyResult.redactedTerms,
     targetWeakness,
-    expectedDetectionCategory: expectedDetectionCategory as any,
+    expectedDetectionCategory,
     difficulty,
     safetyStatus: safetyResult.safetyStatus,
     createdAt: new Date().toISOString()

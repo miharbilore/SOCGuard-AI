@@ -114,6 +114,9 @@ export default function V2PipelineDemo() {
           {/* Stage 3: Candidate Rules */}
           <section className="card">
             <h2 className="section-title">3. Candidate Rule Generation</h2>
+            <div style={{ background: 'rgba(239, 68, 68, 0.05)', border: '1px solid var(--block)', padding: '0.75rem', borderRadius: '4px', marginBottom: '1rem', fontSize: '0.85rem', color: 'var(--block)' }}>
+              <strong>Simulation only:</strong> Candidate rules remain inactive and are never auto-deployed.
+            </div>
             <div className="info-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
               {candidates.map(c => (
                 <div key={c.id} className="finding-item" style={{ border: '1px solid var(--border)', padding: '1rem', borderRadius: '0.5rem' }}>

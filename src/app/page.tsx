@@ -28,6 +28,9 @@ export default function CommandCenter() {
 
   return (
     <DashboardShell>
+      <div style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '0.75rem 1rem', borderRadius: '4px', marginBottom: '1.5rem', fontSize: '0.85rem', fontWeight: 'bold' }}>
+        Research PoC. Deterministic-first. Not production-ready. Not a SIEM/EDR/SOC analyst replacement.
+      </div>
       <div className="command-center">
         <header className="page-header">
           <div className="header-content">

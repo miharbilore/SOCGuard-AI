@@ -92,6 +92,9 @@ export default function RulePacksPage() {
         <div className="left-column" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           {/* Rule Pack Table */}
           <SectionCard title="Registered Rule Packs" subtitle="History of versioned signature bundles">
+            <div style={{ background: 'rgba(245, 158, 11, 0.05)', border: '1px solid var(--escalate)', padding: '0.75rem', borderRadius: '4px', marginBottom: '1rem', fontSize: '0.8rem', color: 'var(--escalate)' }}>
+              <strong>Governance Notice:</strong> Draft packs are inactive. New draft rules are disabled by default and are not deployed.
+            </div>
             <div className="results-table-container">
               <table>
                 <thead>
@@ -224,7 +227,7 @@ export default function RulePacksPage() {
               <LifecycleArrow />
               <LifecycleStep label="Draft Rule Pack" sub="Versioned bundle (Disabled)" />
               <LifecycleArrow />
-              <LifecycleStep label="Signed Release" sub="Production deployment" active />
+              <LifecycleStep label="Future: Signed Release" sub="Production deployment" active />
             </div>
           </SectionCard>
 

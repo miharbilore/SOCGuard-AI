@@ -48,8 +48,12 @@ export default function AdversarialLabPage() {
 
       setRecords(records.map(r => r.id === recordId ? updatedRecord : r));
       setReviewerNotes(''); 
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unknown error occurred during record review.');
+      }
     }
   };
 
@@ -167,7 +171,10 @@ export default function AdversarialLabPage() {
               </div>
 
               <div className="info-item">
-                <h4>Judge Scores (Advisory)</h4>
+                <h4 style={{ marginBottom: '0.5rem' }}>Judge Advisory Recommendation</h4>
+                <div style={{ background: 'rgba(245, 158, 11, 0.05)', border: '1px solid var(--escalate)', padding: '0.5rem', borderRadius: '4px', marginBottom: '1rem', fontSize: '0.7rem', color: 'var(--escalate)' }}>
+                  <strong>ADVISORY:</strong> Heuristic evaluation. Not a final approval.
+                </div>
                 <div className="metrics-grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '1rem' }}>
                   <div className="metric-card" style={{ padding: '0.5rem' }}>
                     <div className="metric-value" style={{ fontSize: '1.2rem' }}>{selectedRecord.judgeRecommendation?.realismScore}</div>
