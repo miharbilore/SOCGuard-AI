@@ -30,25 +30,6 @@ export default function RiskBadge({ level }: RiskBadgeProps) {
     }}>
       <span className="risk-indicator" style={{ background: style.text }}></span>
       {normalizedLevel}
-      <style jsx>{`
-        .risk-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.375rem;
-          padding: 0.125rem 0.5rem;
-          border-radius: 4px;
-          font-size: 0.7rem;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          border: 1px solid;
-        }
-        .risk-indicator {
-          width: 4px;
-          height: 10px;
-          border-radius: 2px;
-        }
-      `}</style>
     </span>
   );
 }

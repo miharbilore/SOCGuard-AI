@@ -5,12 +5,10 @@ import {
   CuratorAgent, 
   AgentRuntimeConfig 
 } from './agent-types';
-import { 
-  MockRedTeamAgent, 
-  MockBlueTeamAgent, 
-  MockJudgeAgent, 
-  MockCuratorAgent 
-} from './index';
+import { MockRedTeamAgent } from './mock-red-team-agent';
+import { MockBlueTeamAgent } from './mock-blue-team-agent';
+import { MockJudgeAgent } from './mock-judge-agent';
+import { MockCuratorAgent } from './mock-curator-agent';
 import { 
   OpenAICompatibleRedTeamAgent, 
   OpenAICompatibleBlueTeamAgent, 

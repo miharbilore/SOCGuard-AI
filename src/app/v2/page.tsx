@@ -159,39 +159,6 @@ export default function V2PipelineDemo() {
         </div>
       )}
 
-      <style jsx>{`
-        .intel-item {
-          background: rgba(255, 255, 255, 0.02);
-          padding: 1.25rem;
-          border-radius: 8px;
-          border: 1px solid var(--border);
-        }
-        .intel-header {
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: 0.5rem;
-        }
-        .intel-id { font-size: 0.75rem; font-weight: 800; color: var(--accent); }
-        .intel-source { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
-        .intel-title { font-size: 1rem; color: white; margin-bottom: 0.5rem; }
-        .intel-summary { font-size: 0.85rem; color: var(--text-soft); line-height: 1.5; }
-
-        .candidates-list { display: flex; flex-direction: column; gap: 1rem; }
-        .candidate-item {
-          background: rgba(0, 0, 0, 0.2);
-          padding: 1rem;
-          border-radius: 8px;
-          border: 1px solid var(--border);
-        }
-        .candidate-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
-        .candidate-id { font-size: 0.75rem; font-weight: 800; color: white; }
-        .candidate-pattern { display: block; font-size: 0.75rem; color: var(--safe); background: #000; padding: 0.75rem; border-radius: 4px; overflow-x: auto; }
-
-        .variants-list { display: flex; flex-direction: column; gap: 0.75rem; }
-        .variant-item { padding: 0.75rem; border-bottom: 1px solid var(--border); }
-        .variant-type { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 0.25rem; }
-        .variant-code { font-size: 0.8rem; color: var(--text-soft); font-family: monospace; }
-      `}</style>
     </DashboardShell>
   );
 }

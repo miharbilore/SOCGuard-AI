@@ -187,7 +187,7 @@ export default function AuditTrailPage() {
                     <div className="context-item"><strong>ID:</strong> {selectedEvent.recordId}</div>
                     <div className="context-item"><strong>Attack Vector:</strong> {selectedEvent.attackType}</div>
                     {selectedEvent.recommendation && (
-                      <div className="context-item recommendation">
+                      <div className="context-item recommendation-box">
                         <strong>Judge Recommendation:</strong> {selectedEvent.recommendation}
                       </div>
                     )}
@@ -226,84 +226,6 @@ export default function AuditTrailPage() {
           </SectionCard>
         </div>
       </div>
-
-      <style jsx>{`
-        .detail-label {
-          font-size: 0.65rem;
-          text-transform: uppercase;
-          color: var(--text-muted);
-          margin-bottom: 0.375rem;
-          letter-spacing: 0.05em;
-          font-weight: 700;
-        }
-        
-        .notes-box {
-          font-size: 0.85rem;
-          background: var(--surface-muted);
-          padding: 1rem;
-          border-radius: 8px;
-          border: 1px solid var(--border);
-          line-height: 1.5;
-          color: var(--text-soft);
-          margin: 0;
-        }
-
-        .context-box {
-          font-size: 0.85rem;
-          display: flex;
-          flex-direction: column;
-          gap: 0.5rem;
-          color: var(--text-soft);
-        }
-        .context-item strong {
-          color: var(--text-muted);
-          margin-right: 0.5rem;
-          font-size: 0.65rem;
-          text-transform: uppercase;
-          letter-spacing: 0.03em;
-        }
-        .recommendation {
-          margin-top: 0.25rem;
-          padding: 0.75rem;
-          background: var(--accent-soft);
-          border-radius: 6px;
-          border: 1px solid rgba(37, 99, 235, 0.1);
-          font-weight: 600;
-        }
-
-        .empty-selection {
-          padding: 5rem 2rem;
-          text-align: center;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 1.5rem;
-          color: var(--text-muted);
-        }
-        .empty-icon {
-          font-size: 3rem;
-          opacity: 0.2;
-        }
-        .empty-selection p {
-          font-size: 0.85rem;
-          max-width: 200px;
-        }
-
-        .gov-notice {
-          background: var(--block-bg);
-          border: 1px solid rgba(220, 38, 38, 0.1);
-          padding: 1.25rem;
-          border-radius: 8px;
-        }
-        .gov-title { color: var(--block); font-size: 0.85rem; margin-bottom: 0.75rem; font-weight: 700; }
-        .gov-list { font-size: 0.75rem; padding-left: 1.25rem; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; color: var(--text-soft); }
-
-        .info-grid-compact {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 0.75rem;
-        }
-      `}</style>
     </DashboardShell>
   );
 }

@@ -1,7 +1,7 @@
 import { 
   AgentRuntimeConfig, 
   CuratedRuleVaultEntry
-} from './index';
+} from './agent-types';
 import { createAgentSet } from './agent-factory';
 import { analyzeLog } from '../demo/analyze-log';
 import { 

@@ -170,39 +170,6 @@ export default function CommandCenter() {
         </SectionCard>
       </div>
 
-      <style jsx>{`
-        .actions-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-          gap: 1rem;
-        }
-        .promo-item {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 0.875rem 1rem;
-          border-radius: var(--radius-sm);
-          border: 1px solid var(--border);
-          background: var(--surface-muted);
-        }
-        .promo-info { display: flex; flex-direction: column; }
-        .promo-label {
-          font-size: 0.825rem;
-          font-weight: 600;
-          color: var(--text);
-        }
-        .promo-sub {
-          font-size: 0.625rem;
-          color: var(--text-muted);
-          text-transform: uppercase;
-          font-weight: 600;
-          letter-spacing: 0.03em;
-        }
-        .promo-value {
-          font-size: 1.5rem;
-          font-weight: 800;
-        }
-      `}</style>
     </DashboardShell>
   );
 }
@@ -218,64 +185,6 @@ function ActionCard({ title, description, href, badge }: { title: string, descri
         <p className="action-desc">{description}</p>
       </div>
       <span className="action-arrow">→</span>
-      <style jsx>{`
-        .action-card-link {
-          background: var(--card-bg);
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          padding: 1.25rem;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          text-decoration: none;
-          transition: all 0.15s ease;
-          box-shadow: var(--shadow-sm);
-        }
-        .action-card-link:hover {
-          border-color: var(--accent);
-          box-shadow: var(--shadow-md);
-        }
-        .action-content {
-          flex: 1;
-        }
-        .action-title-row {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 0.25rem;
-        }
-        .action-title {
-          margin: 0;
-          color: var(--text);
-          font-size: 0.9rem;
-          font-weight: 700;
-          letter-spacing: -0.01em;
-        }
-        .action-badge {
-          background: var(--block);
-          color: white;
-          font-size: 0.6rem;
-          padding: 0.1rem 0.4rem;
-          border-radius: 4px;
-          font-weight: 800;
-        }
-        .action-desc {
-          margin: 0;
-          color: var(--text-muted);
-          font-size: 0.78rem;
-          line-height: 1.4;
-          font-weight: 500;
-        }
-        .action-arrow {
-          color: var(--text-dim);
-          font-size: 1rem;
-          margin-left: 1rem;
-          transition: color 0.15s;
-        }
-        .action-card-link:hover .action-arrow {
-          color: var(--accent);
-        }
-      `}</style>
     </Link>
   );
 }
