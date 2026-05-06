@@ -14,6 +14,7 @@ const navItems = [
   { group: 'Research & Lab', items: [
     { name: 'Evaluation', href: '/evaluation', icon: '⊿' },
     { name: 'Rule Intelligence', href: '/v2', icon: '◈' },
+    { name: 'Source Intelligence', href: '/source-intelligence', icon: '⧉' },
     { name: 'Adversarial Lab', href: '/adversarial-lab', icon: '◇' },
     { name: 'Agent Lab Runner', href: '/agent-lab', icon: '⬡' },
   ]},
