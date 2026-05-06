@@ -110,6 +110,7 @@ export default function AgentLabRunnerPage() {
       {/* Governance Banner */}
       <div style={{ background: 'rgba(217, 119, 6, 0.05)', border: '1px solid var(--escalate)', color: 'var(--escalate)', padding: '1rem', borderRadius: '8px', marginBottom: '2rem', fontSize: '0.85rem', fontWeight: 800 }}>
         ⚠ Controlled demo runner. Single Cycle may use server-side API-backed agents when explicitly enabled; Limited Session remains mock/local in this build. Generated candidates are advisory, sanitized, and never auto-approved, auto-deployed, or used to mutate production rules. This is not uncontrolled learning. API keys are strictly server-side and never exposed to the browser.
+        <div style={{ marginTop: '0.5rem', opacity: 0.8 }}>Note: After editing .env.local, you must restart the dev server.</div>
       </div>
 
       <header style={{ marginBottom: '2.5rem' }}>

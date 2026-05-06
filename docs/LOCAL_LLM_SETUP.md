@@ -1,6 +1,6 @@
 # Local LLM Setup Guide
 
-This guide explains how to safely configure local environment variables for future Groq/OpenAI-compatible agents in SOCGuard AI V4.
+This guide explains how to safely configure local environment variables for Groq/OpenAI-compatible agents in SOCGuard AI V4.
 
 ## Safety & Governance Rules
 
@@ -20,22 +20,39 @@ cp .env.example .env.local
 ```
 
 ### 2. Configure API Keys
-Edit `.env.local` and paste your real API keys into the corresponding fields:
+Edit `.env.local` and paste your real API key into the corresponding field. **Never** paste your real key into `.env.example`.
 
 ```env
 # Example .env.local (DO NOT COMMIT)
 ENABLE_LLM_AGENTS=true
 LLM_PROVIDER=GROQ
-LLM_API_KEY=<server-side-api-key-placeholder>
-LLM_MODEL=llama3-70b-8192
+LLM_BASE_URL=https://api.groq.com/openai/v1
+LLM_MODEL=llama-3.3-70b-versatile
+LLM_API_KEY=<paste-your-server-side-api-key-here>
 ```
 
-### 3. Verify Ignore Rules
+### 3. Restart Dev Server
+After editing `.env.local`, you **must** restart the development server for the changes to take effect:
+
+```bash
+# Press Ctrl+C then
+npm run dev
+```
+
+### 4. Verify Ignore Rules
 Ensure your `.gitignore` correctly prevents these files from being tracked:
 - `.env`
 - `.env.local`
 - `*.pem`
 - `*.key`
+
+## Troubleshooting
+
+- **If UI still says MOCK**: Restart `npm run dev`.
+- **If API key missing**: Double-check `.env.local` exists and contains `LLM_API_KEY`.
+- **If provider returns 429 (Rate Limit)**: Wait for the cooldown. Do not rotate keys to bypass limits.
+- **If model output validation fails**: Lower the temperature in `.env.local` (e.g., `LLM_TEMPERATURE=0.5`) and try again.
+- **If provider refuses red-team generation**: This often happens with safety filters. Keep prompts sanitized and ensure they use placeholders only.
 
 ## Runtime Constraints
 The system enforces the following safety limits when real agents are enabled:
