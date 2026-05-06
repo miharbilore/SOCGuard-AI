@@ -15,11 +15,11 @@ export default function DashboardShell({ children }: DashboardShellProps) {
       <div className="main-container">
         <header className="dashboard-header">
           <div className="header-left">
-            <span className="poc-badge">Research PoC v3.1</span>
+            <span className="poc-badge">Research PoC v4.1</span>
           </div>
           <div className="header-right">
             <div className="system-status">
-              <span className="status-label">Operational Status:</span>
+              <span className="status-label">Status</span>
               <span className="status-dot"></span>
               <span className="status-text">Engine Online</span>
             </div>
@@ -56,87 +56,86 @@ export default function DashboardShell({ children }: DashboardShellProps) {
           display: flex;
           flex-direction: column;
           min-width: 0;
+          margin-left: var(--sidebar-width);
         }
         .dashboard-header {
-          height: 64px;
+          height: 56px;
           border-bottom: 1px solid var(--border);
           display: flex;
           align-items: center;
           justify-content: space-between;
           padding: 0 2rem;
-          background: rgba(255, 255, 255, 0.8);
-          backdrop-filter: blur(12px);
+          background: #ffffff;
           position: sticky;
           top: 0;
           z-index: 50;
         }
         .poc-badge {
-          background: rgba(37, 99, 235, 0.05);
+          background: var(--accent-soft);
           color: var(--accent);
-          padding: 0.25rem 0.75rem;
-          border-radius: 6px;
-          font-size: 0.7rem;
+          padding: 0.2rem 0.6rem;
+          border-radius: 5px;
+          font-size: 0.65rem;
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.05em;
-          border: 1px solid rgba(37, 99, 235, 0.1);
+          border: 1px solid rgba(37, 99, 235, 0.12);
         }
         .system-status {
           display: flex;
           align-items: center;
-          gap: 0.625rem;
+          gap: 0.5rem;
         }
         .status-label {
-          font-size: 0.7rem;
+          font-size: 0.65rem;
           color: var(--text-muted);
           text-transform: uppercase;
           letter-spacing: 0.05em;
           font-weight: 600;
         }
         .status-dot {
-          width: 8px;
-          height: 8px;
+          width: 7px;
+          height: 7px;
           background: var(--safe);
           border-radius: 50%;
-          box-shadow: 0 0 10px var(--safe);
         }
         .status-text {
-          font-size: 0.8rem;
-          color: var(--text);
+          font-size: 0.75rem;
+          color: var(--safe);
           font-weight: 600;
         }
         .dashboard-content {
           flex: 1;
-          padding: 2.5rem 2rem;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
+          padding: 2rem;
         }
         .content-inner {
-          max-width: 1440px;
+          max-width: 1400px;
           width: 100%;
+          margin: 0 auto;
         }
         .dashboard-footer {
-          padding: 2.5rem 2rem;
+          padding: 1.5rem 2rem;
           border-top: 1px solid var(--border);
-          background: rgba(0, 0, 0, 0.02);
+          background: var(--surface-muted);
         }
         .footer-content {
-          max-width: 1440px;
+          max-width: 1400px;
           margin: 0 auto;
-          display: flex;
-          flex-direction: column;
-          gap: 0.5rem;
           text-align: center;
         }
         .footer-main {
-          font-size: 0.85rem;
+          font-size: 0.8rem;
           color: var(--text-soft);
         }
         .footer-sub {
-          font-size: 0.75rem;
+          font-size: 0.7rem;
           color: var(--text-muted);
-          opacity: 0.8;
+          margin-top: 0.25rem;
+        }
+        @media (max-width: 900px) {
+          .main-container {
+            margin-left: 0;
+          }
         }
       `}</style>
     </div>

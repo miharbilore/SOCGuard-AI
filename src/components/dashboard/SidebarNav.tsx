@@ -5,22 +5,22 @@ import { usePathname } from 'next/navigation';
 
 const navItems = [
   { group: 'Overview', items: [
-    { name: 'Command Center', href: '/', icon: '📊' },
+    { name: 'Command Center', href: '/', icon: '⊞' },
   ]},
   { group: 'Security Operations', items: [
-    { name: 'Log Analyzer', href: '/analyzer', icon: '🔍' },
-    { name: 'Review Queue', href: '/review-queue', icon: '📥' },
+    { name: 'Log Analyzer', href: '/analyzer', icon: '⊘' },
+    { name: 'Review Queue', href: '/review-queue', icon: '⊡' },
   ]},
   { group: 'Research & Lab', items: [
-    { name: 'Evaluation', href: '/evaluation', icon: '📈' },
-    { name: 'Rule Intelligence', href: '/v2', icon: '🧠' },
-    { name: 'Adversarial Lab', href: '/adversarial-lab', icon: '🧪' },
-    { name: 'Agent Lab Runner', href: '/agent-lab', icon: '🤖' },
+    { name: 'Evaluation', href: '/evaluation', icon: '⊿' },
+    { name: 'Rule Intelligence', href: '/v2', icon: '◈' },
+    { name: 'Adversarial Lab', href: '/adversarial-lab', icon: '◇' },
+    { name: 'Agent Lab Runner', href: '/agent-lab', icon: '⬡' },
   ]},
   { group: 'Governance', items: [
-    { name: 'Rule Packs', href: '/rule-packs', icon: '📦' },
-    { name: 'Rule Vault', href: '/rule-vault', icon: '🏦' },
-    { name: 'Audit Trail', href: '/audit', icon: '📋' },
+    { name: 'Rule Packs', href: '/rule-packs', icon: '▣' },
+    { name: 'Rule Vault', href: '/rule-vault', icon: '◉' },
+    { name: 'Audit Trail', href: '/audit', icon: '▤' },
   ]},
 ];
 
@@ -31,7 +31,9 @@ export default function SidebarNav() {
     <nav className="sidebar-nav">
       <div className="nav-brand">
         <div className="brand-logo">
-          🛡️
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
         </div>
         <div className="brand-info">
           <span className="brand-name">SOCGuard AI</span>
@@ -52,8 +54,9 @@ export default function SidebarNav() {
                     href={item.href}
                     className={`nav-item ${isActive ? 'active' : ''}`}
                   >
-                    <span className="item-icon-wrapper">{item.icon}</span>
+                    <span className="item-icon">{item.icon}</span>
                     <span className="item-name">{item.name}</span>
+                    {isActive && <span className="active-indicator"></span>}
                   </Link>
                 );
               })}
@@ -73,31 +76,31 @@ export default function SidebarNav() {
         .sidebar-nav {
           width: var(--sidebar-width);
           height: 100vh;
-          background: var(--sidebar-bg);
+          background: #ffffff;
           border-right: 1px solid var(--border);
           display: flex;
           flex-direction: column;
-          position: sticky;
+          position: fixed;
           top: 0;
+          left: 0;
           z-index: 100;
         }
         .nav-brand {
-          padding: 2rem 1.5rem;
+          padding: 1.25rem 1.25rem 1rem;
           display: flex;
           align-items: center;
           gap: 0.75rem;
-          margin-bottom: 1rem;
+          border-bottom: 1px solid var(--border);
         }
         .brand-logo {
-          width: 40px;
-          height: 40px;
-          background: linear-gradient(135deg, var(--accent), #1d4ed8);
+          width: 36px;
+          height: 36px;
+          background: var(--accent);
           border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 1.25rem;
-          box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+          flex-shrink: 0;
         }
         .brand-info {
           display: flex;
@@ -105,21 +108,21 @@ export default function SidebarNav() {
         }
         .brand-name {
           font-weight: 800;
-          font-size: 1.1rem;
-          letter-spacing: -0.01em;
+          font-size: 0.95rem;
+          letter-spacing: -0.02em;
           color: var(--text);
           line-height: 1.2;
         }
         .brand-tag {
-          font-size: 0.65rem;
+          font-size: 0.6rem;
           color: var(--text-muted);
           text-transform: uppercase;
-          letter-spacing: 0.05em;
+          letter-spacing: 0.06em;
           font-weight: 600;
         }
         .nav-container {
           flex: 1;
-          padding: 0 0.75rem;
+          padding: 1rem 0.75rem;
           overflow-y: auto;
           display: flex;
           flex-direction: column;
@@ -128,85 +131,90 @@ export default function SidebarNav() {
         .nav-group {
           display: flex;
           flex-direction: column;
-          gap: 0.5rem;
+          gap: 0.25rem;
         }
         .group-title {
-          padding: 0 1rem;
-          font-size: 0.65rem;
+          padding: 0 0.75rem;
+          font-size: 0.6rem;
           font-weight: 700;
           color: var(--text-muted);
           text-transform: uppercase;
           letter-spacing: 0.1em;
+          margin-bottom: 0.25rem;
         }
         .nav-list {
           display: flex;
           flex-direction: column;
-          gap: 0.125rem;
+          gap: 1px;
         }
         .nav-item {
           display: flex;
           align-items: center;
-          gap: 0.75rem;
-          padding: 0.625rem 0.75rem;
-          border-radius: 0.5rem;
+          gap: 0.625rem;
+          padding: 0.5rem 0.75rem;
+          border-radius: var(--radius-xs);
           color: var(--text-soft);
           text-decoration: none;
           font-weight: 500;
-          font-size: 0.875rem;
-          transition: all 0.15s ease;
+          font-size: 0.825rem;
+          transition: all 0.1s ease;
+          position: relative;
         }
         .nav-item:hover {
-          background: rgba(0, 0, 0, 0.03);
+          background: var(--surface-muted);
           color: var(--text);
         }
         .nav-item.active {
-          background: rgba(37, 99, 235, 0.05);
+          background: var(--accent-soft);
           color: var(--accent);
           font-weight: 600;
         }
-        .item-icon-wrapper {
-          width: 28px;
-          height: 28px;
-          background: rgba(0, 0, 0, 0.02);
-          border: 1px solid rgba(0, 0, 0, 0.04);
-          border-radius: 6px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 0.9rem;
-          transition: all 0.2s;
+        .item-icon {
+          width: 20px;
+          text-align: center;
+          font-size: 0.8rem;
+          opacity: 0.7;
+          flex-shrink: 0;
         }
-        .nav-item.active .item-icon-wrapper {
-          background: rgba(37, 99, 235, 0.1);
-          border-color: rgba(37, 99, 235, 0.2);
-          transform: scale(1.05);
+        .nav-item.active .item-icon {
+          opacity: 1;
+        }
+        .active-indicator {
+          position: absolute;
+          left: 0;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 3px;
+          height: 16px;
+          background: var(--accent);
+          border-radius: 0 3px 3px 0;
         }
         .nav-footer {
-          padding: 1.5rem;
+          padding: 1rem 1.25rem;
           border-top: 1px solid var(--border);
         }
         .status-indicator {
           display: flex;
           align-items: center;
           gap: 0.5rem;
-          background: rgba(5, 150, 105, 0.04);
-          border: 1px solid rgba(5, 150, 105, 0.1);
-          padding: 0.5rem 0.75rem;
-          border-radius: 6px;
         }
         .status-dot {
           width: 6px;
           height: 6px;
           background: var(--safe);
           border-radius: 50%;
-          box-shadow: 0 0 8px var(--safe);
         }
         .status-text {
-          font-size: 0.7rem;
+          font-size: 0.65rem;
           font-weight: 600;
           color: var(--safe);
           text-transform: uppercase;
-          letter-spacing: 0.02em;
+          letter-spacing: 0.03em;
+        }
+        @media (max-width: 900px) {
+          .sidebar-nav {
+            display: none;
+          }
         }
       `}</style>
     </nav>

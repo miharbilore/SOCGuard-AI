@@ -33,40 +33,39 @@ export default function SectionCard({ title, subtitle, children, footer, rightAc
         .section-card {
           background: var(--card-bg);
           border: 1px solid var(--border);
-          border-radius: 12px;
+          border-radius: var(--radius);
           display: flex;
           flex-direction: column;
           overflow: hidden;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+          box-shadow: var(--shadow-sm);
         }
         .section-header {
-          padding: 1.25rem 1.5rem;
-          background: rgba(0, 0, 0, 0.01);
+          padding: 1rem 1.25rem;
           border-bottom: 1px solid var(--border);
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
         }
         .section-title {
-          font-size: 1rem;
+          font-size: 0.9rem;
           font-weight: 700;
           color: var(--text);
           margin: 0;
           letter-spacing: -0.01em;
         }
         .section-subtitle {
-          font-size: 0.8rem;
-          color: var(--text-soft);
-          margin: 0.25rem 0 0 0;
+          font-size: 0.75rem;
+          color: var(--text-muted);
+          margin: 0.15rem 0 0 0;
           font-weight: 500;
         }
         .section-content {
-          padding: 1.5rem;
+          padding: 1.25rem;
           flex: 1;
         }
         .section-footer {
-          padding: 1rem 1.5rem;
-          background: rgba(0, 0, 0, 0.02);
+          padding: 0.75rem 1.25rem;
+          background: var(--surface-muted);
           border-top: 1px solid var(--border);
         }
       `}</style>

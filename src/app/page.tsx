@@ -29,260 +29,187 @@ export default function CommandCenter() {
 
   return (
     <DashboardShell>
-      <div className="command-center">
-        <div style={{ background: 'rgba(59, 130, 246, 0.05)', border: '1px solid rgba(59, 130, 246, 0.15)', color: 'var(--accent)', padding: '0.75rem 1.25rem', borderRadius: '8px', marginBottom: '2.5rem', fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <span style={{ fontSize: '1.25rem' }}>ℹ</span>
-          <span>Research PoC. Deterministic-first architecture. All decisions are transient and demo-only.</span>
+      {/* Info Banner */}
+      <div className="governance-banner info" style={{ marginBottom: '1.5rem' }}>
+        <span>ℹ</span>
+        <span>Research PoC. Deterministic-first architecture. All decisions are transient and demo-only.</span>
+      </div>
+
+      {/* Page Header */}
+      <header style={{ marginBottom: '2rem' }}>
+        <div className="subtitle">Security Operations & Research Hub</div>
+        <h1>Command Center</h1>
+        <p className="description" style={{ margin: '0.5rem 0 0 0' }}>
+          Centralized view of detection performance, research candidates, and policy governance.
+        </p>
+      </header>
+
+      {/* Metrics */}
+      <section style={{ marginBottom: '2rem' }}>
+        <div className="metrics-grid">
+          <MetricCard 
+            label="Detection Engine" 
+            value="v4.1 Online" 
+            color="var(--safe)" 
+            subValue="Deterministic pipeline active"
+          />
+          <MetricCard 
+            label="Global Accuracy" 
+            value={evaluation ? toPct(evaluation.metrics.accuracy) : '...'} 
+            trend="up"
+            subValue={`${evaluation?.metrics.totalLogs || 0} samples analyzed`}
+          />
+          <MetricCard 
+            label="Precision" 
+            value={evaluation ? toPct(evaluation.metrics.precision) : '...'} 
+            color="var(--safe)"
+          />
+          <MetricCard 
+            label="Recall" 
+            value={evaluation ? toPct(evaluation.metrics.recall) : '...'} 
+            color="var(--escalate)"
+          />
+          <MetricCard 
+            label="F1 Score" 
+            value={evaluation ? toPct(evaluation.metrics.f1Score) : '...'} 
+            color="var(--accent)"
+          />
+          <MetricCard 
+            label="Avg. Latency" 
+            value={evaluation ? `${evaluation.metrics.averageLatencyMs.toFixed(2)}ms` : '...'} 
+            subValue="Sub-millisecond target"
+          />
+          <MetricCard 
+            label="Pending Reviews" 
+            value={pendingReviews} 
+            color={pendingReviews > 0 ? 'var(--escalate)' : 'var(--safe)'}
+            subValue="Governance queue backlog"
+          />
+          <MetricCard 
+            label="V3 Lab Records" 
+            value={labRecords.length} 
+            subValue="Research synthesis depth"
+          />
         </div>
+      </section>
 
-        <header className="page-header">
-          <div className="header-content">
-            <div className="subtitle">Security Operations & Research Hub</div>
-            <h1>Command Center</h1>
-            <p className="description" style={{ margin: '0' }}>
-              Centralized view of detection performance, research candidates, and policy governance.
-            </p>
-          </div>
-        </header>
+      {/* Navigation Hub */}
+      <section style={{ marginBottom: '2rem' }}>
+        <h2 style={{ marginBottom: '1rem' }}>Navigation Hub</h2>
+        <div className="actions-grid">
+          <ActionCard title="Log Analyzer" description="Test raw log strings against detection rules." href="/analyzer" />
+          <ActionCard title="Benchmark Evaluation" description="Academic performance metrics and logs." href="/evaluation" />
+          <ActionCard title="Rule Intelligence" description="Candidate rules and intel intake." href="/v2" />
+          <ActionCard title="Adversarial Lab" description="Red/Blue Team research sandbox." href="/adversarial-lab" />
+          <ActionCard title="Review Queue" description="Promote research candidates." href="/review-queue" badge={pendingReviews > 0 ? pendingReviews.toString() : undefined} />
+          <ActionCard title="Rule Packs" description="Inspect versioned detection bundles." href="/rule-packs" />
+          <ActionCard title="Agent Lab Runner" description="Orchestrate automated agent research." href="/agent-lab" />
+          <ActionCard title="Rule Vault" description="Candidate registry for human audit." href="/rule-vault" />
+        </div>
+      </section>
 
-        <section className="metrics-overview">
-          <div className="metrics-grid">
-            <MetricCard 
-              label="Detection Engine" 
-              value="v3.1 Online" 
-              color="var(--safe)" 
-              subValue="Deterministic pipeline active"
-            />
-            <MetricCard 
-              label="Global Accuracy" 
-              value={evaluation ? toPct(evaluation.metrics.accuracy) : '...'} 
-              trend="up"
-              subValue={`${evaluation?.metrics.totalLogs || 0} samples analyzed`}
-            />
-            <MetricCard 
-              label="Precision" 
-              value={evaluation ? toPct(evaluation.metrics.precision) : '...'} 
-              color="var(--safe)"
-            />
-            <MetricCard 
-              label="Recall" 
-              value={evaluation ? toPct(evaluation.metrics.recall) : '...'} 
-              color="var(--escalate)"
-            />
-            <MetricCard 
-              label="F1 Score" 
-              value={evaluation ? toPct(evaluation.metrics.f1Score) : '...'} 
-              color="var(--block)"
-            />
-            <MetricCard 
-              label="Avg. Latency" 
-              value={evaluation ? `${evaluation.metrics.averageLatencyMs.toFixed(2)}ms` : '...'} 
-              subValue="Sub-millisecond target"
-            />
-            <MetricCard 
-              label="Pending Reviews" 
-              value={pendingReviews} 
-              color={pendingReviews > 0 ? 'var(--escalate)' : 'var(--safe)'}
-              subValue="Governance queue backlog"
-            />
-            <MetricCard 
-              label="V3 Lab Records" 
-              value={labRecords.length} 
-              subValue="Research synthesis depth"
-            />
-          </div>
-        </section>
-
-        <section className="quick-actions" style={{ marginTop: '3rem' }}>
-          <h2 className="section-title">Navigation Hub</h2>
-          <div className="actions-grid">
-            <ActionCard 
-              title="Log Analyzer" 
-              description="Test raw log strings against detection rules." 
-              href="/analyzer" 
-              icon="🔍" 
-            />
-            <ActionCard 
-              title="Benchmark Evaluation" 
-              description="Academic performance metrics and logs." 
-              href="/evaluation" 
-              icon="📈" 
-            />
-            <ActionCard 
-              title="Rule Intelligence" 
-              description="Candidate rules and intel intake." 
-              href="/v2" 
-              icon="🧠" 
-            />
-            <ActionCard 
-              title="Adversarial Lab" 
-              description="Red/Blue Team research sandbox." 
-              href="/adversarial-lab" 
-              icon="🧪" 
-            />
-            <ActionCard 
-              title="Review Queue" 
-              description="Promote research candidates." 
-              href="/review-queue" 
-              icon="📥" 
-              badge={pendingReviews > 0 ? pendingReviews.toString() : undefined}
-            />
-            <ActionCard 
-              title="Rule Packs" 
-              description="Inspect versioned detection bundles." 
-              href="/rule-packs" 
-              icon="📦" 
-            />
-            <ActionCard 
-              title="Agent Lab Runner" 
-              description="Orchestrate automated agent research." 
-              href="/agent-lab" 
-              icon="🤖" 
-            />
-            <ActionCard 
-              title="Rule Vault" 
-              description="Candidate registry for human audit." 
-              href="/rule-vault" 
-              icon="🏦" 
-            />
-          </div>
-        </section>
-
-        <div className="dashboard-row" style={{ marginTop: '3rem', display: 'grid', gridTemplateColumns: '1.4fr 0.6fr', gap: '2rem' }}>
-          <SectionCard title="Recent Threat Detections" subtitle="Latest high-risk findings from evaluation pipeline">
-            <div className="results-table-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Log ID</th>
-                    <th>Decision</th>
-                    <th>Risk Score</th>
-                    <th>Category</th>
+      {/* Dashboard Row */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 0.6fr', gap: '1.5rem' }}>
+        <SectionCard title="Recent Threat Detections" subtitle="Latest high-risk findings from evaluation pipeline">
+          <div className="results-table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Log ID</th>
+                  <th>Decision</th>
+                  <th>Risk Score</th>
+                  <th>Category</th>
+                </tr>
+              </thead>
+              <tbody>
+                {evaluation?.results.filter(r => r.policyDecision !== 'SAFE').slice(0, 6).map(res => (
+                  <tr key={res.id}>
+                    <td><code>{res.inputLog.id}</code></td>
+                    <td>
+                      <StatusBadge 
+                        status={res.policyDecision} 
+                        type={res.policyDecision === 'BLOCK' ? 'error' : 'warning'} 
+                      />
+                    </td>
+                    <td><strong>{res.riskScore.score}</strong></td>
+                    <td style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-soft)' }}>{res.findings[0]?.category || 'N/A'}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {evaluation?.results.filter(r => r.policyDecision !== 'SAFE').slice(0, 6).map(res => (
-                    <tr key={res.id}>
-                      <td><code>{res.inputLog.id}</code></td>
-                      <td>
-                        <StatusBadge 
-                          status={res.policyDecision} 
-                          type={res.policyDecision === 'BLOCK' ? 'error' : 'warning'} 
-                        />
-                      </td>
-                      <td><strong style={{ fontSize: '1rem' }}>{res.riskScore.score}</strong></td>
-                      <td><span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-soft)' }}>{res.findings[0]?.category || 'N/A'}</span></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div style={{ marginTop: '1.25rem', textAlign: 'right' }}>
-              <Link href="/evaluation" className="view-all">Explore all evaluation metrics →</Link>
-            </div>
-          </SectionCard>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div style={{ marginTop: '1rem', textAlign: 'right' }}>
+            <Link href="/evaluation" style={{ fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 600 }}>Explore all evaluation metrics →</Link>
+          </div>
+        </SectionCard>
 
-          <SectionCard title="Lab Governance Status" subtitle="Adversarial promotion readiness">
-             <div className="promotion-stats">
-                <div className="promo-item">
-                  <div className="promo-info">
-                    <span className="promo-label">Benchmark Ready</span>
-                    <span className="promo-sub">Approved for datasets</span>
-                  </div>
-                  <span className="promo-value safe">{labRecords.filter(r => r.humanReviewDecision?.decision === 'APPROVE_FOR_BENCHMARK' || r.humanReviewDecision?.decision === 'APPROVE_FOR_BOTH').length}</span>
-                </div>
-                <div className="promo-item">
-                  <div className="promo-info">
-                    <span className="promo-label">Rule Ready</span>
-                    <span className="promo-sub">Approved for packs</span>
-                  </div>
-                  <span className="promo-value accent">{labRecords.filter(r => r.humanReviewDecision?.decision === 'APPROVE_FOR_RULE_CANDIDATE' || r.humanReviewDecision?.decision === 'APPROVE_FOR_BOTH').length}</span>
-                </div>
-                <div className="promo-item">
-                  <div className="promo-info">
-                    <span className="promo-label">Under Revision</span>
-                    <span className="promo-sub">Needs human update</span>
-                  </div>
-                  <span className="promo-value warning">{labRecords.filter(r => r.humanReviewDecision?.decision === 'NEEDS_REVISION').length}</span>
-                </div>
+        <SectionCard title="Lab Governance Status" subtitle="Adversarial promotion readiness">
+           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+             <div className="promo-item">
+               <div className="promo-info">
+                 <span className="promo-label">Benchmark Ready</span>
+                 <span className="promo-sub">Approved for datasets</span>
+               </div>
+               <span className="promo-value" style={{ color: 'var(--safe)' }}>{labRecords.filter(r => r.humanReviewDecision?.decision === 'APPROVE_FOR_BENCHMARK' || r.humanReviewDecision?.decision === 'APPROVE_FOR_BOTH').length}</span>
              </div>
-          </SectionCard>
-        </div>
+             <div className="promo-item">
+               <div className="promo-info">
+                 <span className="promo-label">Rule Ready</span>
+                 <span className="promo-sub">Approved for packs</span>
+               </div>
+               <span className="promo-value" style={{ color: 'var(--accent)' }}>{labRecords.filter(r => r.humanReviewDecision?.decision === 'APPROVE_FOR_RULE_CANDIDATE' || r.humanReviewDecision?.decision === 'APPROVE_FOR_BOTH').length}</span>
+             </div>
+             <div className="promo-item">
+               <div className="promo-info">
+                 <span className="promo-label">Under Revision</span>
+                 <span className="promo-sub">Needs human update</span>
+               </div>
+               <span className="promo-value" style={{ color: 'var(--escalate)' }}>{labRecords.filter(r => r.humanReviewDecision?.decision === 'NEEDS_REVISION').length}</span>
+             </div>
+           </div>
+        </SectionCard>
       </div>
 
       <style jsx>{`
-        .command-center {
-          display: flex;
-          flex-direction: column;
-        }
-        .page-header {
-          margin-bottom: 3rem;
-        }
-        .metrics-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-          gap: 1.5rem;
-        }
         .actions-grid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-          gap: 1.5rem;
-          margin-top: 1rem;
-        }
-        .view-all {
-          font-size: 0.8rem;
-          color: var(--accent);
-          text-decoration: none;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-        }
-        .view-all:hover {
-          text-decoration: underline;
-        }
-        .promotion-stats {
-          display: flex;
-          flex-direction: column;
           gap: 1rem;
         }
         .promo-item {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 1rem;
-          background: rgba(255, 255, 255, 0.02);
-          border-radius: 8px;
+          padding: 0.875rem 1rem;
+          border-radius: var(--radius-sm);
           border: 1px solid var(--border);
+          background: var(--surface-muted);
         }
         .promo-info { display: flex; flex-direction: column; }
         .promo-label {
-          font-size: 0.85rem;
-          font-weight: 700;
+          font-size: 0.825rem;
+          font-weight: 600;
           color: var(--text);
         }
         .promo-sub {
-          font-size: 0.65rem;
+          font-size: 0.625rem;
           color: var(--text-muted);
           text-transform: uppercase;
           font-weight: 600;
-          letter-spacing: 0.02em;
+          letter-spacing: 0.03em;
         }
         .promo-value {
           font-size: 1.5rem;
           font-weight: 800;
         }
-        .promo-value.safe { color: var(--safe); }
-        .promo-value.accent { color: var(--accent); }
-        .promo-value.warning { color: var(--escalate); }
       `}</style>
     </DashboardShell>
   );
 }
 
-function ActionCard({ title, description, href, icon, badge }: { title: string, description: string, href: string, icon: string, badge?: string }) {
+function ActionCard({ title, description, href, badge }: { title: string, description: string, href: string, badge?: string }) {
   return (
-    <Link href={href} className="action-card">
-      <div className="action-icon">{icon}</div>
+    <Link href={href} className="action-card-link">
       <div className="action-content">
         <div className="action-title-row">
           <h4 className="action-title">{title}</h4>
@@ -290,41 +217,23 @@ function ActionCard({ title, description, href, icon, badge }: { title: string, 
         </div>
         <p className="action-desc">{description}</p>
       </div>
+      <span className="action-arrow">→</span>
       <style jsx>{`
-        .action-card {
+        .action-card-link {
           background: var(--card-bg);
           border: 1px solid var(--border);
-          border-radius: 12px;
-          padding: 1.5rem;
+          border-radius: var(--radius);
+          padding: 1.25rem;
           display: flex;
           align-items: center;
-          gap: 1.25rem;
+          justify-content: space-between;
           text-decoration: none;
-          transition: all 0.2s ease;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+          transition: all 0.15s ease;
+          box-shadow: var(--shadow-sm);
         }
-        .action-card:hover {
-          background: rgba(59, 130, 246, 0.04);
+        .action-card-link:hover {
           border-color: var(--accent);
-          transform: translateY(-2px);
-          box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-        }
-        .action-icon {
-          font-size: 1.25rem;
-          background: rgba(255, 255, 255, 0.03);
-          width: 48px;
-          height: 48px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 10px;
-          border: 1px solid var(--border);
-          transition: all 0.2s;
-        }
-        .action-card:hover .action-icon {
-          background: rgba(59, 130, 246, 0.1);
-          border-color: rgba(59, 130, 246, 0.2);
-          transform: scale(1.05);
+          box-shadow: var(--shadow-md);
         }
         .action-content {
           flex: 1;
@@ -338,25 +247,33 @@ function ActionCard({ title, description, href, icon, badge }: { title: string, 
         .action-title {
           margin: 0;
           color: var(--text);
-          font-size: 0.95rem;
+          font-size: 0.9rem;
           font-weight: 700;
           letter-spacing: -0.01em;
         }
         .action-badge {
           background: var(--block);
           color: white;
-          font-size: 0.65rem;
-          padding: 0.125rem 0.4rem;
+          font-size: 0.6rem;
+          padding: 0.1rem 0.4rem;
           border-radius: 4px;
           font-weight: 800;
-          box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
         }
         .action-desc {
           margin: 0;
-          color: var(--text-soft);
-          font-size: 0.8rem;
+          color: var(--text-muted);
+          font-size: 0.78rem;
           line-height: 1.4;
           font-weight: 500;
+        }
+        .action-arrow {
+          color: var(--text-dim);
+          font-size: 1rem;
+          margin-left: 1rem;
+          transition: color 0.15s;
+        }
+        .action-card-link:hover .action-arrow {
+          color: var(--accent);
         }
       `}</style>
     </Link>
