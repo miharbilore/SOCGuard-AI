@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import DashboardShell from '@/components/dashboard/DashboardShell';
 import SectionCard from '@/components/dashboard/SectionCard';
-import StatusBadge from '@/components/dashboard/StatusBadge';
 import { 
   runLimitedAgentLabSession,
   AgentLabCycleResult,
@@ -94,50 +93,49 @@ export default function AgentLabRunnerPage() {
       {/* Governance Banner */}
       <div className="governance-banner warning" style={{ marginBottom: '1.5rem' }}>
         <span>⚠</span>
-        <div>
-          <div>Controlled demo runner. Single Cycle may use server-side API-backed agents when explicitly enabled; Limited Session remains mock/local. Generated candidates are advisory, sanitized, and never auto-approved or used to mutate production rules.</div>
-          <div style={{ marginTop: '0.25rem', opacity: 0.7, fontSize: '0.75rem' }}>After editing .env.local, restart the dev server. API keys are strictly server-side.</div>
+        <div style={{ fontSize: '0.8rem', lineHeight: '1.4' }}>
+          <strong>Governance Notice:</strong> No uncontrolled learning or production mutation occurs. All candidates are <strong>advisory only</strong> and require human review.
+          <ul style={{ margin: '0.25rem 0 0 1rem', padding: 0 }}>
+            <li>No auto-approval of signatures.</li>
+            <li>API keys are strictly server-side only.</li>
+            <li>Single Cycle may use server-side API-backed agents when enabled; Limited Session remains mock/local in this build.</li>
+          </ul>
         </div>
       </div>
 
-      <header style={{ marginBottom: '2rem' }}>
-        <div className="subtitle">Adversarial Research & Synthesis</div>
+      <header style={{ marginBottom: '1.5rem' }}>
+        <div className="subtitle">Adversarial Research & Synthesis (V4.1)</div>
         <h1>Agent Lab</h1>
         <p className="description" style={{ margin: '0.25rem 0 0 0' }}>
-          Simulate multi-agent attack and defense cycles to generate robust security signatures.
+          Orchestrate attack/defense cycles to generate robust security signatures.
         </p>
       </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: '1.5rem' }}>
-        {/* Settings Panel */}
+      <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: '1.5rem' }}>
+        {/* Settings + Summary Column */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <SectionCard title="Runtime Settings" subtitle="Control lab safety limits">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <SettingInput label="Cycles (Max 10)" value={cycles} min={1} max={10} disabled={isRunning} onChange={v => setCycles(v)} />
-              <SettingInput label="Candidates / Cycle (Max 10)" value={candidatesPerCycle} min={1} max={10} disabled={isRunning} onChange={v => setCandidatesPerCycle(v)} />
-              <SettingInput label="Interval (Min 1000ms)" value={intervalMs} min={1000} step={500} disabled={isRunning} onChange={v => setIntervalMs(v)} />
-
-              <div style={{ borderTop: '1px solid var(--border)', paddingTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                <StatusRow label="Provider Mode" value={serverStatus?.providerMode || 'LOADING...'} />
-                <StatusRow label="LLM Agents" value={serverStatus ? (serverStatus.enableLLMAgents ? 'ENABLED' : 'DISABLED') : 'LOADING...'} color={serverStatus?.enableLLMAgents ? 'var(--safe)' : 'var(--block)'} />
-                <StatusRow label="API Key" value={serverStatus?.hasPrimaryApiKey ? 'PRESENT' : 'MISSING'} color="var(--safe)" />
-                <StatusRow label="Single Cycle" value={serverStatus?.providerMode === 'API_BACKED' ? 'API-backed' : 'MOCK'} color="var(--accent)" />
-                <StatusRow label="Limited Session" value="MOCK only" color="var(--text-muted)" />
+          <SectionCard title="Runtime Settings" subtitle="Safety Limits">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <SettingInput label="Cycles" value={cycles} min={1} max={10} disabled={isRunning} onChange={v => setCycles(v)} />
+              <SettingInput label="Candidates" value={candidatesPerCycle} min={1} max={10} disabled={isRunning} onChange={v => setCandidatesPerCycle(v)} />
+              
+              <div style={{ borderTop: '1px solid var(--border)', paddingTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                <StatusRow label="LLM Agents" value={serverStatus ? (serverStatus.enableLLMAgents ? 'ENABLED' : 'DISABLED') : '...'} color={serverStatus?.enableLLMAgents ? 'var(--safe)' : 'var(--block)'} />
+                <StatusRow label="Key" value={serverStatus?.hasPrimaryApiKey ? 'PRESENT' : 'MISSING'} color="var(--safe)" />
+                <StatusRow label="Mode" value={serverStatus?.providerMode === 'API_BACKED' ? 'API-backed' : 'MOCK'} />
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
                 <button onClick={handleRunSingle} disabled={isRunning} className="btn-primary" style={{ width: '100%' }}>
                   Run Single Cycle
                 </button>
-                <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', textAlign: 'center' }}>Server-side route. Uses configured provider if enabled.</div>
-                <button onClick={handleRunSession} disabled={isRunning} className="btn-secondary" style={{ width: '100%', marginTop: '0.25rem' }}>
-                  Run Limited Session
+                <button onClick={handleRunSession} disabled={isRunning} className="btn-secondary" style={{ width: '100%' }}>
+                  Run Session
                 </button>
-                <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', textAlign: 'center' }}>Local/mock only. No external API calls.</div>
               </div>
 
               {isRunning && (
-                <div style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 700, animation: 'pulse 1.5s infinite' }}>
+                <div style={{ textAlign: 'center', fontSize: '0.7rem', color: 'var(--accent)', fontWeight: 800, animation: 'pulse 1.5s infinite' }}>
                   {statusMessage}
                 </div>
               )}
@@ -145,36 +143,33 @@ export default function AgentLabRunnerPage() {
           </SectionCard>
 
           {results && (
-            <SectionCard title="Session Summary" subtitle="Aggregation of lab results">
+            <SectionCard title="Session Summary" subtitle="Performance Metrics">
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <SummaryRow label="Candidates" value={results.totalCandidates} />
                 <SummaryRow label="Detected" value={results.detectedCount} color="var(--safe)" />
                 <SummaryRow label="Missed" value={results.missedCount} color={results.missedCount > 0 ? 'var(--block)' : undefined} />
-                <SummaryRow label="Curated Vault" value={results.curatedEntries.length} color="var(--accent)" />
+                <SummaryRow label="Vault" value={results.curatedEntries.length} color="var(--accent)" />
               </div>
             </SectionCard>
           )}
         </div>
 
-        {/* Results Content */}
+        {/* Results and Workflow Column */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <SectionCard title="Cycle Records" subtitle="Step-by-step agent research traces">
+          {/* Records Table */}
+          <SectionCard title="Cycle Records" subtitle="Human review required for all candidates">
             {!results && !isRunning ? (
-              <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                Configure settings and start a research cycle to see results.
-              </div>
-            ) : isRunning && allRecords.length === 0 ? (
-              <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--accent)', fontWeight: 700 }}>
-                Synthesizing research data...
+              <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                Start a research cycle to begin synthesis.
               </div>
             ) : (
               <div className="results-table-container">
                 <table>
                   <thead>
                     <tr>
-                      <th>Candidate ID</th>
+                      <th>Candidate</th>
                       <th>Attack Type</th>
-                      <th>Detection</th>
+                      <th>V1</th>
                       <th>Risk</th>
                       <th>Blue</th>
                       <th>Judge</th>
@@ -190,18 +185,18 @@ export default function AgentLabRunnerPage() {
                         className={selectedRecord?.redTeamCandidate.id === record.redTeamCandidate.id ? 'selected' : ''}
                         style={{ cursor: 'pointer' }}
                       >
-                        <td><code style={{ fontSize: '0.7rem' }}>{record.redTeamCandidate.id}</code></td>
-                        <td style={{ fontSize: '0.78rem', fontWeight: 600 }}>{record.redTeamCandidate.attackType}</td>
+                        <td><code>{record.redTeamCandidate.id.split('-').pop()}</code></td>
+                        <td style={{ fontSize: '0.75rem', fontWeight: 700 }}>{record.redTeamCandidate.attackType}</td>
                         <td>
-                          <span className={`badge badge-${record.wasDetected ? 'SAFE' : 'BLOCK'}`}>
+                          <span className={`badge badge-${record.wasDetected ? 'SAFE' : 'BLOCK'}`} style={{ fontSize: '0.6rem' }}>
                             {record.wasDetected ? 'DETECTED' : 'MISSED'}
                           </span>
                         </td>
-                        <td><strong style={{ color: record.riskScore > 70 ? 'var(--block)' : 'var(--text)' }}>{record.riskScore}</strong></td>
-                        <td><span className={`badge badge-${record.blueTeamProposal ? 'SAFE' : 'BLOCK'}`}>{record.blueTeamProposal ? 'PROPOSED' : 'MISSING'}</span></td>
-                        <td><span className="badge badge-ESCALATE">{record.judgeRecommendation ? 'ADVISORY' : 'MISSING'}</span></td>
-                        <td><span className="badge badge-SAFE">{record.curatedRuleVaultEntry ? 'VAULT ENTRY' : 'MISSING'}</span></td>
-                        <td style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--accent)' }}>{record.recommendedNextStep.replace(/_/g, ' ')}</td>
+                        <td><strong style={{ fontSize: '0.8rem', color: record.riskScore > 70 ? 'var(--block)' : 'inherit' }}>{record.riskScore}</strong></td>
+                        <td><span className={`badge badge-${record.blueTeamProposal ? 'SAFE' : 'BLOCK'}`} style={{ fontSize: '0.6rem' }}>{record.blueTeamProposal ? 'PROPOSED' : 'MISSING'}</span></td>
+                        <td><span className="badge badge-ESCALATE" style={{ fontSize: '0.6rem' }}>{record.judgeRecommendation ? 'ADVISORY' : 'MISSING'}</span></td>
+                        <td><span className="badge badge-SAFE" style={{ fontSize: '0.6rem' }}>{record.curatedRuleVaultEntry ? 'VAULT' : 'MISSING'}</span></td>
+                        <td style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--accent)' }}>{record.recommendedNextStep.split('_').pop()}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -210,168 +205,162 @@ export default function AgentLabRunnerPage() {
             )}
           </SectionCard>
 
-          {/* Pipeline Timeline + Details */}
+          {/* 4-Panel Workflow */}
           {r && (
-            <>
-              {/* Timeline */}
-              <SectionCard title="Agent Pipeline Timeline" subtitle="Lifecycle of this research record">
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0' }}>
-                  {[
-                    { label: 'Red Team', sub: 'Candidate Created', status: 'DONE' as const },
-                    { label: 'V1 Analyzer', sub: r.wasDetected ? 'Detected' : 'Missed', status: 'DONE' as const },
-                    { label: 'Blue Team', sub: 'Defense Proposed', status: 'DONE' as const },
-                    { label: 'Judge', sub: 'Advisory Evaluated', status: 'DONE' as const },
-                    { label: 'Curator', sub: 'Vault Entry Created', status: 'DONE' as const },
-                    { label: 'Human Review', sub: 'Pending', status: 'NEEDS_REVIEW' as const },
-                  ].map((step, i) => (
-                    <div key={i} style={{ flex: 1, textAlign: 'center', position: 'relative' }}>
-                      <div style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>{step.label}</div>
-                      <div style={{ margin: '0.4rem 0' }}>
-                        <StatusBadge status={step.status} type={step.status === 'DONE' ? 'success' : 'warning'} />
-                      </div>
-                      <div style={{ fontSize: '0.65rem', color: 'var(--text-soft)' }}>{step.sub}</div>
-                      {i < 5 && <div style={{ position: 'absolute', top: '1.75rem', right: '-10%', width: '20%', borderTop: '2px dashed var(--border)' }}></div>}
-                    </div>
-                  ))}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              {/* Pipeline Strip */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--surface-muted)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}>
+                 <PipelineStep label="Red Team" status="DONE" />
+                 <PipelineArrow />
+                 <PipelineStep label="V1 Analyzer" status={r.wasDetected ? "DETECTED" : "MISSED"} highlight={!r.wasDetected} />
+                 <PipelineArrow />
+                 <PipelineStep label="Blue Team" status="DONE" />
+                 <PipelineArrow />
+                 <PipelineStep label="Judge" status="ADVISORY" />
+                 <PipelineArrow />
+                 <PipelineStep label="Curator" status="NEEDS_REVIEW" />
+                 <PipelineArrow />
+                 <PipelineStep label="Human Review" status="PENDING" highlight />
+              </div>
+
+              {/* V1 Detection Summary Strip */}
+              <div style={{ 
+                padding: '1rem', 
+                borderRadius: 'var(--radius-sm)', 
+                border: '1px solid', 
+                borderColor: r.wasDetected ? 'var(--safe)' : 'var(--block)',
+                background: r.wasDetected ? 'var(--safe-bg)' : 'var(--block-bg)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <div>
+                   <div style={{ fontSize: '0.85rem', fontWeight: 800, color: r.wasDetected ? 'var(--safe)' : 'var(--block)' }}>
+                     {r.wasDetected ? '✓ DETECTED BY V1' : '⚠ MISSED BY V1 — needs rule candidate'}
+                   </div>
+                   <div style={{ fontSize: '0.75rem', color: 'var(--text-soft)', marginTop: '0.2rem' }}>
+                     {r.analysisResult.explanation.summary}
+                   </div>
                 </div>
-              </SectionCard>
-
-              {/* Detail Cards */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-                {/* A. Red Team */}
-                <SectionCard title="Red Team Output" subtitle="Adversarial Synthesis">
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    <DetailRow label="ID" value={r.redTeamCandidate.id} />
-                    <DetailRow label="Attack Type" value={r.redTeamCandidate.attackType} />
-                    <DetailRow label="Language">
-                      <span className="badge" style={{ background: 'var(--accent-soft)', color: 'var(--accent)', border: '1px solid rgba(37,99,235,0.12)', fontSize: '0.6rem' }}>
-                        {r.redTeamCandidate.language?.toUpperCase() || 'UNKNOWN'}
-                      </span>
-                    </DetailRow>
-                    <DetailRow label="Safety Status" value={r.redTeamCandidate.safetyStatus} valueColor="var(--safe)" />
-                    <div>
-                      <div style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.3rem' }}>Sanitized Prompt</div>
-                      <code style={{ display: 'block', padding: '0.75rem', background: '#0F172A', borderRadius: 'var(--radius-xs)', color: '#10B981', fontSize: '0.75rem', wordBreak: 'break-all' }}>
-                        {r.redTeamCandidate.sanitizedPrompt}
-                      </code>
-                    </div>
-                    <DetailRow label="Target Weakness" value={r.redTeamCandidate.targetWeakness} />
-                  </div>
-                </SectionCard>
-
-                {/* B. V1 Detection */}
-                <SectionCard title="V1 Detection Result" subtitle="Deterministic Analyzer">
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <StatusBadge status={r.policyDecision} type={r.wasDetected ? 'success' : 'error'} />
-                      <span className={`badge badge-${r.wasDetected ? 'SAFE' : 'BLOCK'}`}>{r.wasDetected ? 'DETECTED' : 'MISSED'}</span>
-                    </div>
-                    <DetailRow label="Risk Score" value={r.riskScore} />
-                    <div>
-                      <div style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.3rem' }}>Matched Categories</div>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
-                        {r.matchedCategories.map(cat => (
-                          <span key={cat} style={{ fontSize: '0.6rem', background: 'var(--surface-muted)', padding: '0.15rem 0.4rem', borderRadius: '4px', fontWeight: 600, color: 'var(--text-soft)' }}>{cat}</span>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.3rem' }}>Explanation</div>
-                      <p style={{ fontSize: '0.8rem', color: 'var(--text-soft)', margin: 0, lineHeight: 1.5 }}>{r.analysisResult.explanation.summary}</p>
-                    </div>
-                  </div>
-                </SectionCard>
-
-                {/* C. Blue Team */}
-                <SectionCard title="Blue Team Proposal" subtitle="Defensive Synthesis">
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    <DetailRow label="Proposed Category" value={r.blueTeamProposal.proposedCategory} />
-                    <div>
-                      <div style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.3rem' }}>Suggested Pattern</div>
-                      <code style={{ display: 'block', padding: '0.625rem', background: 'var(--accent-soft)', border: '1px solid rgba(37,99,235,0.1)', color: 'var(--accent)', borderRadius: 'var(--radius-xs)', fontSize: '0.75rem' }}>
-                        {r.blueTeamProposal.proposedRulePattern}
-                      </code>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-                      <ScoreBox label="Severity" value={r.blueTeamProposal.severity} />
-                      <ScoreBox label="Confidence" value={`${r.blueTeamProposal.confidence}%`} />
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.3rem' }}>False Positive Risks</div>
-                      <ul style={{ margin: 0, paddingLeft: '1rem', fontSize: '0.78rem', color: 'var(--text-soft)' }}>
-                        {r.blueTeamProposal.falsePositiveRisks.map((risk, i) => <li key={i}>{risk}</li>)}
-                      </ul>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.3rem' }}>Rationale</div>
-                      <p style={{ fontSize: '0.8rem', color: 'var(--text-soft)', margin: 0, lineHeight: 1.5 }}>{r.blueTeamProposal.rationale}</p>
-                    </div>
-                  </div>
-                </SectionCard>
-
-                {/* D. Judge Advisory */}
-                <SectionCard title="Judge Advisory" subtitle="Advisory evaluation (not final approval)">
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>Recommendation:</span>
-                      <StatusBadge status={r.judgeRecommendation.recommendation} type="info" />
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-                      <ScoreBox label="Realism" value={r.judgeRecommendation.realismScore} />
-                      <ScoreBox label="Coverage" value={r.judgeRecommendation.coverageScore} />
-                      <ScoreBox label="FP Risk" value={r.judgeRecommendation.falsePositiveRiskScore} />
-                      <ScoreBox label="Safety" value={r.judgeRecommendation.safetyScore} />
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.3rem' }}>Reasons</div>
-                      <ul style={{ margin: 0, paddingLeft: '1rem', fontSize: '0.78rem', color: 'var(--text-soft)' }}>
-                        {r.judgeRecommendation.reasons.map((reason, i) => <li key={i}>{reason}</li>)}
-                      </ul>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.3rem' }}>Limitations</div>
-                      <ul style={{ margin: 0, paddingLeft: '1rem', fontSize: '0.78rem', color: 'var(--text-soft)' }}>
-                        {r.judgeRecommendation.limitations.map((l, i) => <li key={i}>{l}</li>)}
-                      </ul>
-                    </div>
-                    <div className="governance-banner warning" style={{ padding: '0.5rem 0.75rem', fontSize: '0.7rem', fontWeight: 700 }}>
-                      ADVISORY — not a final approval
-                    </div>
-                  </div>
-                </SectionCard>
-
-                {/* E. Curator Output — spans full width */}
-                <div style={{ gridColumn: '1 / -1' }}>
-                  <SectionCard title="Curator / Rule Vault Entry" subtitle="Candidate only — not an active production rule">
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                        <DetailRow label="Vault Entry ID" value={r.curatedRuleVaultEntry.id} />
-                        <DetailRow label="Status" value={r.curatedRuleVaultEntry.status} />
-                        <DetailRow label="Proposed Category" value={r.curatedRuleVaultEntry.proposedCategory} />
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                        <div>
-                          <div style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.3rem' }}>Suggested Pattern</div>
-                          <code style={{ display: 'block', padding: '0.5rem', background: 'var(--surface-muted)', border: '1px solid var(--border)', borderRadius: 'var(--radius-xs)', fontSize: '0.72rem' }}>
-                            {r.curatedRuleVaultEntry.suggestedPattern}
-                          </code>
-                        </div>
-                        <DetailRow label="Confidence" value={`${r.curatedRuleVaultEntry.confidence}%`} />
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                        <div>
-                          <div style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.3rem' }}>Provenance</div>
-                          <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0 }}>{r.curatedRuleVaultEntry.provenance}</p>
-                        </div>
-                        <div className="governance-banner info" style={{ padding: '0.5rem 0.75rem', fontSize: '0.65rem', marginTop: 'auto' }}>
-                          <span>Human review is still required before benchmark or rule-pack promotion.</span>
-                        </div>
-                      </div>
-                    </div>
-                  </SectionCard>
+                <div style={{ textAlign: 'right' }}>
+                   <div style={{ fontSize: '1.25rem', fontWeight: 900, color: r.riskScore > 70 ? 'var(--block)' : 'var(--text)' }}>{r.riskScore}</div>
+                   <div style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Risk Score</div>
                 </div>
               </div>
-            </>
+
+              {/* The 4 Panels */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: '1.5rem' }}>
+                {/* 1. Red Team */}
+                <SectionCard 
+                  title="Panel 1 — Red Team" 
+                  subtitle="Attack Candidate Synthesis" 
+                  style={{ borderTop: '4px solid #F43F5E' }}
+                >
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span className="badge" style={{ background: '#FFF1F2', color: '#F43F5E', border: '1px solid #FECDD3' }}>RED TEAM AGENT</span>
+                      <code style={{ fontSize: '0.7rem' }}>{r.redTeamCandidate.id}</code>
+                    </div>
+                    <DetailRow label="Attack Type" value={r.redTeamCandidate.attackType} />
+                    <DetailRow label="Language" value={r.redTeamCandidate.language || 'UNKNOWN'} />
+                    <DetailRow label="Safety" value={r.redTeamCandidate.safetyStatus} valueColor="var(--safe)" />
+                    <div>
+                       <div style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Sanitized Sample</div>
+                       <code style={{ display: 'block', padding: '0.75rem', background: '#0F172A', color: '#10B981', borderRadius: '4px', fontSize: '0.75rem', whiteSpace: 'pre-wrap', wordBreak: 'break-all', maxHeight: '120px', overflowY: 'auto' }}>
+                         {r.redTeamCandidate.sanitizedPrompt}
+                       </code>
+                    </div>
+                    <DetailRow label="Target Weakness" value={r.redTeamCandidate.targetWeakness} />
+                    <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', margin: '0.5rem 0 0 0', lineHeight: 1.4 }}>Red Team generates a sanitized adversarial incident log. It never stores raw harmful content.</p>
+                  </div>
+                </SectionCard>
+
+                {/* 2. Blue Team */}
+                <SectionCard 
+                  title="Panel 2 — Blue Team" 
+                  subtitle="Defense Proposal Synthesis" 
+                  style={{ borderTop: '4px solid #3B82F6' }}
+                >
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span className="badge" style={{ background: '#EFF6FF', color: '#3B82F6', border: '1px solid #DBEAFE' }}>BLUE TEAM AGENT</span>
+                      <span className="badge badge-SAFE" style={{ fontSize: '0.6rem' }}>DEFENSE READY</span>
+                    </div>
+                    <DetailRow label="Proposed Category" value={r.blueTeamProposal.proposedCategory} />
+                    <div>
+                       <div style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Suggested Pattern</div>
+                       <code style={{ display: 'block', padding: '0.5rem', background: 'var(--accent-soft)', color: 'var(--accent)', border: '1px solid rgba(37,99,235,0.1)', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 700 }}>
+                         {r.blueTeamProposal.proposedRulePattern}
+                       </code>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                       <ScoreBox label="Severity" value={r.blueTeamProposal.severity} />
+                       <ScoreBox label="Confidence" value={`${r.blueTeamProposal.confidence}%`} />
+                    </div>
+                    <div>
+                       <div style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Rationale</div>
+                       <p style={{ fontSize: '0.75rem', color: 'var(--text-soft)', margin: 0, lineHeight: 1.4 }}>{r.blueTeamProposal.rationale}</p>
+                    </div>
+                    <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', margin: '0.5rem 0 0 0', lineHeight: 1.4 }}>Blue Team proposes a defensive detection idea. It is not an active production rule.</p>
+                  </div>
+                </SectionCard>
+
+                {/* 3. Judge */}
+                <SectionCard 
+                  title="Panel 3 — Judge" 
+                  subtitle="Quality Advisory Pass" 
+                  style={{ borderTop: '4px solid #10B981' }}
+                >
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span className="badge" style={{ background: '#ECFDF5', color: '#10B981', border: '1px solid #D1FAE5' }}>JUDGE AGENT</span>
+                      <span style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--escalate)' }}>ADVISORY — not final approval</span>
+                    </div>
+                    <DetailRow label="Recommendation" value={r.judgeRecommendation.recommendation.replace('RECOMMEND_', '').replace(/_/g, ' ')} valueColor="var(--accent)" />
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '0.5rem' }}>
+                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                          <ScoreBox label="Realism" value={r.judgeRecommendation.realismScore} />
+                          <ScoreBox label="Coverage" value={r.judgeRecommendation.coverageScore} />
+                       </div>
+                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                          <ScoreBox label="FP Risk" value={r.judgeRecommendation.falsePositiveRiskScore} />
+                          <ScoreBox label="Safety" value={r.judgeRecommendation.safetyScore} />
+                       </div>
+                    </div>
+                    <div>
+                       <div style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Reasons</div>
+                       <p style={{ fontSize: '0.75rem', color: 'var(--text-soft)', margin: 0, lineHeight: 1.4 }}>{r.judgeRecommendation.reasons.join('. ')}</p>
+                    </div>
+                    <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', margin: '0.5rem 0 0 0', lineHeight: 1.4 }}>Judge provides quality scoring only. It cannot approve or deploy rules.</p>
+                  </div>
+                </SectionCard>
+
+                {/* 4. Curator */}
+                <SectionCard 
+                  title="Panel 4 — Curator" 
+                  subtitle="Rule Vault Formatting" 
+                  style={{ borderTop: '4px solid #8B5CF6' }}
+                >
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span className="badge" style={{ background: '#F5F3FF', color: '#8B5CF6', border: '1px solid #EDE9FE' }}>CURATOR AGENT</span>
+                      <span style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--block)' }}>CANDIDATE ONLY</span>
+                    </div>
+                    <DetailRow label="Vault ID" value={r.curatedRuleVaultEntry.id.split('-').pop()} />
+                    <DetailRow label="Status" value={r.curatedRuleVaultEntry.status} />
+                    <DetailRow label="Next Step" value={r.recommendedNextStep.replace(/_/g, ' ')} valueColor="var(--human)" />
+                    <div>
+                       <div style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Vault Pattern</div>
+                       <code style={{ display: 'block', padding: '0.5rem', background: 'var(--surface-muted)', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '0.75rem' }}>
+                         {r.curatedRuleVaultEntry.suggestedPattern}
+                       </code>
+                    </div>
+                    <DetailRow label="Provenance" value="Deterministic trace + Agent synthesis" />
+                    <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', margin: '0.5rem 0 0 0', lineHeight: 1.4 }}>Curator converts Red + Blue + Judge outputs into a review-ready Rule Vault candidate.</p>
+                  </div>
+                </SectionCard>
+              </div>
+            </div>
           )}
         </div>
       </div>
@@ -387,25 +376,25 @@ function SettingInput({ label, value, min, max, step, disabled, onChange }: {
   return (
     <div>
       <label style={{ display: 'block', fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '0.3rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</label>
-      <input type="number" min={min} max={max} step={step} value={value} onChange={e => onChange(parseInt(e.target.value))} disabled={disabled} style={{ width: '100%' }} />
+      <input type="number" min={min} max={max} step={step} value={value} onChange={e => onChange(parseInt(e.target.value))} disabled={disabled} style={{ width: '100%', padding: '0.4rem', fontSize: '0.85rem', borderRadius: '4px', border: '1px solid var(--border)' }} />
     </div>
   );
 }
 
 function StatusRow({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
-    <div style={{ fontSize: '0.72rem', color: 'var(--text-soft)', display: 'flex', justifyContent: 'space-between' }}>
-      <span>{label}</span>
-      <span style={{ fontWeight: 700, color: color || 'var(--text)' }}>{value}</span>
+    <div style={{ fontSize: '0.65rem', color: 'var(--text-soft)', display: 'flex', justifyContent: 'space-between' }}>
+      <span>{label}:</span>
+      <span style={{ fontWeight: 800, color: color || 'var(--text)' }}>{value}</span>
     </div>
   );
 }
 
 function SummaryRow({ label, value, color }: { label: string; value: string | number; color?: string }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.35rem 0', borderBottom: '1px solid var(--border-light)' }}>
-      <span style={{ fontSize: '0.78rem', color: 'var(--text-soft)' }}>{label}</span>
-      <span style={{ fontWeight: 800, color: color || 'var(--text)' }}>{value}</span>
+    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.3rem 0', borderBottom: '1px solid var(--border-light)' }}>
+      <span style={{ fontSize: '0.75rem', color: 'var(--text-soft)' }}>{label}</span>
+      <span style={{ fontWeight: 900, color: color || 'var(--text)' }}>{value}</span>
     </div>
   );
 }
@@ -414,16 +403,29 @@ function DetailRow({ label, value, valueColor, children }: { label: string; valu
   return (
     <div style={{ fontSize: '0.75rem' }}>
       <strong style={{ color: 'var(--text-muted)', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.03em' }}>{label}: </strong>
-      {children || <span style={{ color: valueColor || 'var(--text)', fontWeight: 600 }}>{value}</span>}
+      {children || <span style={{ color: valueColor || 'var(--text)', fontWeight: 700 }}>{value}</span>}
     </div>
   );
 }
 
 function ScoreBox({ label, value }: { label: string; value: string | number }) {
   return (
-    <div style={{ background: 'var(--surface-muted)', padding: '0.4rem 0.5rem', borderRadius: 'var(--radius-xs)', border: '1px solid var(--border)', textAlign: 'center' }}>
-      <div style={{ fontSize: '0.55rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>{label}</div>
-      <div style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text)' }}>{value}</div>
+    <div style={{ background: 'var(--surface-muted)', padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--border)', textAlign: 'center' }}>
+      <div style={{ fontSize: '0.5rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>{label}</div>
+      <div style={{ fontSize: '0.8rem', fontWeight: 900, color: 'var(--text)' }}>{value}</div>
     </div>
   );
+}
+
+function PipelineStep({ label, status, highlight }: { label: string; status: string; highlight?: boolean }) {
+  return (
+    <div style={{ flex: 1, textAlign: 'center', opacity: highlight ? 1 : 0.8 }}>
+      <div style={{ fontSize: '0.55rem', fontWeight: 900, color: highlight ? 'var(--accent)' : 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.2rem' }}>{label}</div>
+      <div style={{ fontSize: '0.5rem', fontWeight: 900, color: status === 'MISSED' ? 'var(--block)' : status === 'DETECTED' ? 'var(--safe)' : 'var(--text)' }}>{status}</div>
+    </div>
+  );
+}
+
+function PipelineArrow() {
+  return <div style={{ fontSize: '0.8rem', color: 'var(--border)', fontWeight: 300 }}>→</div>;
 }
