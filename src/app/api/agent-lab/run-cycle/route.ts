@@ -3,14 +3,34 @@ import { getLLMAgentEnvConfig } from '@/modules/socguard/agent-adapters/server-e
 import { runSingleAgentLabCycle } from '@/modules/socguard/agent-adapters/lab-cycle-runner';
 import { AgentRuntimeConfig } from '@/modules/socguard/agent-adapters/agent-types';
 
+let lastApiBackedRunAt: number | null = null;
+
 /**
  * Server-side API route to run a controlled agent lab cycle.
  * This route reads environment variables server-side and enforces safety limits.
  */
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
     const envConfig = getLLMAgentEnvConfig();
+
+    if (envConfig.enabled) {
+      const now = Date.now();
+      const minInterval = Math.max(envConfig.limits.minIntervalMs || 10000, 10000);
+      if (lastApiBackedRunAt && now - lastApiBackedRunAt < minInterval) {
+        return NextResponse.json(
+          { error: "Rate limit active. Please wait before running another API-backed cycle." },
+          { status: 429 }
+        );
+      }
+      lastApiBackedRunAt = now;
+    }
+
+    let body: Record<string, unknown> = {};
+    try {
+      body = await req.json();
+    } catch (e) {
+      // ignore
+    }
 
     // Map server-side env to runtime config
     const config: AgentRuntimeConfig = {
@@ -35,8 +55,10 @@ export async function POST(req: NextRequest) {
     };
 
     // Enforcement & Clamping
+    const requestedMaxCandidates = typeof body.maxCandidates === 'number' ? body.maxCandidates : envConfig.limits.maxCandidates || 3;
     const maxCandidates = Math.min(
-      Math.max(1, body.maxCandidates || envConfig.limits.maxCandidates),
+      requestedMaxCandidates,
+      envConfig.limits.maxCandidates || 3,
       10
     );
 
@@ -50,10 +72,15 @@ export async function POST(req: NextRequest) {
     // Return safe result (secrets are already handled by factory/adapters)
     return NextResponse.json(result);
 
-  } catch (error: any) {
-    console.error('[API] Agent Lab Cycle Error:', error);
+  } catch (error: unknown) {
+    const err = error as Error & { status?: number };
+    console.error('[API] Agent Lab Cycle Error:', {
+      name: err.name,
+      status: err.status || 500,
+      message: 'Sanitized error log'
+    });
     return NextResponse.json(
-      { error: 'Failed to execute research cycle.', details: error.message },
+      { error: 'Agent lab cycle failed safely. Check server logs.' },
       { status: 500 }
     );
   }

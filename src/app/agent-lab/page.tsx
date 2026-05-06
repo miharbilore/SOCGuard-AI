@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DashboardShell from '@/components/dashboard/DashboardShell';
 import SectionCard from '@/components/dashboard/SectionCard';
 import MetricCard from '@/components/dashboard/MetricCard';
@@ -26,6 +26,14 @@ export default function AgentLabRunnerPage() {
   const [candidatesPerCycle, setCandidatesPerCycle] = useState(3);
   const [intervalMs, setIntervalMs] = useState(1000);
   const [statusMessage, setStatusMessage] = useState('');
+  const [serverStatus, setServerStatus] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/agent-lab/status')
+      .then(res => res.json())
+      .then(data => setServerStatus(data))
+      .catch(err => console.error(err));
+  }, []);
 
   const handleRunSingle = async () => {
     setIsRunning(true);
@@ -62,9 +70,10 @@ export default function AgentLabRunnerPage() {
       
       setResults(sessionResult);
       setStatusMessage('Cycle completed.');
-    } catch (err: any) {
-      console.error(err);
-      setStatusMessage(`Error: ${err.message}`);
+    } catch (err: unknown) {
+      const error = err as Error;
+      console.error(error);
+      setStatusMessage(`Error: ${error.message}`);
     } finally {
       setIsRunning(false);
     }
@@ -167,10 +176,10 @@ export default function AgentLabRunnerPage() {
 
                 <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1rem', marginTop: '0.5rem' }}>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-soft)', display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                    <span>Provider:</span> <span style={{ fontWeight: 800 }}>MOCK</span>
+                    <span>Provider:</span> <span style={{ fontWeight: 800 }}>{serverStatus?.providerMode || 'LOADING...'}</span>
                   </div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-soft)', display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                    <span>LLM Agents:</span> <span style={{ color: 'var(--block)', fontWeight: 800 }}>DISABLED</span>
+                    <span>LLM Agents:</span> <span style={{ color: serverStatus?.enableLLMAgents ? 'var(--safe)' : 'var(--block)', fontWeight: 800 }}>{serverStatus ? (serverStatus.enableLLMAgents ? 'ENABLED' : 'DISABLED') : 'LOADING...'}</span>
                   </div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-soft)', display: 'flex', justifyContent: 'space-between' }}>
                     <span>Auto-Approval:</span> <span style={{ color: 'var(--block)', fontWeight: 800 }}>FALSE</span>

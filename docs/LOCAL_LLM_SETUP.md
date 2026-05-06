@@ -26,7 +26,7 @@ Edit `.env.local` and paste your real API keys into the corresponding fields:
 # Example .env.local (DO NOT COMMIT)
 ENABLE_LLM_AGENTS=true
 LLM_PROVIDER=GROQ
-LLM_API_KEY=gsk_your_real_key_here
+LLM_API_KEY=<server-side-api-key-placeholder>
 LLM_MODEL=llama3-70b-8192
 ```
 

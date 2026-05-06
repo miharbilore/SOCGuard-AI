@@ -9,6 +9,8 @@ import {
   CuratedRuleVaultEntry,
   AgentRuntimeConfig
 } from '../agent-types';
+import { DetectionCategory } from '../../types';
+import { JudgeRecommendationType } from '../../adversarial-lab/adversarial-types';
 import { callOpenAICompatibleChat } from './server-llm-client';
 import { 
   safeParseLLMJSON, 
@@ -57,18 +59,19 @@ Include attackType, sanitizedPrompt, targetWeakness, expectedDetectionCategory, 
       throw new Error('Invalid Red Team output schema from LLM.');
     }
 
-    return data.candidates.map((c: any, index: number) => {
-      const safetyResult = sanitizeAdversarialPrompt(c.sanitizedPrompt);
+    const validatedCandidates = (data as Record<string, unknown[]>).candidates.map((c: unknown, index: number) => {
+      const candidate = c as Record<string, unknown>;
+      const safetyResult = sanitizeAdversarialPrompt(candidate.sanitizedPrompt as string);
       return {
         id: `RT-LLM-${input.sourceId}-${Date.now().toString(36)}-${index}`,
         sourceId: input.sourceId,
-        attackType: c.attackType,
+        attackType: candidate.attackType,
         // Mandatory double-sanitization for defense in depth
         sanitizedPrompt: safetyResult.sanitizedPrompt,
         redactedTerms: safetyResult.redactedTerms,
-        targetWeakness: c.targetWeakness,
-        expectedDetectionCategory: c.expectedDetectionCategory,
-        difficulty: c.difficulty,
+        targetWeakness: candidate.targetWeakness,
+        expectedDetectionCategory: candidate.expectedDetectionCategory,
+        difficulty: candidate.difficulty,
         safetyStatus: safetyResult.safetyStatus,
         createdAt: new Date().toISOString(),
         metadata: {
@@ -76,7 +79,13 @@ Include attackType, sanitizedPrompt, targetWeakness, expectedDetectionCategory, 
           generatedAt: new Date().toISOString()
         }
       };
-    });
+    }).filter((c: Record<string, unknown>) => c.safetyStatus !== "REJECTED") as unknown as RedTeamCandidate[];
+
+    if (validatedCandidates.length === 0) {
+      throw new Error("All generated Red Team candidates were rejected by the sanitizer.");
+    }
+
+    return validatedCandidates;
   }
 }
 
@@ -118,16 +127,17 @@ Attack Type: ${input.candidate.attackType}`;
       throw new Error('Invalid Blue Team output schema from LLM.');
     }
 
+    const d = data as Record<string, unknown>;
     return {
       id: `BP-LLM-${input.candidate.id}-${Date.now().toString(36)}`,
       redTeamCandidateId: input.candidate.id,
-      proposedCategory: data.proposedCategory,
-      proposedRulePattern: data.proposedRulePattern,
-      severity: data.severity,
-      confidence: data.confidence,
-      falsePositiveRisks: data.falsePositiveRisks,
-      hardNegativeSuggestions: data.hardNegativeSuggestions,
-      rationale: data.rationale,
+      proposedCategory: d.proposedCategory as DetectionCategory,
+      proposedRulePattern: d.proposedRulePattern as string,
+      severity: d.severity as "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
+      confidence: d.confidence as number,
+      falsePositiveRisks: d.falsePositiveRisks as string[],
+      hardNegativeSuggestions: d.hardNegativeSuggestions as string[],
+      rationale: d.rationale as string,
       status: 'NEEDS_REVIEW'
     };
   }
@@ -171,22 +181,20 @@ Rationale: ${input.proposal.rationale}`;
       throw new Error('Invalid Judge output schema from LLM.');
     }
 
-    // Map recommendation to internal type
-    let recommendation: any = 'RECOMMEND_REVISE';
-    if (data.recommendation === 'APPROVE') recommendation = 'RECOMMEND_APPROVE_FOR_REVIEW';
-    if (data.recommendation === 'REJECT') recommendation = 'RECOMMEND_REJECT';
+    const d = data as Record<string, unknown>;
+    const recommendation = d.recommendation as JudgeRecommendationType;
 
     return {
       id: `JR-LLM-${input.proposal.id}-${Date.now().toString(36)}`,
       redTeamCandidateId: input.candidate.id,
       blueTeamProposalId: input.proposal.id,
       recommendation,
-      realismScore: data.realismScore,
-      coverageScore: data.coverageScore,
-      falsePositiveRiskScore: data.falsePositiveRiskScore,
-      safetyScore: data.safetyScore,
-      reasons: data.reasons,
-      limitations: data.limitations || [],
+      realismScore: d.realismScore as number,
+      coverageScore: d.coverageScore as number,
+      falsePositiveRiskScore: d.falsePositiveRiskScore as number,
+      safetyScore: d.safetyScore as number,
+      reasons: d.reasons as string[],
+      limitations: (d.limitations as string[]) || [],
       createdAt: new Date().toISOString()
     };
   }
@@ -234,16 +242,17 @@ Judge Recommendation: ${input.judge.recommendation}`;
       throw new Error('Invalid Curator output schema from LLM.');
     }
 
+    const d = data as Record<string, unknown>;
     return {
       id: `RV-CUR-${Date.now().toString(36).toUpperCase()}`,
       sourceType: 'AGENT_LAB',
-      attackType: data.attackType,
-      sanitizedLog: data.sanitizedLog,
-      proposedCategory: data.proposedCategory,
-      suggestedPattern: data.suggestedPattern,
-      severity: data.severity,
-      confidence: data.confidence,
-      falsePositiveRisks: data.falsePositiveRisks,
+      attackType: d.attackType as string,
+      sanitizedLog: d.sanitizedLog as string,
+      proposedCategory: d.proposedCategory as DetectionCategory,
+      suggestedPattern: d.suggestedPattern as string,
+      severity: d.severity as "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
+      confidence: d.confidence as number,
+      falsePositiveRisks: d.falsePositiveRisks as string[],
       status: 'NEEDS_REVIEW',
       provenance: `Curated by LLM (${this.config.openai.model}) from Red Team ${input.candidate.id}`,
       createdAt: new Date().toISOString()

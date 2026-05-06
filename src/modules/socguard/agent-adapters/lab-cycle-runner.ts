@@ -87,6 +87,11 @@ export async function runSingleAgentLabCycle(
     // 1. Sanitize (Mandatory Safety)
     const sanitizedCandidate = sanitizeRedTeamCandidate(rawCandidate);
     
+    if (sanitizedCandidate.safetyStatus === 'REJECTED') {
+      warnings.push("Rejected Red Team candidate skipped by sanitizer.");
+      continue;
+    }
+    
     // 2. V1 Detection Benchmark
     const logEntry: LogEntry = {
       id: `lab-${sanitizedCandidate.id}`,
