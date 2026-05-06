@@ -35,8 +35,14 @@ export interface AgentRuntimeConfig {
   };
 }
 
+import { SourceIntelligenceNote } from '../source-intelligence/source-types';
+
 export interface RedTeamAgent {
-  generate(input: { sourceId: string; maxCandidates?: number }): Promise<RedTeamCandidate[]>;
+  generate(input: { 
+    sourceId: string; 
+    maxCandidates?: number;
+    sourceContextNotes?: SourceIntelligenceNote[];
+  }): Promise<RedTeamCandidate[]>;
 }
 
 export interface BlueTeamAgent {

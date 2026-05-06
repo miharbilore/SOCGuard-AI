@@ -11,7 +11,8 @@ The pipeline consists of four specialized agents working in a coordinated loop t
 - **Function**: Generates sanitized attack candidates.
 - **Multilingual Support**: Supports Turkish, English, Arabic, German, French, Polish, and mixed-language logs to test translation-bypass resilience.
 - **Output**: `RedTeamCandidate[]`
-- **Security**: Must produce non-operational logs (sanitized). Outputs are treated as **untrusted data**.
+- **Intelligence Context**: Can consume **APPROVED** source notes from the Source Intelligence module to align attack synthesis with current industry benchmarks.
+- **Security**: Must produce non-operational logs (sanitized). Outputs are treated as **untrusted data** and are double-sanitized before further processing.
 
 ### 2. Blue Team Agent
 - **Function**: Proposes deterministic defense signatures (regex/heuristics) for a given attack candidate.

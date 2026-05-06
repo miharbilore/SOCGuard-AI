@@ -66,7 +66,8 @@ export async function POST(req: NextRequest) {
     const result = await runSingleAgentLabCycle(
       config,
       'api-route-run',
-      maxCandidates
+      maxCandidates,
+      body.sourceContextNotes as any[]
     );
 
     // Return safe result (secrets are already handled by factory/adapters)

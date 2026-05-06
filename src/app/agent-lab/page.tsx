@@ -10,9 +10,11 @@ import {
   AgentLabCycleRecord,
   DEFAULT_AGENT_CONFIG,
 } from '@/modules/socguard/agent-adapters';
+import { createDemoSourceIntelligenceNotes } from '@/modules/socguard/source-intelligence/corpus-builder';
 
 export default function AgentLabRunnerPage() {
   const [isRunning, setIsRunning] = useState(false);
+  const [useIntelligenceContext, setUseIntelligenceContext] = useState(false);
   const [results, setResults] = useState<AgentLabSessionResult | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<AgentLabCycleRecord | null>(null);
   const [cycles, setCycles] = useState(1);
@@ -37,11 +39,19 @@ export default function AgentLabRunnerPage() {
     setStatusMessage('Initiating server-side research cycle...');
     setResults(null);
     setSelectedRecord(null);
+
+    const sourceContextNotes = useIntelligenceContext 
+      ? createDemoSourceIntelligenceNotes().filter(n => n.status === 'APPROVED')
+      : undefined;
+
     try {
       const response = await fetch('/api/agent-lab/run-cycle', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ maxCandidates: candidatesPerCycle })
+        body: JSON.stringify({ 
+          maxCandidates: candidatesPerCycle,
+          sourceContextNotes
+        })
       });
       if (!response.ok) {
         const errorData = await response.json();
@@ -74,8 +84,13 @@ export default function AgentLabRunnerPage() {
     setStatusMessage(`Running session with ${cycles} cycles...`);
     setResults(null);
     setSelectedRecord(null);
+
+    const sourceContextNotes = useIntelligenceContext 
+      ? createDemoSourceIntelligenceNotes().filter(n => n.status === 'APPROVED')
+      : undefined;
+
     try {
-      const sessionResult = await runLimitedAgentLabSession(cycles, intervalMs, candidatesPerCycle, DEFAULT_AGENT_CONFIG);
+      const sessionResult = await runLimitedAgentLabSession(cycles, intervalMs, candidatesPerCycle, DEFAULT_AGENT_CONFIG, sourceContextNotes);
       setResults(sessionResult);
       setStatusMessage('Session completed.');
     } catch {
@@ -119,6 +134,19 @@ export default function AgentLabRunnerPage() {
               <SettingInput label="Cycles" value={cycles} min={1} max={10} disabled={isRunning} onChange={v => setCycles(v)} />
               <SettingInput label="Candidates" value={candidatesPerCycle} min={1} max={10} disabled={isRunning} onChange={v => setCandidatesPerCycle(v)} />
               
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0' }}>
+                <input 
+                  type="checkbox" 
+                  id="use-context" 
+                  checked={useIntelligenceContext} 
+                  onChange={(e) => setUseIntelligenceContext(e.target.checked)}
+                  disabled={isRunning}
+                />
+                <label htmlFor="use-context" style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-soft)', cursor: 'pointer' }}>
+                  Use Approved Source Intel
+                </label>
+              </div>
+
               <div style={{ borderTop: '1px solid var(--border)', paddingTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                 <StatusRow label="LLM Agents" value={serverStatus ? (serverStatus.enableLLMAgents ? 'ENABLED' : 'DISABLED') : '...'} color={serverStatus?.enableLLMAgents ? 'var(--safe)' : 'var(--block)'} />
                 <StatusRow label="Key" value={serverStatus?.hasPrimaryApiKey ? 'PRESENT' : 'MISSING'} color="var(--safe)" />

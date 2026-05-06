@@ -57,6 +57,8 @@ export interface AgentLabSessionResult {
   warnings: string[];
 }
 
+import { SourceIntelligenceNote } from '../source-intelligence/source-types';
+
 /**
  * Runs a single research cycle using the agent pipeline.
  * Each cycle: Red -> Sanitize -> V1 Analyze -> Blue -> Judge -> Curator.
@@ -64,7 +66,8 @@ export interface AgentLabSessionResult {
 export async function runSingleAgentLabCycle(
   config: AgentRuntimeConfig,
   sourceId: string,
-  maxCandidates: number = 3
+  maxCandidates: number = 3,
+  sourceContextNotes?: SourceIntelligenceNote[]
 ): Promise<AgentLabCycleResult> {
   const agents = createAgentSet(config);
   const redAgent = agents.redTeam;
@@ -72,7 +75,7 @@ export async function runSingleAgentLabCycle(
   const judgeAgent = agents.judge;
   const curatorAgent = agents.curator;
 
-    const candidates = await redAgent.generate({ sourceId, maxCandidates });
+  const candidates = await redAgent.generate({ sourceId, maxCandidates, sourceContextNotes });
   const limitedCandidates = candidates.slice(0, maxCandidates);
   
   const records: AgentLabCycleRecord[] = [];
@@ -165,7 +168,8 @@ export async function runLimitedAgentLabSession(
   cycles: number,
   intervalMs: number,
   maxCandidatesPerCycle: number,
-  config: AgentRuntimeConfig
+  config: AgentRuntimeConfig,
+  sourceContextNotes?: SourceIntelligenceNote[]
 ): Promise<AgentLabSessionResult> {
   // Safety Limits
   const safeCycles = Math.min(Math.max(1, cycles), 10);
@@ -179,7 +183,7 @@ export async function runLimitedAgentLabSession(
   if (intervalMs < 1000) warnings.push(`Interval increased to minimum 1000ms`);
 
   for (let i = 0; i < safeCycles; i++) {
-    const cycle = await runSingleAgentLabCycle(config, `session-cycle-${i}`, safeMaxCandidates);
+    const cycle = await runSingleAgentLabCycle(config, `session-cycle-${i}`, safeMaxCandidates, sourceContextNotes);
     cycleResults.push(cycle);
     
     if (i < safeCycles - 1) {
