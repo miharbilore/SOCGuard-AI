@@ -26,7 +26,11 @@ export default function AgentLabRunnerPage() {
   const [candidatesPerCycle, setCandidatesPerCycle] = useState(3);
   const [intervalMs, setIntervalMs] = useState(1000);
   const [statusMessage, setStatusMessage] = useState('');
-  const [serverStatus, setServerStatus] = useState<any>(null);
+  const [serverStatus, setServerStatus] = useState<{
+    providerMode: string;
+    enableLLMAgents: boolean;
+    hasPrimaryApiKey: boolean;
+  } | null>(null);
 
   useEffect(() => {
     fetch('/api/agent-lab/status')
@@ -268,9 +272,10 @@ export default function AgentLabRunnerPage() {
                     <tr>
                       <th>ID</th>
                       <th>Attack Type</th>
-                      <th>Decision</th>
-                      <th>Score</th>
-                      <th>Status</th>
+                      <th>V1 Decision</th>
+                      <th>Blue</th>
+                      <th>Judge</th>
+                      <th>Curator</th>
                       <th>Next Step</th>
                     </tr>
                   </thead>
@@ -285,10 +290,19 @@ export default function AgentLabRunnerPage() {
                         <td><code>{record.redTeamCandidate.id}</code></td>
                         <td><span style={{ fontSize: '0.8rem', fontWeight: 600 }}>{record.redTeamCandidate.attackType}</span></td>
                         <td><StatusBadge status={record.policyDecision} type={record.wasDetected ? 'success' : 'error'} /></td>
-                        <td><span style={{ fontWeight: 800, color: record.riskScore > 70 ? 'var(--block)' : 'inherit' }}>{record.riskScore}</span></td>
                         <td>
-                          <span className={`badge badge-${record.wasDetected ? 'SAFE' : 'BLOCK'}`} style={{ fontSize: '0.65rem' }}>
-                            {record.wasDetected ? 'DETECTED' : 'MISSED'}
+                          <span className={`badge badge-${record.blueTeamProposal ? 'SAFE' : 'BLOCK'}`} style={{ fontSize: '0.65rem' }}>
+                            {record.blueTeamProposal ? 'PROPOSED' : 'MISSING'}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`badge badge-${record.judgeRecommendation ? 'SAFE' : 'BLOCK'}`} style={{ fontSize: '0.65rem' }}>
+                            {record.judgeRecommendation ? 'ADVISORY' : 'MISSING'}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`badge badge-${record.curatedRuleVaultEntry ? 'SAFE' : 'BLOCK'}`} style={{ fontSize: '0.65rem' }}>
+                            {record.curatedRuleVaultEntry ? 'VAULT ENTRY' : 'MISSING'}
                           </span>
                         </td>
                         <td>
@@ -306,59 +320,172 @@ export default function AgentLabRunnerPage() {
 
           {/* Record Details Panel */}
           {selectedRecord && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-               <SectionCard title="Candidate Intelligence" subtitle="Agent-generated adversarial data">
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                    <div>
-                      <h4 style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem', fontWeight: 700 }}>Sanitized Prompt</h4>
-                      <code style={{ display: 'block', padding: '1rem', background: '#0F172A', borderRadius: '8px', color: '#10B981', fontSize: '0.8rem', wordBreak: 'break-all' }}>
-                        {selectedRecord.redTeamCandidate.sanitizedPrompt}
-                      </code>
-                    </div>
-                    <div>
-                      <h4 style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem', fontWeight: 700 }}>V1 Analysis Summary</h4>
-                      <p style={{ fontSize: '0.9rem', color: 'var(--text-soft)', margin: 0, lineHeight: 1.4 }}>{selectedRecord.analysisResult.explanation.summary}</p>
-                    </div>
-                    <div>
-                      <h4 style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem', fontWeight: 700 }}>Matched Categories</h4>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-                        {selectedRecord.matchedCategories.map(cat => (
-                          <span key={cat} style={{ fontSize: '0.65rem', background: 'rgba(0,0,0,0.05)', padding: '0.2rem 0.5rem', borderRadius: '4px', fontWeight: 600 }}>{cat}</span>
-                        ))}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+               {/* Timeline Header */}
+               <SectionCard title="Agent Pipeline Timeline" subtitle="Lifecycle of this research record">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem 0' }}>
+                    {[
+                      { label: 'Red Team', sub: 'Candidate Created', status: 'DONE' },
+                      { label: 'V1 Analyzer', sub: selectedRecord.wasDetected ? 'Detected' : 'Missed', status: 'DONE' },
+                      { label: 'Blue Team', sub: 'Defense Proposed', status: 'DONE' },
+                      { label: 'Judge', sub: 'Advisory Evaluated', status: 'DONE' },
+                      { label: 'Curator', sub: 'Vault Entry Created', status: 'DONE' },
+                      { label: 'Human Review', sub: 'Pending Review', status: 'NEEDS_REVIEW' }
+                    ].map((step, i) => (
+                      <div key={i} style={{ flex: 1, textAlign: 'center', position: 'relative' }}>
+                        <div style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>{step.label}</div>
+                        <div style={{ margin: '0.5rem 0' }}>
+                           <StatusBadge status={step.status} type={step.status === 'DONE' ? 'success' : 'warning'} />
+                        </div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-soft)' }}>{step.sub}</div>
+                        {i < 5 && (
+                          <div style={{ position: 'absolute', top: '2.5rem', right: '-10%', width: '20%', borderTop: '2px dashed var(--border)', zIndex: 0 }}></div>
+                        )}
                       </div>
-                    </div>
+                    ))}
                   </div>
                </SectionCard>
 
-               <SectionCard title="Defense & Curation" subtitle="Blue Team proposal and vault status">
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                    <div>
-                      <h4 style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem', fontWeight: 700 }}>Blue Team Proposed Pattern</h4>
-                      <code style={{ display: 'block', padding: '0.75rem', background: 'rgba(37, 99, 235, 0.04)', border: '1px solid rgba(37, 99, 235, 0.1)', color: 'var(--accent)', borderRadius: '6px', fontSize: '0.85rem' }}>
-                        {selectedRecord.blueTeamProposal.proposedRulePattern}
-                      </code>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                       <div style={{ background: 'rgba(0,0,0,0.02)', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                          <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 700 }}>JUDGE REALISM</div>
-                          <div style={{ fontSize: '1.25rem', fontWeight: 800 }}>{selectedRecord.judgeRecommendation.realismScore}</div>
-                       </div>
-                       <div style={{ background: 'rgba(0,0,0,0.02)', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                          <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 700 }}>JUDGE SAFETY</div>
-                          <div style={{ fontSize: '1.25rem', fontWeight: 800 }}>{selectedRecord.judgeRecommendation.safetyScore}</div>
-                       </div>
-                    </div>
-                    <div style={{ background: 'white', padding: '1rem', borderRadius: '8px', border: '1px solid var(--accent)', borderLeft: '4px solid var(--accent)' }}>
-                      <h4 style={{ fontSize: '0.7rem', color: 'var(--accent)', textTransform: 'uppercase', marginBottom: '0.5rem', fontWeight: 800 }}>Vault Entry: {selectedRecord.curatedRuleVaultEntry.id}</h4>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-soft)' }}>
-                        <strong>Status:</strong> {selectedRecord.curatedRuleVaultEntry.status}
+               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                 {/* A. Red Team Output */}
+                 <SectionCard title="[A] Red Team Output" subtitle="Adversarial Synthesis">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <div style={{ fontSize: '0.75rem' }}><strong>ID:</strong> {selectedRecord.redTeamCandidate.id}</div>
+                      <div style={{ fontSize: '0.75rem' }}><strong>Attack Type:</strong> {selectedRecord.redTeamCandidate.attackType}</div>
+                      <div style={{ fontSize: '0.75rem' }}><strong>Language:</strong> { (selectedRecord.redTeamCandidate as any).language || 'Not specified' }</div>
+                      <div style={{ fontSize: '0.75rem' }}><strong>Safety Status:</strong> <span style={{ color: 'var(--safe)' }}>{selectedRecord.redTeamCandidate.safetyStatus}</span></div>
+                      <div>
+                        <h4 style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.4rem' }}>Sanitized Prompt</h4>
+                        <code style={{ display: 'block', padding: '0.75rem', background: '#0F172A', borderRadius: '6px', color: '#10B981', fontSize: '0.75rem', wordBreak: 'break-all' }}>
+                          {selectedRecord.redTeamCandidate.sanitizedPrompt}
+                        </code>
                       </div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                        {selectedRecord.curatedRuleVaultEntry.provenance}
+                      <div style={{ fontSize: '0.75rem' }}><strong>Target Weakness:</strong> {selectedRecord.redTeamCandidate.targetWeakness}</div>
+                    </div>
+                 </SectionCard>
+
+                 {/* B. V1 Detection Result */}
+                 <SectionCard title="[B] V1 Detection Result" subtitle="Deterministic Analyzer">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <StatusBadge status={selectedRecord.policyDecision} type={selectedRecord.wasDetected ? 'success' : 'error'} />
+                        <span className={`badge badge-${selectedRecord.wasDetected ? 'SAFE' : 'BLOCK'}`} style={{ fontSize: '0.7rem' }}>
+                          {selectedRecord.wasDetected ? 'DETECTED' : 'MISSED'}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '0.75rem' }}><strong>Risk Score:</strong> <span style={{ fontWeight: 800 }}>{selectedRecord.riskScore}</span></div>
+                      <div>
+                        <h4 style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.4rem' }}>Matched Categories</h4>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                          {selectedRecord.matchedCategories.map(cat => (
+                            <span key={cat} style={{ fontSize: '0.65rem', background: 'rgba(0,0,0,0.05)', padding: '0.2rem 0.5rem', borderRadius: '4px', fontWeight: 600 }}>{cat}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.4rem' }}>Explanation Summary</h4>
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-soft)', margin: 0, lineHeight: 1.4 }}>{selectedRecord.analysisResult.explanation.summary}</p>
                       </div>
                     </div>
-                  </div>
-               </SectionCard>
+                 </SectionCard>
+
+                 {/* C. Blue Team Proposal */}
+                 <SectionCard title="[C] Blue Team Proposal" subtitle="Defensive Synthesis">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <div style={{ fontSize: '0.75rem' }}><strong>Proposed Category:</strong> {selectedRecord.blueTeamProposal.proposedCategory}</div>
+                      <div>
+                        <h4 style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.4rem' }}>Suggested Pattern</h4>
+                        <code style={{ display: 'block', padding: '0.75rem', background: 'rgba(37, 99, 235, 0.04)', border: '1px solid rgba(37, 99, 235, 0.1)', color: 'var(--accent)', borderRadius: '6px', fontSize: '0.8rem' }}>
+                          {selectedRecord.blueTeamProposal.proposedRulePattern}
+                        </code>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                         <div>
+                            <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 700 }}>SEVERITY</div>
+                            <div style={{ fontSize: '0.9rem', fontWeight: 800 }}>{selectedRecord.blueTeamProposal.severity}</div>
+                         </div>
+                         <div>
+                            <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 700 }}>CONFIDENCE</div>
+                            <div style={{ fontSize: '0.9rem', fontWeight: 800 }}>{selectedRecord.blueTeamProposal.confidence}%</div>
+                         </div>
+                      </div>
+                      <div>
+                        <h4 style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.4rem' }}>False Positive Risks</h4>
+                        <ul style={{ margin: 0, paddingLeft: '1.2rem', fontSize: '0.8rem', color: 'var(--text-soft)' }}>
+                          {selectedRecord.blueTeamProposal.falsePositiveRisks.map((risk, i) => <li key={i}>{risk}</li>)}
+                        </ul>
+                      </div>
+                      <div>
+                        <h4 style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.4rem' }}>Rationale</h4>
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-soft)', margin: 0, lineHeight: 1.4 }}>{selectedRecord.blueTeamProposal.rationale}</p>
+                      </div>
+                    </div>
+                 </SectionCard>
+
+                 {/* D. Judge Advisory */}
+                 <SectionCard title="[D] Judge Advisory" subtitle="Advisory evaluation (not final approval)">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '0.75rem' }}><strong>Recommendation:</strong></span>
+                        <StatusBadge status={selectedRecord.judgeRecommendation.recommendation} type="info" />
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                         {[
+                           { label: 'Realism', score: selectedRecord.judgeRecommendation.realismScore },
+                           { label: 'Coverage', score: selectedRecord.judgeRecommendation.coverageScore },
+                           { label: 'FP Risk', score: selectedRecord.judgeRecommendation.falsePositiveRiskScore },
+                           { label: 'Safety', score: selectedRecord.judgeRecommendation.safetyScore }
+                         ].map(s => (
+                           <div key={s.label} style={{ background: 'rgba(0,0,0,0.02)', padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--border)', textAlign: 'center' }}>
+                              <div style={{ fontSize: '0.55rem', color: 'var(--text-muted)', fontWeight: 700 }}>{s.label.toUpperCase()}</div>
+                              <div style={{ fontSize: '1rem', fontWeight: 800 }}>{s.score}</div>
+                           </div>
+                         ))}
+                      </div>
+                      <div>
+                        <h4 style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.4rem' }}>Reasons</h4>
+                        <ul style={{ margin: 0, paddingLeft: '1.2rem', fontSize: '0.8rem', color: 'var(--text-soft)' }}>
+                          {selectedRecord.judgeRecommendation.reasons.map((r, i) => <li key={i}>{r}</li>)}
+                        </ul>
+                      </div>
+                      <div>
+                        <h4 style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.4rem' }}>Limitations</h4>
+                        <ul style={{ margin: 0, paddingLeft: '1.2rem', fontSize: '0.8rem', color: 'var(--text-soft)' }}>
+                          {selectedRecord.judgeRecommendation.limitations.map((l, i) => <li key={i}>{l}</li>)}
+                        </ul>
+                      </div>
+                      <div style={{ fontSize: '0.65rem', color: 'var(--escalate)', fontWeight: 800, textAlign: 'center', padding: '0.5rem', background: 'rgba(217, 119, 6, 0.05)', borderRadius: '4px' }}>
+                        ADVISORY — not a final approval
+                      </div>
+                    </div>
+                 </SectionCard>
+
+                 {/* E. Curator Output */}
+                 <SectionCard title="[E] Curator Output" subtitle="Candidate only (not an active rule)">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <div style={{ fontSize: '0.75rem' }}><strong>Vault Entry ID:</strong> <code>{selectedRecord.curatedRuleVaultEntry.id}</code></div>
+                      <div style={{ fontSize: '0.75rem' }}><strong>Status:</strong> <span style={{ fontWeight: 800 }}>{selectedRecord.curatedRuleVaultEntry.status}</span></div>
+                      <div style={{ fontSize: '0.75rem' }}><strong>Proposed Category:</strong> {selectedRecord.curatedRuleVaultEntry.proposedCategory}</div>
+                      <div>
+                        <h4 style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.4rem' }}>Suggested Pattern</h4>
+                        <code style={{ display: 'block', padding: '0.75rem', background: 'rgba(0,0,0,0.02)', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '0.8rem' }}>
+                          {selectedRecord.curatedRuleVaultEntry.suggestedPattern}
+                        </code>
+                      </div>
+                      <div style={{ fontSize: '0.75rem' }}><strong>Confidence:</strong> {selectedRecord.curatedRuleVaultEntry.confidence}%</div>
+                      <div>
+                        <h4 style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.4rem' }}>Provenance Summary</h4>
+                        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0 }}>{selectedRecord.curatedRuleVaultEntry.provenance}</p>
+                      </div>
+                      <div style={{ fontSize: '0.65rem', color: 'var(--accent)', fontWeight: 800, textAlign: 'center', padding: '0.5rem', background: 'rgba(37, 99, 235, 0.05)', borderRadius: '4px' }}>
+                        Curator converts Red + Blue + Judge outputs into a Rule Vault candidate.
+                      </div>
+                      <div style={{ fontSize: '0.65rem', color: 'var(--escalate)', fontWeight: 800, textAlign: 'center' }}>
+                        Human review is still required before benchmark or rule-pack promotion.
+                      </div>
+                    </div>
+                 </SectionCard>
+               </div>
             </div>
           )}
         </div>
