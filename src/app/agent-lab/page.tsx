@@ -109,7 +109,7 @@ export default function AgentLabRunnerPage() {
     <DashboardShell>
       {/* Governance Banner */}
       <div style={{ background: 'rgba(217, 119, 6, 0.05)', border: '1px solid var(--escalate)', color: 'var(--escalate)', padding: '1rem', borderRadius: '8px', marginBottom: '2rem', fontSize: '0.85rem', fontWeight: 800 }}>
-        ⚠ Controlled demo runner. Mock agents only. This is not uncontrolled learning. Generated candidates are advisory, sanitized, and never auto-approved, auto-deployed, or used to mutate production rules.
+        ⚠ Controlled demo runner. Single Cycle may use server-side API-backed agents when explicitly enabled; Limited Session remains mock/local in this build. Generated candidates are advisory, sanitized, and never auto-approved, auto-deployed, or used to mutate production rules. This is not uncontrolled learning. API keys are strictly server-side and never exposed to the browser.
       </div>
 
       <header style={{ marginBottom: '2.5rem' }}>
@@ -174,35 +174,47 @@ export default function AgentLabRunnerPage() {
                   />
                 </div>
 
-                <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1rem', marginTop: '0.5rem' }}>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-soft)', display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                    <span>Provider:</span> <span style={{ fontWeight: 800 }}>{serverStatus?.providerMode || 'LOADING...'}</span>
-                  </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-soft)', display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                    <span>LLM Agents:</span> <span style={{ color: serverStatus?.enableLLMAgents ? 'var(--safe)' : 'var(--block)', fontWeight: 800 }}>{serverStatus ? (serverStatus.enableLLMAgents ? 'ENABLED' : 'DISABLED') : 'LOADING...'}</span>
+                <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1rem', marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-soft)', display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Provider Mode:</span> <span style={{ fontWeight: 800 }}>{serverStatus?.providerMode || 'LOADING...'}</span>
                   </div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-soft)', display: 'flex', justifyContent: 'space-between' }}>
-                    <span>Auto-Approval:</span> <span style={{ color: 'var(--block)', fontWeight: 800 }}>FALSE</span>
+                    <span>LLM Agents Enabled:</span> <span style={{ color: serverStatus?.enableLLMAgents ? 'var(--safe)' : 'var(--block)', fontWeight: 800 }}>{serverStatus ? (serverStatus.enableLLMAgents ? 'ENABLED' : 'DISABLED') : 'LOADING...'}</span>
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-soft)', display: 'flex', justifyContent: 'space-between' }}>
+                    <span>API Key:</span> <span style={{ color: 'var(--safe)', fontWeight: 800 }}>{serverStatus?.hasPrimaryApiKey ? 'PRESENT (Server-side only)' : 'MISSING'}</span>
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-soft)', display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Single Cycle Mode:</span> <span style={{ color: 'var(--accent)', fontWeight: 800 }}>{serverStatus?.providerMode === 'API_BACKED' ? 'API-backed via server route' : 'MOCK'}</span>
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-soft)', display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Limited Session Mode:</span> <span style={{ color: 'var(--text-muted)', fontWeight: 800 }}>MOCK/local only in this build</span>
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1rem' }}>
-                  <button 
-                    onClick={handleRunSingle} 
-                    disabled={isRunning}
-                    className="btn-primary"
-                    style={{ width: '100%', padding: '0.75rem', borderRadius: '6px', background: 'var(--accent)', color: 'white', border: 'none', fontWeight: 700, cursor: isRunning ? 'not-allowed' : 'pointer', opacity: isRunning ? 0.6 : 1 }}
-                  >
-                    Run Single Cycle
-                  </button>
-                  <button 
-                    onClick={handleRunSession} 
-                    disabled={isRunning}
-                    className="btn-secondary"
-                    style={{ width: '100%', padding: '0.75rem', borderRadius: '6px', fontWeight: 700, cursor: isRunning ? 'not-allowed' : 'pointer' }}
-                  >
-                    Run Limited Session
-                  </button>
+                  <div>
+                    <button 
+                      onClick={handleRunSingle} 
+                      disabled={isRunning}
+                      className="btn-primary"
+                      style={{ width: '100%', padding: '0.75rem', borderRadius: '6px', background: 'var(--accent)', color: 'white', border: 'none', fontWeight: 700, cursor: isRunning ? 'not-allowed' : 'pointer', opacity: isRunning ? 0.6 : 1 }}
+                    >
+                      Run Single Cycle
+                    </button>
+                    <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '0.35rem', textAlign: 'center' }}>Uses the server-side /api/agent-lab/run-cycle route. If LLM agents are enabled in .env.local, this can call the configured provider.</div>
+                  </div>
+                  <div style={{ marginTop: '0.5rem' }}>
+                    <button 
+                      onClick={handleRunSession} 
+                      disabled={isRunning}
+                      className="btn-secondary"
+                      style={{ width: '100%', padding: '0.75rem', borderRadius: '6px', fontWeight: 700, cursor: isRunning ? 'not-allowed' : 'pointer' }}
+                    >
+                      Run Limited Session
+                    </button>
+                    <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '0.35rem', textAlign: 'center' }}>Runs a limited local/mock session only. It does not call external APIs in this build.</div>
+                  </div>
                 </div>
                 
                 {isRunning && (
