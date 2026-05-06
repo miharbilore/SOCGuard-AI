@@ -2,7 +2,8 @@ import {
   RedTeamCandidate, 
   AdversarialAttackType, 
   DifficultyLevel, 
-  SafetyStatus 
+  SafetyStatus,
+  LanguageCode 
 } from './adversarial-types';
 import { deterministicHash } from '../utils/crypto';
 
@@ -105,13 +106,14 @@ interface CreateCandidateInput {
   targetWeakness: string;
   expectedDetectionCategory: DetectionCategory;
   difficulty: DifficultyLevel;
+  language?: LanguageCode;
 }
 
 /**
  * Creates a RedTeamCandidate while ensuring NO raw harmful prompt is stored.
  */
 export function createSafeRedTeamCandidate(input: CreateCandidateInput): RedTeamCandidate {
-  const { sourceId, attackType, rawPrompt, targetWeakness, expectedDetectionCategory, difficulty } = input;
+  const { sourceId, attackType, rawPrompt, targetWeakness, expectedDetectionCategory, difficulty, language } = input;
   
   const safetyResult = sanitizeAdversarialPrompt(rawPrompt);
   
@@ -127,6 +129,7 @@ export function createSafeRedTeamCandidate(input: CreateCandidateInput): RedTeam
     targetWeakness,
     expectedDetectionCategory,
     difficulty,
+    language,
     safetyStatus: safetyResult.safetyStatus,
     createdAt: new Date().toISOString()
   };

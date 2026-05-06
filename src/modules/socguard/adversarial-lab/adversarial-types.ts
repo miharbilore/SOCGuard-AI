@@ -13,6 +13,7 @@ export type AdversarialAttackType =
 
 export type SafetyStatus = 'SANITIZED' | 'NEEDS_SANITIZATION' | 'REJECTED';
 export type DifficultyLevel = 'EASY' | 'MEDIUM' | 'HARD';
+export type LanguageCode = 'tr' | 'en' | 'ar' | 'de' | 'fr' | 'pl' | 'mixed' | 'unknown';
 
 /**
  * Red Team Candidate: A synthesized attack pattern.
@@ -27,6 +28,7 @@ export interface RedTeamCandidate {
   targetWeakness: string; // e.g., "Lack of multi-lingual regex"
   expectedDetectionCategory: DetectionCategory;
   difficulty: DifficultyLevel;
+  language?: LanguageCode;
   safetyStatus: SafetyStatus;
   createdAt: string;
 }

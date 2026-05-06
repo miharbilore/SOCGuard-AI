@@ -1,5 +1,5 @@
 import { DetectionCategory, DetectionSeverity as Severity } from '../../types';
-import { AdversarialAttackType, JudgeRecommendationType as JudgeRecommendation } from '../../adversarial-lab/adversarial-types';
+import { AdversarialAttackType, JudgeRecommendationType as JudgeRecommendation, LanguageCode } from '../../adversarial-lab/adversarial-types';
 
 export function isNonEmptyString(value: unknown): boolean {
   return typeof value === 'string' && value.trim().length > 0;
@@ -42,6 +42,11 @@ export function isValidJudgeRecommendation(value: unknown): value is JudgeRecomm
   ];
   return recommendations.includes(value as JudgeRecommendation);
 }
+ 
+export function isValidLanguageCode(value: unknown): value is LanguageCode {
+  const codes: LanguageCode[] = ['tr', 'en', 'ar', 'de', 'fr', 'pl', 'mixed', 'unknown'];
+  return codes.includes(value as LanguageCode);
+}
 
 export function validateRedTeamOutput(data: unknown): boolean {
   if (!data || typeof data !== 'object' || !Array.isArray((data as Record<string, unknown>).candidates) || (data as Record<string, unknown[]>).candidates.length === 0) return false;
@@ -52,7 +57,8 @@ export function validateRedTeamOutput(data: unknown): boolean {
     isNonEmptyString(candidate.sanitizedPrompt) &&
     isNonEmptyString(candidate.targetWeakness) &&
     isValidDetectionCategory(candidate.expectedDetectionCategory) &&
-    ['EASY', 'MEDIUM', 'HARD'].includes(candidate.difficulty as string);
+    ['EASY', 'MEDIUM', 'HARD'].includes(candidate.difficulty as string) &&
+    (!candidate.language || isValidLanguageCode(candidate.language));
   });
 }
 

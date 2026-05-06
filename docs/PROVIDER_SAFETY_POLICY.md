@@ -13,6 +13,7 @@ The purpose of the Red Team Agent is to synthesize **prompt injection patterns f
 - **No Credentials**: Do not request or generate real passwords, API keys, or private tokens.
 - **No Exfiltration**: Do not request or generate real exfiltration URLs or attacker-controlled endpoints.
 - **Use Placeholders**: Always use placeholders like `[REDACTED_HARMFUL_REQUEST]` or `[REDACTED_SECRET]` to represent unsafe intent.
+- **Multilingual Safety**: When generating logs in multiple languages (Turkish, English, Arabic, etc.), the same safety constraints apply. Harmful intent must be redacted regardless of the language or script used.
 
 ## 2. Respect for Provider Limits
 

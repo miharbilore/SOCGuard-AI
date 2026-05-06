@@ -352,7 +352,7 @@ export default function AgentLabRunnerPage() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                       <div style={{ fontSize: '0.75rem' }}><strong>ID:</strong> {selectedRecord.redTeamCandidate.id}</div>
                       <div style={{ fontSize: '0.75rem' }}><strong>Attack Type:</strong> {selectedRecord.redTeamCandidate.attackType}</div>
-                      <div style={{ fontSize: '0.75rem' }}><strong>Language:</strong> { (selectedRecord.redTeamCandidate as any).language || 'Not specified' }</div>
+                      <div style={{ fontSize: '0.75rem' }}><strong>Language:</strong> <span className="badge" style={{ fontSize: '0.65rem', background: 'rgba(59, 130, 246, 0.1)', color: 'var(--accent)', border: '1px solid var(--accent)' }}>{(selectedRecord.redTeamCandidate as any).language?.toUpperCase() || 'UNKNOWN'}</span></div>
                       <div style={{ fontSize: '0.75rem' }}><strong>Safety Status:</strong> <span style={{ color: 'var(--safe)' }}>{selectedRecord.redTeamCandidate.safetyStatus}</span></div>
                       <div>
                         <h4 style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.4rem' }}>Sanitized Prompt</h4>

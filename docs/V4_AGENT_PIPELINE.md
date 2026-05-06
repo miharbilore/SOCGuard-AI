@@ -9,6 +9,7 @@ The pipeline consists of four specialized agents working in a coordinated loop t
 
 ### 1. Red Team Agent
 - **Function**: Generates sanitized attack candidates.
+- **Multilingual Support**: Supports Turkish, English, Arabic, German, French, Polish, and mixed-language logs to test translation-bypass resilience.
 - **Output**: `RedTeamCandidate[]`
 - **Security**: Must produce non-operational logs (sanitized). Outputs are treated as **untrusted data**.
 
