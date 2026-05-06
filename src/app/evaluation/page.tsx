@@ -25,23 +25,23 @@ export default function EvaluationPage() {
 
   return (
     <DashboardShell>
-      <header style={{ marginBottom: '2.5rem' }}>
+      <header style={{ marginBottom: '2rem' }}>
         <div className="subtitle">Academic Benchmark Results</div>
         <h1>Evaluation Dashboard</h1>
-        <p className="description" style={{ margin: '0' }}>
+        <p className="description" style={{ margin: '0.25rem 0 0 0' }}>
           Deterministic benchmark on synthetic SIEM prompt injection dataset. Results represent performance across multiple threat vectors.
         </p>
       </header>
 
       {/* Primary Metrics */}
-      <section className="metrics-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
+      <section className="metrics-grid" style={{ marginBottom: '2rem' }}>
         <MetricCard label="Accuracy" value={toPct(metrics.accuracy)} trend="neutral" />
         <MetricCard label="Precision" value={toPct(metrics.precision)} color="var(--safe)" trend="up" />
         <MetricCard label="Recall (Sensitivity)" value={toPct(metrics.recall)} color="var(--escalate)" trend="down" />
-        <MetricCard label="F1 Score" value={toPct(metrics.f1Score)} color="var(--block)" trend="neutral" />
+        <MetricCard label="F1 Score" value={toPct(metrics.f1Score)} color="var(--accent)" trend="neutral" />
       </section>
 
-      <div className="dashboard-content-layout" style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '2rem', marginBottom: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
         {/* Left: Confusion Matrix */}
         <SectionCard title="Confusion Matrix" subtitle="Type I and Type II Error analysis">
           <div className="results-table-container">
@@ -108,7 +108,7 @@ export default function EvaluationPage() {
         </SectionCard>
       </div>
 
-      <div className="dashboard-content-layout" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
         {/* Category Coverage */}
         <SectionCard title="Category Coverage" subtitle="Recall by threat category">
           <div className="results-table-container">
@@ -133,7 +133,7 @@ export default function EvaluationPage() {
                             background: c.coveragePercentage >= 100 ? 'var(--safe)' : 'var(--escalate)'
                           }} />
                         </div>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>{c.coveragePercentage.toFixed(0)}%</span>
+                        <span style={{ fontSize: '0.7rem', fontWeight: 700 }}>{c.coveragePercentage.toFixed(0)}%</span>
                       </div>
                     </td>
                   </tr>
@@ -167,7 +167,7 @@ export default function EvaluationPage() {
                             background: v.detectionRate > 0.8 ? 'var(--safe)' : 'var(--escalate)'
                           }} />
                         </div>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>{toPct(v.detectionRate)}</span>
+                        <span style={{ fontSize: '0.7rem', fontWeight: 700 }}>{toPct(v.detectionRate)}</span>
                       </div>
                     </td>
                   </tr>
@@ -202,31 +202,31 @@ export default function EvaluationPage() {
                     <td><code>{res.inputLog.id}</code></td>
                     <td>
                       <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ color: gt?.label === 'INJECTED' ? 'var(--block)' : 'var(--safe)', fontWeight: 700, fontSize: '0.75rem' }}>
+                        <span style={{ color: gt?.label === 'INJECTED' ? 'var(--block)' : 'var(--safe)', fontWeight: 700, fontSize: '0.7rem' }}>
                           {gt?.label}
                         </span>
-                        <span style={{ fontSize: '0.65rem', opacity: 0.6 }}>
+                        <span style={{ fontSize: '0.6rem', opacity: 0.6, textTransform: 'uppercase', fontWeight: 600 }}>
                           {gt?.difficulty} | {gt?.attackVector}
                         </span>
                       </div>
                     </td>
                     <td>
-                      <span className={`status-badge status-${res.policyDecision === 'SAFE' ? 'success' : res.policyDecision === 'BLOCK' ? 'error' : 'warning'}`}>
+                      <span className={`badge badge-${res.policyDecision === 'SAFE' ? 'success' : res.policyDecision === 'BLOCK' ? 'error' : 'warning'}`}>
                         {res.policyDecision}
                       </span>
                     </td>
                     <td>
-                      <span style={{ fontWeight: 800, color: res.riskScore.score >= 51 ? 'var(--block)' : 'white' }}>
+                      <span style={{ fontWeight: 800, color: res.riskScore.score >= 51 ? 'var(--block)' : 'var(--text)' }}>
                         {res.riskScore.score}
                       </span>
                     </td>
                     <td>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--text-soft)' }}>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-soft)', fontWeight: 600 }}>
                         {gt?.expectedCategory || '-'}
                       </div>
                     </td>
                     <td>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {triggeredRules || '-'}
                       </div>
                     </td>

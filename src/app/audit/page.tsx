@@ -71,16 +71,16 @@ export default function AuditTrailPage() {
 
   return (
     <DashboardShell>
-      <header style={{ marginBottom: '2.5rem' }}>
+      <header style={{ marginBottom: '2rem' }}>
         <div className="subtitle">System Governance & Traceability</div>
         <h1>Audit Trail</h1>
-        <p className="description" style={{ margin: '0' }}>
+        <p className="description" style={{ margin: '0.25rem 0 0 0' }}>
           Governance log for Red Team, Blue Team, Judge, and Human Review actions. Trace every candidate from synthesis to review.
         </p>
       </header>
 
       {/* Metrics Section */}
-      <section className="metrics-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
+      <section className="metrics-grid" style={{ marginBottom: '2rem' }}>
         <MetricCard label="Total Audit Events" value={metrics.total} />
         <MetricCard label="Red Team" value={metrics.red} color="var(--block)" />
         <MetricCard label="Blue Team" value={metrics.blue} color="var(--safe)" />
@@ -89,16 +89,15 @@ export default function AuditTrailPage() {
         <MetricCard label="Records Tracked" value={metrics.records} color="var(--accent)" />
       </section>
 
-      <div className="dashboard-content-layout" style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '1.5rem' }}>
         {/* Left Column: List and Filters */}
-        <div className="list-column" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <SectionCard title="Event History" subtitle="Centralized provenance log">
             {/* Filters */}
-            <div className="filter-bar" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem', marginBottom: '1.25rem' }}>
               <select 
                 value={actorFilter} 
                 onChange={(e) => setActorFilter(e.target.value)}
-                className="filter-input"
               >
                 <option value="All">All Actors</option>
                 <option value="RedTeamAgent">Red Team Agent</option>
@@ -111,14 +110,12 @@ export default function AuditTrailPage() {
                 placeholder="Search action..." 
                 value={actionSearch}
                 onChange={(e) => setActionSearch(e.target.value)}
-                className="filter-input"
               />
               <input 
                 type="text" 
                 placeholder="Search record ID..." 
                 value={recordIdSearch}
                 onChange={(e) => setRecordIdSearch(e.target.value)}
-                className="filter-input"
               />
             </div>
 
@@ -143,12 +140,12 @@ export default function AuditTrailPage() {
                       <td><span style={{ fontSize: '0.75rem', fontWeight: 600 }}>{new Date(event.timestamp).toLocaleTimeString()}</span></td>
                       <td><code>{event.recordId}</code></td>
                       <td>
-                        <span className={`actor-badge actor-${event.actor}`}>
+                        <span className={`badge badge-${event.actor === 'RedTeamAgent' ? 'error' : event.actor === 'BlueTeamAgent' ? 'success' : event.actor === 'JudgeAgent' ? 'warning' : 'info'}`} style={{ fontSize: '0.6rem' }}>
                           {event.actor.replace('Agent', '').replace('Reviewer', '')}
                         </span>
                       </td>
                       <td>
-                        <span className="action-text">{event.action.replace(/_/g, ' ')}</span>
+                        <span style={{ fontSize: '0.85rem', color: 'var(--text-soft)', fontWeight: 600 }}>{event.action.replace(/_/g, ' ')}</span>
                       </td>
                     </tr>
                   ))}
@@ -159,32 +156,32 @@ export default function AuditTrailPage() {
         </div>
 
         {/* Right Column: Details and Context */}
-        <div className="details-column" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {/* Event Details */}
           <SectionCard title="Event Intelligence" subtitle="Deep dive into selected audit entry">
             {selectedEvent ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                <div className="detail-row">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                <div>
                   <h4 className="detail-label">Full Timestamp</h4>
-                  <div className="detail-value mono">{selectedEvent.timestamp}</div>
+                  <div className="detail-value mono" style={{ color: 'var(--text-soft)', fontSize: '0.8rem' }}>{selectedEvent.timestamp}</div>
                 </div>
-                <div className="detail-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   <div>
                     <h4 className="detail-label">Actor</h4>
-                    <div className="detail-value strong">{selectedEvent.actor}</div>
+                    <div className="detail-value strong" style={{ color: 'var(--text)', fontWeight: 800 }}>{selectedEvent.actor}</div>
                   </div>
                   <div>
                     <h4 className="detail-label">Action</h4>
-                    <div className="detail-value accent">{selectedEvent.action}</div>
+                    <div className="detail-value accent" style={{ color: 'var(--accent)', fontWeight: 800 }}>{selectedEvent.action}</div>
                   </div>
                 </div>
-                <div className="detail-row">
+                <div>
                   <h4 className="detail-label">Notes</h4>
                   <p className="notes-box">
                     {selectedEvent.notes}
                   </p>
                 </div>
-                <div className="detail-row" style={{ borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
+                <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
                   <h4 className="detail-label">Related Record Context</h4>
                   <div className="context-box">
                     <div className="context-item"><strong>ID:</strong> {selectedEvent.recordId}</div>
@@ -231,65 +228,24 @@ export default function AuditTrailPage() {
       </div>
 
       <style jsx>{`
-        .filter-input {
-          background: rgba(0, 0, 0, 0.2);
-          border: 1px solid var(--border);
-          color: white;
-          padding: 0.625rem 0.75rem;
-          borderRadius: 6px;
-          font-size: 0.85rem;
-          transition: all 0.2s;
-        }
-        .filter-input:focus {
-          outline: none;
-          border-color: var(--accent);
-          background: rgba(0, 0, 0, 0.3);
-        }
-        .actor-badge {
-          display: inline-flex;
-          padding: 0.125rem 0.5rem;
-          border-radius: 4px;
-          font-size: 0.65rem;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          border: 1px solid transparent;
-        }
-        .actor-RedTeamAgent { background: rgba(220, 38, 38, 0.08); color: var(--block); border-color: rgba(220, 38, 38, 0.1); }
-        .actor-BlueTeamAgent { background: rgba(5, 150, 105, 0.08); color: var(--safe); border-color: rgba(5, 150, 105, 0.1); }
-        .actor-JudgeAgent { background: rgba(217, 119, 6, 0.08); color: var(--escalate); border-color: rgba(217, 119, 6, 0.1); }
-        .actor-HumanReviewer { background: rgba(219, 39, 119, 0.08); color: var(--human); border-color: rgba(219, 39, 119, 0.1); }
-        
-        .action-text {
-          font-size: 0.85rem;
-          color: var(--text-soft);
-          font-weight: 500;
-        }
-
         .detail-label {
-          font-size: 0.7rem;
+          font-size: 0.65rem;
           text-transform: uppercase;
           color: var(--text-muted);
           margin-bottom: 0.375rem;
           letter-spacing: 0.05em;
           font-weight: 700;
         }
-        .detail-value {
-          font-size: 0.95rem;
-          color: white;
-        }
-        .detail-value.mono { font-family: 'Fira Code', monospace; font-size: 0.85rem; }
-        .detail-value.strong { font-weight: 700; }
-        .detail-value.accent { color: var(--accent); font-weight: 700; }
-
+        
         .notes-box {
-          font-size: 0.9rem;
-          background: rgba(0, 0, 0, 0.02);
-          padding: 1.25rem;
+          font-size: 0.85rem;
+          background: var(--surface-muted);
+          padding: 1rem;
           border-radius: 8px;
           border: 1px solid var(--border);
-          line-height: 1.6;
+          line-height: 1.5;
           color: var(--text-soft);
+          margin: 0;
         }
 
         .context-box {
@@ -302,15 +258,17 @@ export default function AuditTrailPage() {
         .context-item strong {
           color: var(--text-muted);
           margin-right: 0.5rem;
-          font-size: 0.75rem;
+          font-size: 0.65rem;
           text-transform: uppercase;
+          letter-spacing: 0.03em;
         }
         .recommendation {
-          margin-top: 0.5rem;
+          margin-top: 0.25rem;
           padding: 0.75rem;
-          background: rgba(37, 99, 235, 0.04);
+          background: var(--accent-soft);
           border-radius: 6px;
           border: 1px solid rgba(37, 99, 235, 0.1);
+          font-weight: 600;
         }
 
         .empty-selection {
@@ -327,13 +285,13 @@ export default function AuditTrailPage() {
           opacity: 0.2;
         }
         .empty-selection p {
-          font-size: 0.9rem;
+          font-size: 0.85rem;
           max-width: 200px;
         }
 
         .gov-notice {
-          background: rgba(239, 68, 68, 0.03);
-          border: 1px solid rgba(239, 68, 68, 0.15);
+          background: var(--block-bg);
+          border: 1px solid rgba(220, 38, 38, 0.1);
           padding: 1.25rem;
           border-radius: 8px;
         }
@@ -343,7 +301,7 @@ export default function AuditTrailPage() {
         .info-grid-compact {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 1rem;
+          gap: 0.75rem;
         }
       `}</style>
     </DashboardShell>

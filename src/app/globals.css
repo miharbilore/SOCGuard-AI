@@ -235,12 +235,13 @@ button:disabled {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
+  border: 1px solid transparent;
 }
 
-.badge-SAFE { background: var(--safe-bg); color: var(--safe); border: 1px solid rgba(5, 150, 105, 0.15); }
-.badge-ESCALATE { background: var(--escalate-bg); color: var(--escalate); border: 1px solid rgba(217, 119, 6, 0.15); }
-.badge-HUMAN_REVIEW { background: rgba(124, 58, 237, 0.06); color: var(--human); border: 1px solid rgba(124, 58, 237, 0.15); }
-.badge-BLOCK { background: var(--block-bg); color: var(--block); border: 1px solid rgba(220, 38, 38, 0.15); }
+.badge-SAFE, .badge-success { background: var(--safe-bg); color: var(--safe); border-color: rgba(5, 150, 105, 0.15); }
+.badge-ESCALATE, .badge-warning { background: var(--escalate-bg); color: var(--escalate); border-color: rgba(217, 119, 6, 0.15); }
+.badge-HUMAN_REVIEW, .badge-info { background: rgba(124, 58, 237, 0.06); color: var(--human); border-color: rgba(124, 58, 237, 0.15); }
+.badge-BLOCK, .badge-error { background: var(--block-bg); color: var(--block); border-color: rgba(220, 38, 38, 0.15); }
 
 /* ── Metrics Grid ── */
 .metrics-grid {
@@ -282,6 +283,17 @@ td {
   border-bottom: 1px solid var(--border-light);
   color: var(--text-soft);
   vertical-align: middle;
+}
+
+td strong {
+  color: var(--text);
+}
+
+td code {
+  background: var(--surface-muted);
+  padding: 0.15rem 0.3rem;
+  border-radius: 4px;
+  color: var(--accent);
 }
 
 tbody tr:last-child td {

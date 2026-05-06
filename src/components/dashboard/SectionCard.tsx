@@ -8,11 +8,13 @@ interface SectionCardProps {
   children: ReactNode;
   footer?: ReactNode;
   rightAction?: ReactNode;
+  className?: string;
+  style?: React.CSSProperties;
 }
 
-export default function SectionCard({ title, subtitle, children, footer, rightAction }: SectionCardProps) {
+export default function SectionCard({ title, subtitle, children, footer, rightAction, className, style }: SectionCardProps) {
   return (
-    <div className="section-card">
+    <div className={`section-card ${className || ''}`} style={style}>
       <div className="section-header">
         <div className="header-text">
           <h3 className="section-title">{title}</h3>

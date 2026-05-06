@@ -101,19 +101,11 @@ export default function AgentLabRunnerPage() {
       </div>
 
       <header style={{ marginBottom: '2rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div>
-            <div className="subtitle">Agent Pipeline (V4)</div>
-            <h1>Agent Lab Runner</h1>
-            <p className="description" style={{ margin: '0.25rem 0 0 0' }}>
-              Orchestrate automated research cycles where agents synthesize attacks and propose defenses.
-            </p>
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Security</div>
-            <span className="badge badge-SAFE" style={{ fontSize: '0.6rem' }}>KEY: SERVER-ONLY</span>
-          </div>
-        </div>
+        <div className="subtitle">Adversarial Research & Synthesis</div>
+        <h1>Agent Lab</h1>
+        <p className="description" style={{ margin: '0.25rem 0 0 0' }}>
+          Simulate multi-agent attack and defense cycles to generate robust security signatures.
+        </p>
       </header>
 
       <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: '1.5rem' }}>
@@ -259,7 +251,7 @@ export default function AgentLabRunnerPage() {
                     <DetailRow label="Safety Status" value={r.redTeamCandidate.safetyStatus} valueColor="var(--safe)" />
                     <div>
                       <div style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.3rem' }}>Sanitized Prompt</div>
-                      <code style={{ display: 'block', padding: '0.625rem', background: '#0f172a', borderRadius: 'var(--radius-xs)', color: '#10b981', fontSize: '0.72rem', wordBreak: 'break-all' }}>
+                      <code style={{ display: 'block', padding: '0.75rem', background: '#0F172A', borderRadius: 'var(--radius-xs)', color: '#10B981', fontSize: '0.75rem', wordBreak: 'break-all' }}>
                         {r.redTeamCandidate.sanitizedPrompt}
                       </code>
                     </div>
