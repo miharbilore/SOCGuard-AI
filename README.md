@@ -1,93 +1,205 @@
 # SOCGuard AI
 
-**Deterministic-first protection and adversarial evaluation platform for LLM-based SOC workflows.**
+**LLM tabanlı SOC (Security Operations Center) iş akışlarını dolaylı prompt injection saldırılarına karşı korumak için deterministik‑öncelikli araştırma platformu.**
 
-SOCGuard AI detects indirect prompt injection risks hidden inside SIEM-style logs before those logs are processed by LLM-based SOC assistants. It provides deterministic detection, explainability, evaluation metrics, controlled rule intelligence, adversarial lab workflows, human review, and auditability.
-
-## Current Implementation Status: V4.1 (Research Build)
-
-The current repository includes the complete research pipeline from V1 to V4:
-
-- **V1: Detection PoC**: Deterministic engine using keyword and regex-based threat identification.
-- **V2: Rule Intelligence**: Workflow for managing candidate rules, categories, and severity scoring.
-- **V3: Adversarial Lab**: Red/Blue/Judge framework for generating and evaluating synthetic threats.
-- **V3.1: Modern Dashboard**: High-fidelity SIEM-style UI for security operations and research.
-- **V4: Agent Pipeline**: 
-  - **Agent Adapters**: Interface-driven architecture for Red/Blue/Judge/Curator agents.
-  - **Mock Agents**: Deterministic mock implementations of the agent pipeline.
-  - **Lab Cycle Runner**: Automated research orchestrator with safety limits.
-  - **Rule Vault**: Candidate signature registry for human-reviewed defenses.
-  - **Integrated UI**: Specialized dashboards for /agent-lab and /rule-vault.
-
-## Key Features
-
-- **Multi-Layer Preprocessing**: NFKC normalization, URL/HTML decoding, and zero-width character detection.
-- **Deterministic Engine**: High-performance, low-latency detection without non-deterministic LLM overhead.
-- **Adversarial Research Lab**: Automated synthesis of new attack variants and defense proposals.
-- **Governance First**: Mandatory human-in-the-loop audit for all research promotions.
-- **Explainability**: Detailed rationale and evidence mapping for every detection.
-- **Performance Metrics**: Academic-grade evaluation (Accuracy, Precision, Recall, F1) across difficulty tiers.
-
-## Core Pages / Routes
-- `/`: **Command Center** - Global performance and governance overview.
-- `/analyzer`: **Log Analyzer** - Real-time testing of logs against active rules.
-- `/evaluation`: **Benchmark Evaluation** - Full dataset performance metrics.
-- `/v2`: **Rule Intelligence** - Management of candidate rules and intel.
-- `/adversarial-lab`: **Research Sandbox** - Manual Red/Blue Team synthesis.
-- `/agent-lab`: **Agent Runner** - Automated research orchestration (V4).
-- `/rule-vault`: **Candidate Registry** - Human review of agent findings (V4).
-- `/review-queue`: **Promotion Queue** - Approval workflow for datasets and rules.
-- `/rule-packs`: **Rule Bundles** - Inspection of versioned detection logic.
-- `/audit`: **Audit Trail** - Historical record of all governance actions.
-
-## Roadmap
-
-| Version | Status | Focus |
-| :--- | :--- | :--- |
-| **V1 - V3** | **Active** | Core engine, benchmarking, and manual adversarial lab. |
-| **V4** | **Active** | **Agent Pipeline (Mock Mode)**. Interface adapters and Rule Vault. |
-| **V4.x** | **Planned** | **API Integration**. Server-side Groq/OpenAI adapters (Disabled by default). |
-| **V5** | **Future** | **ML-Assisted Detection**. Training classifiers on V4 benchmark data. |
-
-## Generative AI / API Usage
-- **V4 Research Build**: Uses **MOCK agents only**. No real external API calls are made to Groq, OpenAI, or other providers.
-- **Mock-Default Policy**: All agent synthesis is currently performed using deterministic mock logic to ensure stability and safety.
-- **Future API Implementation**: Groq/OpenAI-compatible adapters are present as **disabled placeholders**. Real implementation will require:
-  - Server-side environment variables for API keys.
-  - Strict JSON schema validation for LLM responses.
-  - Mandatory post-processing via the SOCGuard safety sanitizer.
-- **Governance**: Agent outputs are explicitly **untrusted and advisory**. The system does not feature "uncontrolled learning" and never mutates production rules automatically.
-
-## Governance and Safety
-SOCGuard AI is built on a "Human-in-the-loop" governance model:
-- **Untrusted LLM Outputs**: All agent-generated suggestions are treated as untrusted candidates.
-- **Advisory Judge**: The Judge Agent provides heuristic scores only; it cannot authorize changes.
-- **Human Authority**: The Human Reviewer is the final authority for all approvals.
-- **No Auto-Approval**: There is no path for a rule or benchmark to bypass human review.
-- **No Auto-Deployment**: Rule Vault entries are candidates only and require manual bundling into Rule Packs.
-- **No Production Mutation**: Ajanlar üretim kurallarını doğrudan değiştiremez.
-- **Safety Sanitization**: Generated adversarial prompts are sanitized to be non-operational; raw harmful payloads are never stored in production paths.
+SOCGuard AI, SIEM tarzı loglar içinde saklanan dolaylı prompt injection risklerini **LLM analizinden önce** tespit etmeyi hedefler. Sistem, **deterministik tespit**, **açıklanabilirlik**, **akademik değerlendirme metrikleri**, **kontrollü kural zekâsı**, **adversarial lab**, **insan onaylı yönetişim** ve **denetlenebilirlik** odaklı bir araştırma altyapısı sunar.
 
 > [!NOTE]
-> All documentation examples are sanitized and non-operational. The project uses placeholders (e.g., `[REDACTED]`) to represent unsafe intent without providing actionable harmful content.
+> Doküman örnekleri ve veri seti kayıtları **sanitize** edilmiştir; operasyonel zararlı içerik bulunmaz. `[REDACTED]` gibi yer tutucular kullanılır.
 
-## Installation & Setup
+---
 
-1. Clone the repository.
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Run the research dashboard:
-   ```bash
-   npm run dev
-   ```
+## 1) Proje Amacı ve Kapsam
 
-## Limitations
-- **Not Production-Ready**: This is a research platform for academic validation.
-- **Signature Bounded**: Deterministic signatures may miss creative paraphrases.
-- **Stateless**: Analyzes logs in isolation, not as multi-event chains.
-- **English Focus**: Primarily optimized for English-based log content.
+### Amaç
+- SIEM loglarında gizlenen dolaylı prompt injection girişimlerini **deterministik kurallarla** yakalamak.
+- LLM tabanlı SOC asistanlarının **manipülasyona** açık yüzeylerini korumak.
+- Araştırma amaçlı, ölçülebilir ve denetlenebilir bir **pipeline** sunmak.
 
-## License
-Research use only. (C) 2024 SOCGuard AI Team.
+### Bu Proje **Ne Değildir**
+- **Chatbot değildir.** Etkileşimli sohbet değil, veri işleme pipeline’ıdır.
+- **Tam bir SIEM/EDR değildir.** Splunk/ELK/CrowdStrike gibi platformların yerine geçmez.
+- **LLM karar motoru değildir.** Nihai güvenlik kararı **daima deterministiktir**.
+
+---
+
+## 2) Mimari Özet (Deterministik Otorite)
+
+SOCGuard AI’nin temel prensibi **Deterministic Authority** yaklaşımıdır. LLM çıktıları **asla** son kararı vermez; kararlar sabit kurallarla verilir.
+
+### Veri Akışı
+1. **Raw Log Input**
+2. **Preprocessing** (normalizasyon + çoklu decoding)
+3. **Detection** (deterministik imza/kural eşleşmesi)
+4. **Risk Scoring** (0‑100 risk skoru)
+5. **Policy Engine** (BLOCK / HUMAN_REVIEW / ESCALATE / SAFE)
+6. **Explainability** (kanıt + gerekçe)
+7. **Çıktı** (`AnalysisResult`)
+
+---
+
+## 3) Çekirdek Modüller
+
+> Modüllerin çoğu `src/modules/socguard/` altında konumlanır.
+
+- **dataset**: Sentetik SIEM log setini yükler/sağlar.
+- **preprocessing**: NFKC normalizasyonu, zero‑width temizliği, URL/HTML/Base64 çoklu çözümleme.
+- **detection**: Regex/heuristik/keyword tabanlı deterministik tespit motoru.
+- **scoring**: Bulgu ağırlıklarıyla 0‑100 risk skoru hesaplar.
+- **policy**: Skor ve kritik bulgulara göre nihai aksiyon belirler.
+- **explainability**: Kanıt ve karar gerekçesi üretir.
+- **adversarial-lab**: Red/Blue/Judge araştırma kayıtları ve yönetişim.
+- **agent-adapters**: V4 agent pipeline için arayüz/adapter katmanı.
+- **rule-vault**: İnsan onaylı aday kayıtlarının saklandığı araştırma deposu.
+- **rule-pack**: Versiyonlu kural paketleri ve test case’ler.
+- **review-queue**: İnsan inceleme ve onay kuyruğu.
+- **source-intelligence / threat-intel**: Kaynak istihbarat ve tehdit girdileri.
+- **regression-runner**: Offline regresyon değerlendirme akışı.
+
+---
+
+## 4) V4 Agent Pipeline (Mock Varsayılan)
+
+V4 mimarisi, LLM tabanlı ajanlarla entegre olmaya hazır bir yapı kurar; **varsayılan olarak MOCK** çalışır.
+
+**Ajan Rollerinin Özeti**
+- **Red Team Agent**: Sanitize edilmiş saldırı adayları üretir (çok dilli destek).
+- **Blue Team Agent**: Deterministik savunma kuralları önerir.
+- **Judge Agent**: Danışman niteliğinde değerlendirme yapar.
+- **Curator Agent**: Çıktıları Rule Vault formatında paketler.
+
+**Güvenlik Kuralları**
+- Otomatik onay **yok**.
+- İnsan incelemesi **zorunlu**.
+- Üretim kural seti **değiştirilemez**.
+- API anahtarları **sadece sunucu tarafı** ortam değişkenlerinde tutulur.
+
+---
+
+## 5) Veri Seti (Araştırma Amaçlı)
+
+- **30 örnek**: 15 benign, 15 injected.
+- **Kaynak çeşitliliği**: Web sunucuları, cloud audit, syslog, uygulama logları.
+- **Zorluk seviyeleri**: EASY / MEDIUM / HARD.
+- **Türkçe varyantlar** ve obfuscation örnekleri içerir.
+
+**Kayıt alanları**
+- `id`, `source`, `raw`, `difficulty`, `attackVector`
+
+---
+
+## 6) Arayüz Sayfaları (Next.js 14)
+
+- `/` **Command Center**
+- `/analyzer` **Log Analyzer**
+- `/evaluation` **Benchmark Evaluation**
+- `/v2` **Rule Intelligence**
+- `/adversarial-lab` **Research Sandbox**
+- `/agent-lab` **Agent Runner**
+- `/rule-vault` **Candidate Registry**
+- `/review-queue` **Promotion Queue**
+- `/rule-packs` **Rule Bundles**
+- `/audit` **Audit Trail**
+
+**API**
+- `/api/agent-lab/run-cycle`
+- `/api/agent-lab/status`
+
+---
+
+## 7) Kurulum ve Çalıştırma
+
+### Gereksinimler
+- Node.js (Next.js 14 uyumlu sürüm)
+
+### Kurulum
+```bash
+npm install
+```
+
+### Geliştirme
+```bash
+npm run dev
+```
+
+### Üretim Build
+```bash
+npm run build
+npm start
+```
+
+---
+
+## 8) Komutlar
+
+```bash
+npm run dev    # geliştirme sunucusu
+npm run build  # production build
+npm start      # production server
+npm run lint   # eslint (Next.js)
+```
+
+---
+
+## 9) Ortam Değişkenleri
+
+`.env.example` dosyasını `.env.local` olarak kopyalayın. Varsayılan yapı **LLM ajanlarını kapalı** tutar.
+
+Örnek alanlar:
+- `ENABLE_LLM_AGENTS=false`
+- `ALLOW_AUTO_APPROVAL=false`
+- `REQUIRE_HUMAN_REVIEW=true`
+- `LLM_PROVIDER`, `LLM_BASE_URL`, `LLM_MODEL`, `LLM_API_KEY`
+
+> API anahtarlarını **asla** frontend’e koymayın. Sadece sunucu tarafında kullanılmalıdır.
+
+---
+
+## 10) Dizin Yapısı (Özet)
+
+```
+SOCGuard-AI/
+├─ docs/                 # Mimari ve araştırma dokümantasyonu
+├─ src/
+│  ├─ app/               # Next.js App Router sayfaları
+│  ├─ components/        # UI bileşenleri
+│  └─ modules/socguard/  # Tespit, scoring, policy, lab, vault, vb.
+├─ test_goruntuleri/     # Görseller
+├─ package.json
+└─ README.md
+```
+
+---
+
+## 11) Yönetişim ve Güvenlik İlkeleri
+
+- **İnsan onayı zorunlu**: Ajanlar tek başına kural onaylayamaz.
+- **Üretime otomatik mutasyon yok**: Rule Vault sadece araştırma deposudur.
+- **Deterministik karar**: Nihai karar LLM’e devredilmez.
+- **Sanitize edilmiş içerik**: Zararlı içerikler kayıt altına alınmaz.
+
+---
+
+## 12) Sınırlamalar
+
+- **Üretime hazır değildir** (araştırma PoC).
+- **Deterministik imzalar** yaratıcı/parafraz saldırıları kaçırabilir.
+- **Stateless** çalışır (loglar tekil analiz edilir).
+- **İngilizce ağırlıklı optimizasyon** (çok dilli destek gelişmektedir).
+
+---
+
+## 13) Ek Dokümantasyon
+
+`docs/` klasöründe ayrıntılı teknik belgeler bulunur:
+- Architecture, Preprocessing, Detection Engine
+- Risk Scoring, Policy Engine, Explainability
+- Adversarial Lab, Red/Blue/Judge Workflow
+- Rule Vault & Rule Pack Format
+- V4 Agent Pipeline
+
+---
+
+## 14) Lisans
+
+Araştırma amaçlı kullanım için. (C) 2024 SOCGuard AI Team.
