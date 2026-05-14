@@ -323,7 +323,7 @@ export default function AgentLabRunnerPage() {
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
                        <ScoreBox label="Severity" value={r.blueTeamProposal.severity} />
-                       <ScoreBox label="Confidence" value={`${r.blueTeamProposal.confidence}%`} />
+                       <ScoreBox label="Confidence" value={`${(r.blueTeamProposal.confidence * 100).toFixed(0)}%`} />
                     </div>
                     <div>
                        <div style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Rationale</div>

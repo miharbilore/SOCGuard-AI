@@ -29,7 +29,9 @@ export interface AgentSet {
  */
 export function createAgentSet(config: AgentRuntimeConfig): AgentSet {
   // Check if LLM agents are enabled and have a valid provider/key
+  // Both enableLLMAgents governance flag AND openai.enabled must be true
   const useLLM = 
+    config.enableLLMAgents &&
     config.openai?.enabled && 
     config.openai.apiKey && 
     config.openai.apiKey !== '<server-side-api-key-placeholder>' &&

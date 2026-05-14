@@ -176,14 +176,27 @@ export async function runLimitedAgentLabSession(
   const safeInterval = Math.max(intervalMs, 1000);
   const safeMaxCandidates = Math.min(Math.max(1, maxCandidatesPerCycle), 10);
 
+  // GOVERNANCE: Client-side sessions must always use mock agents.
+  // LLM-backed runs must go through the server-side API route (/api/agent-lab/run-cycle)
+  // which enforces rate limiting, env-based key management, and safety clamps.
+  const safeConfig: AgentRuntimeConfig = {
+    ...config,
+    enableLLMAgents: false,
+    provider: 'MOCK',
+    openai: undefined
+  };
+
   const cycleResults: AgentLabCycleResult[] = [];
   const warnings: string[] = [];
 
+  if (config.enableLLMAgents || config.openai?.enabled) {
+    warnings.push('LLM agents are disabled for client-side sessions. Use Single Cycle (server-side) for API-backed runs.');
+  }
   if (cycles > 10) warnings.push(`Session limited to 10 cycles (requested ${cycles})`);
   if (intervalMs < 1000) warnings.push(`Interval increased to minimum 1000ms`);
 
   for (let i = 0; i < safeCycles; i++) {
-    const cycle = await runSingleAgentLabCycle(config, `session-cycle-${i}`, safeMaxCandidates, sourceContextNotes);
+    const cycle = await runSingleAgentLabCycle(safeConfig, `session-cycle-${i}`, safeMaxCandidates, sourceContextNotes);
     cycleResults.push(cycle);
     
     if (i < safeCycles - 1) {
