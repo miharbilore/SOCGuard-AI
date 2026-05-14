@@ -1,57 +1,107 @@
 # SOCGuard AI
 
-**Deterministic-first protection and adversarial evaluation platform for LLM-based SOC workflows.**
+**LLM tabanlı SOC iş akışlarını, SIEM loglarına gömülü dolaylı prompt injection saldırılarına karşı koruyan deterministik araştırma platformu.**
 
-SOCGuard AI detects indirect prompt injection risks hidden inside SIEM-style logs before those logs are processed by LLM-based SOC assistants. It provides deterministic detection, explainability, evaluation metrics, controlled rule intelligence, adversarial lab workflows, human review, and auditability.
+SOCGuard AI; ham logları normalleştirir, deterministik kurallar ile risk bulguları üretir, skorlama ve politika motoru ile karar verir, bulguları açıklanabilir şekilde sunar. Üzerine araştırma amaçlı bir **Adversarial Lab**, **Rule Vault**, **Review Queue** ve **Audit Trail** katmanları ekleyerek red/blue/judge/curator akışlarını simüle eder.
 
-## Current Implementation Status: V4.1 (Research Build)
+## Amaç ve Kapsam
 
-The current repository includes the complete research pipeline from V1 to V4.1:
+- **Amaç:** LLM destekli SOC asistanlarını, loglar içine gizlenmiş dolaylı prompt injection girişimlerinden korumak.
+- **Kapsam:** Deterministik tespit, risk skoru, politika kararı, açıklanabilirlik ve yönetişim.
+- **Kapsam Dışı:** Chatbot, tam SIEM/EDR platformu veya LLM tabanlı nihai karar motoru.
 
-- **V1-V3**: Core engine, benchmarking, and manual adversarial lab.
-- **V4**: Agent Pipeline. Interface adapters, Rule Vault, and Integrated UI.
-- **V4.1 (NEW)**: **Production-Ready Foundation**.
-  - **Prisma + SQLite Persistence**: Lab results and Rule Vault entries are now persistent.
-  - **LLM API Integration**: structurally ready for Groq/OpenAI via `.env.local`.
-  - **CI/CD Readiness**: GitHub Actions workflow and Vitest suite configured.
+## Mimari Akış (Deterministik Hat)
 
-## Generative AI / API Usage
+1. **Raw Log Input** → 2. **Preprocessing** (decode/normalize) → 3. **Detection** (regex/heuristic) →  
+4. **Scoring** (0-100) → 5. **Policy** (BLOCK / HUMAN_REVIEW / ESCALATE / SAFE) →  
+6. **Explainability** → 7. **UI/API çıktısı**
 
-- **Dual Mode Support**: The system supports both **MOCK** and **API-BACKED** research modes.
-- **Single Cycle (API-BACKED)**: Can use real LLMs (Groq/OpenAI) for server-side synthesis when configured.
-- **Limited Session (MOCK)**: Client-side sessions remain deterministic and local for stability.
-- **Configuration**: API usage is opt-in via `.env.local`. If keys are missing, the system falls back to mock logic.
-- **Governance**: All LLM outputs are **untrusted candidates** requiring human review. No auto-approval occurs.
+## Öne Çıkan Modüller
 
-## Installation & Setup
+- **dataset**: SIEM benzeri örnek veri seti.
+- **preprocessing**: Çoklu decode + normalizasyon.
+- **detection**: Deterministik imza setleri.
+- **scoring**: Bulguları ağırlıklandırıp skora çevirir.
+- **policy**: Skoru karar aksiyonuna map eder.
+- **explainability**: Neden/kanıt çıktıları üretir.
+- **agent-adapters**: Mock/LLM tabanlı agent adaptörleri.
+- **rule-vault / review-queue**: İnsan onaylı yönetişim katmanı.
+- **audit**: İzlenebilirlik ve denetim kayıtları.
 
-1. **Clone & Install**:
-   ```bash
-   npm install
-   ```
+## UI Sayfaları (Next.js)
 
-2. **Database Setup**:
-   The project uses Prisma with SQLite. Initialize the database:
-   ```bash
-   npx prisma migrate dev --name init
-   ```
+- **Command Center**: genel metrikler ve navigasyon.
+- **Log Analyzer**: tekil log tespiti.
+- **Evaluation**: benchmark metrikleri.
+- **Adversarial Lab**: red/blue/judge akışı.
+- **Agent Lab**: kontrollü agent koşuları (mock veya API).
+- **Rule Vault**: aday imza kayıtları ve inceleme.
+- **Review Queue**: insan onayı süreci.
+- **Audit Trail**: tüm aksiyonların iz kaydı.
 
-3. **Environment Config**:
-   Copy the example environment file and add your API keys:
-   ```bash
-   cp .env.example .env.local
-   ```
-   *Edit `.env.local` to set `ENABLE_LLM_AGENTS=true` and add your `LLM_API_KEY` (Groq recommended).*
+## Kurulum
 
-4. **Run Research Dashboard**:
-   ```bash
-   npm run dev
-   ```
+### 1) Bağımlılıklar
+```bash
+npm install
+```
 
-5. **Testing**:
-   ```bash
-   npm test
-   ```
+### 2) Ortam Değişkenleri
+```bash
+cp .env.example .env.local
+```
 
-## License
-Research use only. (C) 2024 SOCGuard AI Team.
+`.env.local` içine **veritabanı** ve opsiyonel **LLM** ayarlarını ekleyin:
+
+```env
+# SQLite (örnek)
+DATABASE_URL="file:./dev.db"
+
+# LLM (opsiyonel, API-backed mod için)
+ENABLE_LLM_AGENTS=true
+LLM_PROVIDER=GROQ
+LLM_BASE_URL=https://api.groq.com/openai/v1
+LLM_MODEL=llama-3.3-70b-versatile
+LLM_API_KEY=<server-side-api-key>
+```
+
+### 3) Prisma Migrasyon
+```bash
+npx prisma migrate dev --name init
+```
+
+### 4) Dev Server
+```bash
+npm run dev
+```
+
+## LLM Modları (Mock vs API)
+
+- **Varsayılan:** MOCK (API çağrısı yok).
+- **API-backed:** `ENABLE_LLM_AGENTS=true` + `LLM_API_KEY` gerekir.
+- **Agent Lab**: “Run Single Cycle” API destekliyken gerçek LLM çağrısı yapar; “Run Session (Mock)” deterministik kalır.
+
+## Kalıcılık (DB)
+
+Prisma + SQLite ile **Agent Lab oturumları**, **Rule Vault** ve **Audit Trail** kalıcıdır.  
+`DATABASE_URL` tanımlı değilse bu API uçları hata verebilir.
+
+## Komutlar
+
+```bash
+npm run lint
+npm run build
+npm test
+```
+
+## Dokümantasyon
+
+Detaylı tasarım ve araştırma notları için `docs/` klasörüne bakın:
+- `ARCHITECTURE.md`, `DETECTION_ENGINE.md`, `POLICY_ENGINE.md`
+- `V4_AGENT_PIPELINE.md`, `RULE_VAULT.md`, `HUMAN_REVIEW_WORKFLOW.md`
+
+## Güvenlik ve Yönetişim İlkeleri
+
+- **Otomatik onay yok**: Üretim kuralları insan onayı gerektirir.
+- **LLM çıktıları güvensiz veri** olarak kabul edilir.
+- **API anahtarları yalnızca server-side** tutulur.
