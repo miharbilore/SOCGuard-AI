@@ -17,56 +17,53 @@ interface FlattenedAuditEvent extends AuditTrailEntry {
 }
 
 export default function AuditTrailPage() {
-  const [records, setRecords] = useState<AdversarialLabRecord[]>([]);
+  const [events, setEvents] = useState<AuditTrailEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [actorFilter, setActorFilter] = useState('All');
   const [actionSearch, setActionSearch] = useState('');
   const [recordIdSearch, setRecordIdSearch] = useState('');
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
   useEffect(() => {
-    setRecords(createDefaultAdversarialLabRecords());
+    const fetchAudit = async () => {
+      try {
+        const res = await fetch('/api/audit');
+        if (!res.ok) throw new Error('Failed to fetch audit trail');
+        const data = await res.json();
+        setEvents(data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchAudit();
   }, []);
-
-  // Flatten and enrich audit events
-  const allEvents = useMemo(() => {
-    const events: FlattenedAuditEvent[] = [];
-    records.forEach(record => {
-      record.auditTrail.forEach(entry => {
-        events.push({
-          ...entry,
-          recordId: record.id,
-          attackType: record.redTeamCandidate.attackType,
-          recommendation: record.judgeRecommendation?.recommendation
-        });
-      });
-    });
-    // Sort by timestamp descending
-    return events.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-  }, [records]);
 
   // Filtered events
   const filteredEvents = useMemo(() => {
-    return allEvents.filter(event => {
+    return events.filter(event => {
       const matchActor = actorFilter === 'All' || event.actor === actorFilter;
       const matchAction = event.action.toLowerCase().includes(actionSearch.toLowerCase());
-      const matchRecordId = event.recordId.toLowerCase().includes(recordIdSearch.toLowerCase());
-      return matchActor && matchAction && matchRecordId;
+      // Record ID search is now part of the action/notes for general audit
+      const matchNotes = event.notes.toLowerCase().includes(actionSearch.toLowerCase());
+      return matchActor && (matchAction || matchNotes);
     });
-  }, [allEvents, actorFilter, actionSearch, recordIdSearch]);
+  }, [events, actorFilter, actionSearch]);
 
   const selectedEvent = useMemo(() => {
     if (!selectedEventId) return null;
-    const [recordId, timestamp] = selectedEventId.split('|');
-    return allEvents.find(e => e.recordId === recordId && e.timestamp === timestamp) || null;
-  }, [allEvents, selectedEventId]);
+    return events.find(e => e.id === selectedEventId) || null;
+  }, [events, selectedEventId]);
 
   const metrics = {
-    total: allEvents.length,
-    red: allEvents.filter(e => e.actor === 'RedTeamAgent').length,
-    blue: allEvents.filter(e => e.actor === 'BlueTeamAgent').length,
-    judge: allEvents.filter(e => e.actor === 'JudgeAgent').length,
-    human: allEvents.filter(e => e.actor === 'HumanReviewer').length,
-    records: records.length,
+    total: events.length,
+    red: events.filter(e => e.actor.includes('Red') || e.actor === 'AgentLabRunner').length,
+    blue: events.filter(e => e.actor.includes('Blue')).length,
+    judge: events.filter(e => e.actor.includes('Judge')).length,
+    human: events.filter(e => e.actor.includes('Human') || e.actor.includes('Reviewer')).length,
+    records: new Set(events.map(e => e.id)).size,
   };
 
   return (
@@ -120,37 +117,49 @@ export default function AuditTrailPage() {
             </div>
 
             <div className="results-table-container" style={{ maxHeight: '640px', overflowY: 'auto' }}>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Timestamp</th>
-                    <th>Record ID</th>
-                    <th>Actor</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredEvents.map((event) => (
-                    <tr 
-                      key={`${event.recordId}|${event.timestamp}`} 
-                      onClick={() => setSelectedEventId(`${event.recordId}|${event.timestamp}`)}
-                      className={selectedEventId === `${event.recordId}|${event.timestamp}` ? 'selected' : ''}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <td><span style={{ fontSize: '0.75rem', fontWeight: 600 }}>{new Date(event.timestamp).toLocaleTimeString()}</span></td>
-                      <td><code>{event.recordId}</code></td>
-                      <td>
-                        <span className={`badge badge-${event.actor === 'RedTeamAgent' ? 'error' : event.actor === 'BlueTeamAgent' ? 'success' : event.actor === 'JudgeAgent' ? 'warning' : 'info'}`} style={{ fontSize: '0.6rem' }}>
-                          {event.actor.replace('Agent', '').replace('Reviewer', '')}
-                        </span>
-                      </td>
-                      <td>
-                        <span style={{ fontSize: '0.85rem', color: 'var(--text-soft)', fontWeight: 600 }}>{event.action.replace(/_/g, ' ')}</span>
-                      </td>
+              {isLoading ? (
+                <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                  <div className="al-running-indicator" style={{ marginBottom: '1rem' }}>Synchronizing with Audit DB...</div>
+                </div>
+              ) : error ? (
+                <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--block)' }}>
+                  <strong>Error:</strong> {error}
+                </div>
+              ) : filteredEvents.length === 0 ? (
+                <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                  No audit events found. Actions will appear here as they occur.
+                </div>
+              ) : (
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Timestamp</th>
+                      <th>Actor</th>
+                      <th>Action</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {filteredEvents.map((event) => (
+                      <tr 
+                        key={event.id} 
+                        onClick={() => setSelectedEventId(event.id)}
+                        className={selectedEventId === event.id ? 'selected' : ''}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <td><span style={{ fontSize: '0.75rem', fontWeight: 600 }}>{new Date(event.timestamp).toLocaleString()}</span></td>
+                        <td>
+                          <span className={`badge badge-${event.actor === 'RedTeamAgent' ? 'error' : event.actor === 'BlueTeamAgent' ? 'success' : event.actor === 'JudgeAgent' ? 'warning' : 'info'}`} style={{ fontSize: '0.6rem' }}>
+                            {event.actor}
+                          </span>
+                        </td>
+                        <td>
+                          <span style={{ fontSize: '0.85rem', color: 'var(--text-soft)', fontWeight: 600 }}>{event.action.replace(/_/g, ' ')}</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           </SectionCard>
         </div>
@@ -180,18 +189,6 @@ export default function AuditTrailPage() {
                   <p className="notes-box">
                     {selectedEvent.notes}
                   </p>
-                </div>
-                <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-                  <h4 className="detail-label">Related Record Context</h4>
-                  <div className="context-box">
-                    <div className="context-item"><strong>ID:</strong> {selectedEvent.recordId}</div>
-                    <div className="context-item"><strong>Attack Vector:</strong> {selectedEvent.attackType}</div>
-                    {selectedEvent.recommendation && (
-                      <div className="context-item recommendation-box">
-                        <strong>Judge Recommendation:</strong> {selectedEvent.recommendation}
-                      </div>
-                    )}
-                  </div>
                 </div>
               </div>
             ) : (

@@ -70,6 +70,73 @@ export async function POST(req: NextRequest) {
       body.sourceContextNotes as any[]
     );
 
+    // PERSISTENCE: Save session and records to Prisma
+    try {
+      const prisma = (await import('@/lib/prisma')).default;
+      
+      await prisma.$transaction(async (tx) => {
+        // Create the session and cycle records
+        const session = await tx.agentLabSession.create({
+          data: {
+            cyclesRun: 1,
+            totalCandidates: result.totalCandidates,
+            detectedCount: result.detectedCount,
+            missedCount: result.missedCount,
+            warnings: JSON.stringify(result.warnings),
+            cycleResults: {
+              create: result.records.map(record => ({
+                redTeamCandidateId: record.redTeamCandidate.id,
+                attackType: record.redTeamCandidate.attackType,
+                sanitizedPrompt: record.redTeamCandidate.sanitizedPrompt,
+                wasDetected: record.wasDetected,
+                wasMissed: !record.wasDetected,
+                policyDecision: record.analysisResult.decision,
+                riskScore: record.riskScore,
+                matchedCategories: JSON.stringify(record.analysisResult.matchedCategories),
+                blueTeamProposal: JSON.stringify(record.blueTeamProposal),
+                judgeRecommendation: JSON.stringify(record.judgeRecommendation),
+                curatedRuleVaultId: record.curatedRuleVaultEntry?.id,
+                recommendedNextStep: record.recommendedNextStep
+              }))
+            }
+          }
+        });
+
+        // Create the RuleVaultEntry records for each record that has one
+        for (const record of result.records) {
+          if (record.curatedRuleVaultEntry) {
+            await tx.ruleVaultEntry.create({
+              data: {
+                id: record.curatedRuleVaultEntry.id,
+                sourceType: record.curatedRuleVaultEntry.sourceType,
+                attackType: record.curatedRuleVaultEntry.attackType,
+                sanitizedLog: record.curatedRuleVaultEntry.sanitizedLog,
+                proposedCategory: record.curatedRuleVaultEntry.proposedCategory,
+                suggestedPattern: record.curatedRuleVaultEntry.suggestedPattern,
+                severity: record.curatedRuleVaultEntry.severity,
+                confidence: record.curatedRuleVaultEntry.confidence,
+                falsePositiveRisks: JSON.stringify(record.curatedRuleVaultEntry.falsePositiveRisks),
+                status: record.curatedRuleVaultEntry.status,
+                provenance: record.curatedRuleVaultEntry.provenance,
+                createdAt: new Date(record.curatedRuleVaultEntry.createdAt)
+              }
+            });
+          }
+        }
+
+        // Create an audit entry for the cycle
+        await tx.auditTrailEntry.create({
+          data: {
+            actor: 'AgentLabRunner',
+            action: 'RUN_CYCLE',
+            notes: `Executed 1 research cycle with ${result.totalCandidates} candidates. Detected: ${result.detectedCount}, Missed: ${result.missedCount}.`
+          }
+        });
+      });
+    } catch (dbError) {
+      console.error('[API] DB Save Error (Session/Vault):', dbError);
+    }
+
     // Return safe result (secrets are already handled by factory/adapters)
     return NextResponse.json(result);
 

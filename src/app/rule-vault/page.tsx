@@ -13,10 +13,28 @@ import {
 } from '@/modules/socguard/rule-vault';
 
 export default function RuleVaultPage() {
-  const [entries] = useState<RuleVaultEntry[]>(createDemoRuleVaultEntries());
+  const [entries, setEntries] = useState<RuleVaultEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
+
+  useEffect(() => {
+    const fetchEntries = async () => {
+      try {
+        const res = await fetch('/api/rule-vault');
+        if (!res.ok) throw new Error('Failed to fetch from registry');
+        const data = await res.json();
+        setEntries(data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchEntries();
+  }, []);
 
   const summary = useMemo(() => summarizeRuleVault(entries), [entries]);
 
@@ -89,7 +107,20 @@ export default function RuleVaultPage() {
 
           {/* Table */}
           <SectionCard title={`Candidate Entries (${filteredEntries.length})`} subtitle="Select an entry to view provenance and signature details">
-            <div className="results-table-container">
+            {isLoading ? (
+              <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                <div className="al-running-indicator" style={{ marginBottom: '1rem' }}>Synchronizing with Rule Vault DB...</div>
+              </div>
+            ) : error ? (
+              <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--block)' }}>
+                <strong>Error:</strong> {error}
+              </div>
+            ) : filteredEntries.length === 0 ? (
+              <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                No candidate entries found in the registry. Run an Agent Lab cycle to generate findings.
+              </div>
+            ) : (
+              <div className="results-table-container">
               <table>
                 <thead>
                   <tr>
@@ -126,6 +157,7 @@ export default function RuleVaultPage() {
                 </tbody>
               </table>
             </div>
+            )}
           </SectionCard>
 
           {/* Lifecycle Explanation */}

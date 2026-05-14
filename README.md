@@ -6,88 +6,52 @@ SOCGuard AI detects indirect prompt injection risks hidden inside SIEM-style log
 
 ## Current Implementation Status: V4.1 (Research Build)
 
-The current repository includes the complete research pipeline from V1 to V4:
+The current repository includes the complete research pipeline from V1 to V4.1:
 
-- **V1: Detection PoC**: Deterministic engine using keyword and regex-based threat identification.
-- **V2: Rule Intelligence**: Workflow for managing candidate rules, categories, and severity scoring.
-- **V3: Adversarial Lab**: Red/Blue/Judge framework for generating and evaluating synthetic threats.
-- **V3.1: Modern Dashboard**: High-fidelity SIEM-style UI for security operations and research.
-- **V4: Agent Pipeline**: 
-  - **Agent Adapters**: Interface-driven architecture for Red/Blue/Judge/Curator agents.
-  - **Mock Agents**: Deterministic mock implementations of the agent pipeline.
-  - **Lab Cycle Runner**: Automated research orchestrator with safety limits.
-  - **Rule Vault**: Candidate signature registry for human-reviewed defenses.
-  - **Integrated UI**: Specialized dashboards for /agent-lab and /rule-vault.
-
-## Key Features
-
-- **Multi-Layer Preprocessing**: NFKC normalization, URL/HTML decoding, and zero-width character detection.
-- **Deterministic Engine**: High-performance, low-latency detection without non-deterministic LLM overhead.
-- **Adversarial Research Lab**: Automated synthesis of new attack variants and defense proposals.
-- **Governance First**: Mandatory human-in-the-loop audit for all research promotions.
-- **Explainability**: Detailed rationale and evidence mapping for every detection.
-- **Performance Metrics**: Academic-grade evaluation (Accuracy, Precision, Recall, F1) across difficulty tiers.
-
-## Core Pages / Routes
-- `/`: **Command Center** - Global performance and governance overview.
-- `/analyzer`: **Log Analyzer** - Real-time testing of logs against active rules.
-- `/evaluation`: **Benchmark Evaluation** - Full dataset performance metrics.
-- `/v2`: **Rule Intelligence** - Management of candidate rules and intel.
-- `/adversarial-lab`: **Research Sandbox** - Manual Red/Blue Team synthesis.
-- `/agent-lab`: **Agent Runner** - Automated research orchestration (V4).
-- `/rule-vault`: **Candidate Registry** - Human review of agent findings (V4).
-- `/review-queue`: **Promotion Queue** - Approval workflow for datasets and rules.
-- `/rule-packs`: **Rule Bundles** - Inspection of versioned detection logic.
-- `/audit`: **Audit Trail** - Historical record of all governance actions.
-
-## Roadmap
-
-| Version | Status | Focus |
-| :--- | :--- | :--- |
-| **V1 - V3** | **Active** | Core engine, benchmarking, and manual adversarial lab. |
-| **V4** | **Active** | **Agent Pipeline (Mock Mode)**. Interface adapters and Rule Vault. |
-| **V4.x** | **Planned** | **API Integration**. Server-side Groq/OpenAI adapters (Disabled by default). |
-| **V5** | **Future** | **ML-Assisted Detection**. Training classifiers on V4 benchmark data. |
+- **V1-V3**: Core engine, benchmarking, and manual adversarial lab.
+- **V4**: Agent Pipeline. Interface adapters, Rule Vault, and Integrated UI.
+- **V4.1 (NEW)**: **Production-Ready Foundation**.
+  - **Prisma + SQLite Persistence**: Lab results and Rule Vault entries are now persistent.
+  - **LLM API Integration**: structurally ready for Groq/OpenAI via `.env.local`.
+  - **CI/CD Readiness**: GitHub Actions workflow and Vitest suite configured.
 
 ## Generative AI / API Usage
-- **V4 Research Build**: Uses **MOCK agents only**. No real external API calls are made to Groq, OpenAI, or other providers.
-- **Mock-Default Policy**: All agent synthesis is currently performed using deterministic mock logic to ensure stability and safety.
-- **Future API Implementation**: Groq/OpenAI-compatible adapters are present as **disabled placeholders**. Real implementation will require:
-  - Server-side environment variables for API keys.
-  - Strict JSON schema validation for LLM responses.
-  - Mandatory post-processing via the SOCGuard safety sanitizer.
-- **Governance**: Agent outputs are explicitly **untrusted and advisory**. The system does not feature "uncontrolled learning" and never mutates production rules automatically.
 
-## Governance and Safety
-SOCGuard AI is built on a "Human-in-the-loop" governance model:
-- **Untrusted LLM Outputs**: All agent-generated suggestions are treated as untrusted candidates.
-- **Advisory Judge**: The Judge Agent provides heuristic scores only; it cannot authorize changes.
-- **Human Authority**: The Human Reviewer is the final authority for all approvals.
-- **No Auto-Approval**: There is no path for a rule or benchmark to bypass human review.
-- **No Auto-Deployment**: Rule Vault entries are candidates only and require manual bundling into Rule Packs.
-- **No Production Mutation**: Ajanlar üretim kurallarını doğrudan değiştiremez.
-- **Safety Sanitization**: Generated adversarial prompts are sanitized to be non-operational; raw harmful payloads are never stored in production paths.
-
-> [!NOTE]
-> All documentation examples are sanitized and non-operational. The project uses placeholders (e.g., `[REDACTED]`) to represent unsafe intent without providing actionable harmful content.
+- **Dual Mode Support**: The system supports both **MOCK** and **API-BACKED** research modes.
+- **Single Cycle (API-BACKED)**: Can use real LLMs (Groq/OpenAI) for server-side synthesis when configured.
+- **Limited Session (MOCK)**: Client-side sessions remain deterministic and local for stability.
+- **Configuration**: API usage is opt-in via `.env.local`. If keys are missing, the system falls back to mock logic.
+- **Governance**: All LLM outputs are **untrusted candidates** requiring human review. No auto-approval occurs.
 
 ## Installation & Setup
 
-1. Clone the repository.
-2. Install dependencies:
+1. **Clone & Install**:
    ```bash
    npm install
    ```
-3. Run the research dashboard:
+
+2. **Database Setup**:
+   The project uses Prisma with SQLite. Initialize the database:
+   ```bash
+   npx prisma migrate dev --name init
+   ```
+
+3. **Environment Config**:
+   Copy the example environment file and add your API keys:
+   ```bash
+   cp .env.example .env.local
+   ```
+   *Edit `.env.local` to set `ENABLE_LLM_AGENTS=true` and add your `LLM_API_KEY` (Groq recommended).*
+
+4. **Run Research Dashboard**:
    ```bash
    npm run dev
    ```
 
-## Limitations
-- **Not Production-Ready**: This is a research platform for academic validation.
-- **Signature Bounded**: Deterministic signatures may miss creative paraphrases.
-- **Stateless**: Analyzes logs in isolation, not as multi-event chains.
-- **English Focus**: Primarily optimized for English-based log content.
+5. **Testing**:
+   ```bash
+   npm test
+   ```
 
 ## License
 Research use only. (C) 2024 SOCGuard AI Team.

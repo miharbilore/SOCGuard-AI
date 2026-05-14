@@ -1,0 +1,66 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model RuleVaultEntry {
+  id                 String   @id @default(cuid())
+  sourceType        String
+  attackType        String
+  sanitizedLog      String
+  proposedCategory  String
+  suggestedPattern  String
+  severity          String
+  confidence        Float
+  falsePositiveRisks String   // Stored as JSON string
+  status            String
+  provenance        String
+  createdAt         DateTime @default(now())
+  reviewedBy        String?
+  reviewedAt        DateTime?
+  reviewerNotes     String?
+}
+
+model AgentLabSession {
+  id              String   @id @default(cuid())
+  createdAt       DateTime @default(now())
+  cyclesRun       Int
+  totalCandidates Int
+  detectedCount   Int
+  missedCount     Int
+  warnings        String   // Stored as JSON string
+  cycleResults    AgentLabCycleRecord[]
+}
+
+model AgentLabCycleRecord {
+  id                    String          @id @default(cuid())
+  sessionId             String
+  session               AgentLabSession @relation(fields: [sessionId], references: [id])
+  redTeamCandidateId    String
+  attackType            String
+  sanitizedPrompt       String
+  wasDetected           Boolean
+  wasMissed             Boolean
+  policyDecision        String
+  riskScore             Int
+  matchedCategories     String          // Stored as JSON string
+  blueTeamProposal      String          // Stored as JSON string
+  judgeRecommendation   String          // Stored as JSON string
+  curatedRuleVaultId    String?
+  recommendedNextStep   String
+  createdAt             DateTime        @default(now())
+}
+
+model AuditTrailEntry {
+  id        String   @id @default(cuid())
+  timestamp DateTime @default(now())
+  actor     String
+  action    String
+  notes     String
+}
