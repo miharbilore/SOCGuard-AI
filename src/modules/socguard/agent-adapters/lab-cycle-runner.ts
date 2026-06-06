@@ -86,13 +86,13 @@ export async function runSingleAgentLabCycle(
   let missedCount = 0;
   let highRiskCount = 0;
 
-  for (const rawCandidate of limitedCandidates) {
+  await Promise.all(limitedCandidates.map(async (rawCandidate) => {
     // 1. Sanitize (Mandatory Safety)
     const sanitizedCandidate = sanitizeRedTeamCandidate(rawCandidate);
     
     if (sanitizedCandidate.safetyStatus === 'REJECTED') {
       warnings.push("Rejected Red Team candidate skipped by sanitizer.");
-      continue;
+      return;
     }
     
     // 2. V1 Detection Benchmark
@@ -145,7 +145,7 @@ export async function runSingleAgentLabCycle(
       curatedRuleVaultEntry: vaultEntry,
       recommendedNextStep
     });
-  }
+  }));
 
   return {
     id: `CYCLE-${Date.now().toString(36).toUpperCase()}`,

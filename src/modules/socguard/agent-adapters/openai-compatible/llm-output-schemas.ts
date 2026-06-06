@@ -49,25 +49,57 @@ export function isValidLanguageCode(value: unknown): value is LanguageCode {
 }
 
 export function validateRedTeamOutput(data: unknown): boolean {
-  if (!data || typeof data !== 'object' || !Array.isArray((data as Record<string, unknown>).candidates) || (data as Record<string, unknown[]>).candidates.length === 0) return false;
-  return (data as Record<string, unknown[]>).candidates.every((c: unknown) => {
+  if (!data || typeof data !== 'object' || !Array.isArray((data as Record<string, unknown>).candidates) || (data as Record<string, unknown[]>).candidates.length === 0) {
+    console.error('[SCHEMA] RedTeam missing candidates array:', data);
+    return false;
+  }
+  return (data as Record<string, unknown[]>).candidates.every((c: unknown, i: number) => {
     if (!c || typeof c !== 'object') return false;
     const candidate = c as Record<string, unknown>;
-    return isValidAdversarialAttackType(candidate.attackType) &&
-    isNonEmptyString(candidate.sanitizedPrompt) &&
-    isNonEmptyString(candidate.targetWeakness) &&
-    isValidDetectionCategory(candidate.expectedDetectionCategory) &&
-    ['EASY', 'MEDIUM', 'HARD'].includes(candidate.difficulty as string) &&
-    (!candidate.language || isValidLanguageCode(candidate.language));
+    
+    // Auto-repair hallucinated attackTypes
+    if (!isValidAdversarialAttackType(candidate.attackType)) {
+      candidate.attackType = 'DIRECT_INSTRUCTION_OVERRIDE';
+    }
+    
+    // Auto-repair hallucinated expectedDetectionCategory
+    if (!isValidDetectionCategory(candidate.expectedDetectionCategory)) {
+      candidate.expectedDetectionCategory = 'PROMPT_INJECTION';
+    }
+
+    // Auto-repair language
+    if (!candidate.language || !isValidLanguageCode(candidate.language)) {
+      candidate.language = 'unknown';
+    }
+
+    // Auto-repair difficulty
+    if (!['EASY', 'MEDIUM', 'HARD'].includes(candidate.difficulty as string)) {
+      candidate.difficulty = 'MEDIUM';
+    }
+
+    const vPrompt = isNonEmptyString(candidate.sanitizedPrompt);
+    const vWeakness = isNonEmptyString(candidate.targetWeakness);
+
+    if (!(vPrompt && vWeakness)) {
+      console.error(`[SCHEMA] RedTeam validation failed at candidate ${i}: missing required text fields`);
+      return false;
+    }
+    return true;
   });
 }
 
 export function validateBlueTeamOutput(data: unknown): boolean {
   if (!data || typeof data !== 'object') return false;
   const d = data as Record<string, unknown>;
-  return isValidDetectionCategory(d.proposedCategory) &&
-    isNonEmptyString(d.proposedRulePattern) &&
-    isValidSeverity(d.severity) &&
+  
+  if (!isValidDetectionCategory(d.proposedCategory)) {
+    d.proposedCategory = 'PROMPT_INJECTION';
+  }
+  if (!isValidSeverity(d.severity)) {
+    d.severity = 'MEDIUM';
+  }
+
+  return isNonEmptyString(d.proposedRulePattern) &&
     isNumberInRange(d.confidence, 0, 1) &&
     isStringArray(d.falsePositiveRisks) &&
     isStringArray(d.hardNegativeSuggestions) &&
@@ -77,8 +109,12 @@ export function validateBlueTeamOutput(data: unknown): boolean {
 export function validateJudgeOutput(data: unknown): boolean {
   if (!data || typeof data !== 'object') return false;
   const d = data as Record<string, unknown>;
-  return isValidJudgeRecommendation(d.recommendation) &&
-    isNumberInRange(d.realismScore, 0, 100) &&
+
+  if (!isValidJudgeRecommendation(d.recommendation)) {
+    d.recommendation = 'RECOMMEND_REVISE';
+  }
+
+  return isNumberInRange(d.realismScore, 0, 100) &&
     isNumberInRange(d.coverageScore, 0, 100) &&
     isNumberInRange(d.falsePositiveRiskScore, 0, 100) &&
     isNumberInRange(d.safetyScore, 0, 100) &&
@@ -89,18 +125,42 @@ export function validateJudgeOutput(data: unknown): boolean {
 export function validateCuratorOutput(data: unknown): boolean {
   if (!data || typeof data !== 'object') return false;
   const d = data as Record<string, unknown>;
-  return isValidAdversarialAttackType(d.attackType) &&
-    isNonEmptyString(d.sanitizedLog) &&
-    isValidDetectionCategory(d.proposedCategory) &&
+
+  if (!isValidAdversarialAttackType(d.attackType)) {
+    d.attackType = 'DIRECT_INSTRUCTION_OVERRIDE';
+  }
+  if (!isValidDetectionCategory(d.proposedCategory)) {
+    d.proposedCategory = 'PROMPT_INJECTION';
+  }
+  if (!isValidSeverity(d.severity)) {
+    d.severity = 'MEDIUM';
+  }
+
+  return isNonEmptyString(d.sanitizedLog) &&
     isNonEmptyString(d.suggestedPattern) &&
-    isValidSeverity(d.severity) &&
     isNumberInRange(d.confidence, 0, 1) &&
     isStringArray(d.falsePositiveRisks);
 }
 
 export function safeParseLLMJSON(content: string): unknown | null {
   try {
-    const cleaned = content.replace(/```json/g, '').replace(/```/g, '').trim();
+    let cleaned = content.replace(/```json/gi, '').replace(/```/g, '').trim();
+    
+    const firstBrace = cleaned.indexOf('{');
+    const firstBracket = cleaned.indexOf('[');
+    const lastBrace = cleaned.lastIndexOf('}');
+    const lastBracket = cleaned.lastIndexOf(']');
+    
+    const startIdx = Math.min(
+      firstBrace !== -1 ? firstBrace : Infinity,
+      firstBracket !== -1 ? firstBracket : Infinity
+    );
+    const endIdx = Math.max(lastBrace, lastBracket);
+
+    if (startIdx !== Infinity && endIdx !== -1 && endIdx >= startIdx) {
+      cleaned = cleaned.substring(startIdx, endIdx + 1);
+    }
+
     return JSON.parse(cleaned);
   } catch (e) {
     console.error('[SCHEMA] Failed to parse LLM JSON:', e);

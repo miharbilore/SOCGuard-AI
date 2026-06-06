@@ -142,13 +142,9 @@ export async function POST(req: NextRequest) {
 
   } catch (error: unknown) {
     const err = error as Error & { status?: number };
-    console.error('[API] Agent Lab Cycle Error:', {
-      name: err.name,
-      status: err.status || 500,
-      message: 'Sanitized error log'
-    });
+    console.error('[API] Agent Lab Cycle Error:', err);
     return NextResponse.json(
-      { error: 'Agent lab cycle failed safely. Check server logs.' },
+      { error: err.message || 'Agent lab cycle failed safely. Check server logs.' },
       { status: 500 }
     );
   }
