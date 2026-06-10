@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import DashboardShell from '@/components/dashboard/DashboardShell';
 import SectionCard from '@/components/dashboard/SectionCard';
 import MetricCard from '@/components/dashboard/MetricCard';
