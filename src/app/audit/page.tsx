@@ -139,11 +139,11 @@ export default function AuditTrailPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredEvents.map((event) => (
+                    {filteredEvents.map((event, i) => (
                       <tr 
-                        key={event.id} 
-                        onClick={() => setSelectedEventId(event.id)}
-                        className={selectedEventId === event.id ? 'selected' : ''}
+                        key={event.id || `audit-${i}`} 
+                        onClick={() => setSelectedEventId(event.id || null)}
+                        className={selectedEventId && selectedEventId === event.id ? 'selected' : ''}
                         style={{ cursor: 'pointer' }}
                       >
                         <td><span style={{ fontSize: '0.75rem', fontWeight: 600 }}>{new Date(event.timestamp).toLocaleString()}</span></td>

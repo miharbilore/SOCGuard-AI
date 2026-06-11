@@ -161,6 +161,86 @@ export async function runSingleAgentLabCycle(
 }
 
 /**
+ * Runs a specialized cycle for an escalated threat (missed by Analyzer).
+ * Bypasses the Red Team synthesis and starts directly with the Blue Team.
+ */
+export async function runEscalatedAgentLabCycle(
+  config: AgentRuntimeConfig,
+  escalatedLog: string
+): Promise<AgentLabCycleResult> {
+  const agents = createAgentSet(config);
+  const blueAgent = agents.blueTeam;
+  const judgeAgent = agents.judge;
+  const curatorAgent = agents.curator;
+
+  // 1. Mock Red Team Candidate from Escalated Log
+  const escalatedCandidate: RedTeamCandidate = {
+    id: `ESC-${Date.now().toString(36).toUpperCase()}`,
+    sourceId: 'user-escalation',
+    attackType: 'DIRECT_INSTRUCTION_OVERRIDE',
+    language: 'en',
+    sanitizedPrompt: escalatedLog, // Assuming it's already a log we want to analyze directly
+    redactedTerms: [],
+    targetWeakness: 'Evaded deterministic signature matching',
+    expectedDetectionCategory: 'PROMPT_INJECTION',
+    difficulty: 'HARD',
+    safetyStatus: 'SANITIZED',
+    createdAt: new Date().toISOString()
+  };
+
+  const records: AgentLabCycleRecord[] = [];
+  const curatedEntries: CuratedRuleVaultEntry[] = [];
+  const warnings: string[] = [];
+
+  // 2. V1 Detection Benchmark (We already know it was missed, but we run it for the record)
+  const logEntry: LogEntry = {
+    id: `lab-${escalatedCandidate.id}`,
+    timestamp: escalatedCandidate.createdAt,
+    source: 'adversarial-lab-runner',
+    payload: escalatedCandidate.sanitizedPrompt
+  };
+  const analysisResult = analyzeLog(logEntry);
+
+  // 3. Blue Team Defense Proposal
+  const proposal = await blueAgent.propose({ candidate: escalatedCandidate });
+
+  // 4. Judge Advisory Evaluation
+  const judge = await judgeAgent.evaluate({ candidate: escalatedCandidate, proposal });
+
+  // 5. Curator Vault Entry Creation
+  const vaultEntry = await curatorAgent.curate({ candidate: escalatedCandidate, proposal, judge });
+  curatedEntries.push(vaultEntry);
+
+  // 6. Record Generation
+  records.push({
+    redTeamCandidate: escalatedCandidate,
+    analysisResult,
+    wasDetected: false, // By definition, escalated logs were missed
+    wasMissed: true,
+    policyDecision: analysisResult.policyDecision,
+    riskScore: analysisResult.riskScore.score,
+    matchedCategories: analysisResult.riskScore.factors.map(f => f.factor),
+    blueTeamProposal: proposal,
+    judgeRecommendation: judge,
+    curatedRuleVaultEntry: vaultEntry,
+    recommendedNextStep: 'ADD_TO_REVIEW_QUEUE'
+  });
+
+  return {
+    id: `CYCLE-ESC-${Date.now().toString(36).toUpperCase()}`,
+    createdAt: new Date().toISOString(),
+    totalCandidates: 1,
+    detectedCount: 0,
+    missedCount: 1,
+    highRiskCount: analysisResult.riskScore.score > 70 ? 1 : 0,
+    curatedEntries,
+    records,
+    warnings
+  };
+}
+
+
+/**
  * Runs a limited research session consisting of multiple cycles.
  * Enforces strict safety limits to prevent runaway execution or cost.
  */

@@ -21,12 +21,12 @@ import { createAnalysisId } from '../utils/crypto';
  * @param log The raw log entry to analyze.
  * @returns Complete end-to-end analysis result.
  */
-export function analyzeLog(log: LogEntry): AnalysisResult {
+export function analyzeLog(log: LogEntry, dynamicRules: any[] = []): AnalysisResult {
   const startTime = Date.now();
   
   // 1. Detection Phase (Deterministic Regex-based)
   // Note: analyzeLog in the detection module handles preprocessing internally.
-  const findings = detectThreats(log);
+  const findings = detectThreats(log, dynamicRules);
   
   // 2. Risk Scoring Phase (Confidence-aware & capped)
   const riskScore = calculateRiskScore(findings);

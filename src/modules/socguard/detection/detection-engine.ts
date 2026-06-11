@@ -6,14 +6,23 @@ import { createFindingId } from '../utils/crypto';
 /**
  * Analyzes a LogEntry using deterministic rule patterns and normalized variants.
  * @param entry The log entry to analyze.
+ * @param dynamicRules Optional array of dynamically loaded rules from the Rule Vault.
  * @returns An array of findings discovered in the log.
  */
-export function analyzeLog(entry: LogEntry): DetectionFinding[] {
+export function analyzeLog(entry: LogEntry, dynamicRules: any[] = []): DetectionFinding[] {
   const findings: DetectionFinding[] = [];
   const normalizedInput = normalizeLogInput(entry.payload);
   const ruleCounts: Record<string, number> = {};
   const MAX_FINDINGS_PER_RULE = 5;
   const findingKeys = new Set<string>();
+
+  const ALL_RULES = [
+    ...DETERMINISTIC_RULES,
+    ...dynamicRules.map(r => ({
+      ...r,
+      pattern: r.pattern instanceof RegExp ? r.pattern : new RegExp(r.pattern, 'i')
+    }))
+  ];
 
   // We check multiple variants to catch obfuscated attacks
   const analysisTargets = [
@@ -33,7 +42,7 @@ export function analyzeLog(entry: LogEntry): DetectionFinding[] {
       const lineText = lines[lineIdx];
       const lineNum = lineIdx + 1;
 
-      for (const rule of DETERMINISTIC_RULES) {
+      for (const rule of ALL_RULES) {
         if ((ruleCounts[rule.id] || 0) >= MAX_FINDINGS_PER_RULE) continue;
 
         rule.pattern.lastIndex = 0;
@@ -115,12 +124,14 @@ export function analyzeLog(entry: LogEntry): DetectionFinding[] {
 
 /**
  * Helper to check if a match is inside a quote or prefixed by documentation keywords.
+ * Updated for SIEM logs: Only lower severity if there are explicit documentation keywords,
+ * because SIEM logs naturally wrap HTTP requests and JSON payloads in quotes.
  */
 function isQuotedDocumentation(line: string, match: string): boolean {
   const documentationKeywords = /instruction|help|guide|documentation|example|usage|note|quote/i;
   const isQuoted = new RegExp(`["\'].*${match.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}.*["\']`, 'i').test(line);
   const isDocPrefixed = documentationKeywords.test(line.substring(0, line.indexOf(match)));
-  return isQuoted || isDocPrefixed;
+  return isQuoted && isDocPrefixed;
 }
 
 /**

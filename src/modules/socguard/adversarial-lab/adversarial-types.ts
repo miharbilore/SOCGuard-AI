@@ -95,6 +95,7 @@ export interface HumanReviewDecision {
 }
 
 export interface AuditTrailEntry {
+  id?: string;
   timestamp: string;
   actor: string; // "RedTeamAgent" | "BlueTeamAgent" | "JudgeAgent" | "HumanReviewer"
   action: string;

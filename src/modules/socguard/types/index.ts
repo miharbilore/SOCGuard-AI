@@ -16,6 +16,11 @@ export type DetectionCategory =
   | 'TOOL_ABUSE'
   | 'FORMAT_CONTROL'
   | 'OBFUSCATION'
+  | 'SQL_INJECTION'
+  | 'COMMAND_INJECTION'
+  | 'BRUTE_FORCE'
+  | 'PATH_TRAVERSAL'
+  | 'CROSS_SITE_SCRIPTING'
   | 'BENIGN';
 
 /**

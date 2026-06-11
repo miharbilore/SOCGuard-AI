@@ -9,7 +9,6 @@ const navItems = [
   ]},
   { group: 'Security Operations', items: [
     { name: 'Log Analyzer', href: '/analyzer', icon: '⊘' },
-    { name: 'Review Queue', href: '/review-queue', icon: '⊡' },
   ]},
   { group: 'Research & Lab', items: [
     { name: 'Evaluation', href: '/evaluation', icon: '⊿' },

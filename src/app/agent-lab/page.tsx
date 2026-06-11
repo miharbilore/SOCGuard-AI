@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import DashboardShell from '@/components/dashboard/DashboardShell';
 import SectionCard from '@/components/dashboard/SectionCard';
 import AgentLabWorkflow from '@/components/agent-lab/AgentLabWorkflow';
@@ -20,6 +21,11 @@ import {
 import { createDemoSourceIntelligenceNotes } from '@/modules/socguard/source-intelligence/corpus-builder';
 
 export default function AgentLabRunnerPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const missedLog = searchParams.get('missedLog');
+  const isEscalationMode = !!missedLog;
+
   const [isRunning, setIsRunning] = useState(false);
   const [useIntelligenceContext, setUseIntelligenceContext] = useState(false);
   const [results, setResults] = useState<AgentLabSessionResult | null>(null);
@@ -43,7 +49,7 @@ export default function AgentLabRunnerPage() {
 
   const handleRunSingle = async () => {
     setIsRunning(true);
-    setStatusMessage('Initiating server-side research cycle...');
+    setStatusMessage(isEscalationMode ? 'Resolving escalated threat...' : 'Initiating server-side research cycle...');
     setResults(null);
     setSelectedRecord(null);
 
@@ -52,15 +58,26 @@ export default function AgentLabRunnerPage() {
       : undefined;
 
     try {
-      const response = await fetch('/api/agent-lab/run-cycle', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ maxCandidates: candidatesPerCycle, sourceContextNotes })
-      });
+      let response;
+      if (isEscalationMode) {
+        response = await fetch('/api/agent-lab/escalate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ escalatedLog: missedLog })
+        });
+      } else {
+        response = await fetch('/api/agent-lab/run-cycle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ maxCandidates: candidatesPerCycle, sourceContextNotes })
+        });
+      }
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.details || 'Server error during cycle');
       }
+      
       const cycleResult: AgentLabCycleResult = await response.json();
       const sessionResult: AgentLabSessionResult = {
         id: `SESS-S-${Date.now().toString(36).toUpperCase()}`,
@@ -75,6 +92,11 @@ export default function AgentLabRunnerPage() {
       };
       setResults(sessionResult);
       setStatusMessage('Cycle completed.');
+      
+      // Optionally clear the URL parameter so it doesn't run escalation next time
+      if (isEscalationMode) {
+         router.replace('/agent-lab');
+      }
     } catch (err: unknown) {
       const error = err as Error;
       setStatusMessage(`Error: ${error.message}`);
@@ -123,9 +145,11 @@ export default function AgentLabRunnerPage() {
 
       <header style={{ marginBottom: '1.5rem' }}>
         <div className="subtitle">Adversarial Research &amp; Synthesis (V4.1)</div>
-        <h1>Agent Lab</h1>
+        <h1>Agent Lab {isEscalationMode && <span style={{ color: '#F43F5E', fontSize: '0.6em', verticalAlign: 'middle', marginLeft: '10px' }}>(ESCALATION MODE)</span>}</h1>
         <p className="description" style={{ margin: '0.25rem 0 0 0' }}>
-          Orchestrate attack/defense cycles to generate robust security signatures.
+          {isEscalationMode 
+            ? "Resolve a missed threat escalated from the Analyzer. Red Team synthesis is bypassed." 
+            : "Orchestrate attack/defense cycles to generate robust security signatures."}
         </p>
       </header>
 
@@ -151,8 +175,10 @@ export default function AgentLabRunnerPage() {
               </div>
 
               <div className="al-btn-group">
-                <button onClick={handleRunSingle} disabled={isRunning} className="btn-primary">Run Single Cycle</button>
-                <button onClick={handleRunSession} disabled={isRunning} className="btn-secondary">Run Session (Mock)</button>
+                <button onClick={handleRunSingle} disabled={isRunning} className="btn-primary" style={isEscalationMode ? { background: '#F43F5E' } : {}}>
+                  {isEscalationMode ? 'Resolve Escalated Threat' : 'Run Single Cycle'}
+                </button>
+                {!isEscalationMode && <button onClick={handleRunSession} disabled={isRunning} className="btn-secondary">Run Session (Mock)</button>}
               </div>
 
               {isRunning && <div className="al-running-indicator">{statusMessage}</div>}

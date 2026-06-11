@@ -248,5 +248,47 @@ export const DETERMINISTIC_RULES: DetectionRule[] = [
     severity: 'HIGH',
     reason: 'Direct attempt to leak hidden system context (Turkish).',
     confidence: 0.9
+  },
+
+  // --- SIEM SPECIFIC THREATS ---
+  {
+    id: 'RULE-SIEM-001',
+    pattern: /UNION\s+SELECT/gi,
+    category: 'SQL_INJECTION' as DetectionCategory,
+    severity: 'CRITICAL',
+    reason: 'Classic union-based SQL injection attempt.',
+    confidence: 0.95
+  },
+  {
+    id: 'RULE-SIEM-002',
+    pattern: /(?:\|\||&&|;|\b(?:bash|sh|wget|curl|nc)\b.*-c)/gi,
+    category: 'COMMAND_INJECTION' as DetectionCategory,
+    severity: 'CRITICAL',
+    reason: 'OS Command injection or reverse shell attempt.',
+    confidence: 0.98
+  },
+  {
+    id: 'RULE-SIEM-003',
+    pattern: /(?:Failed\spassword\sfor.*\(\d{2,}\sattempts|Multiple failed login attempts)/gi,
+    category: 'BRUTE_FORCE' as DetectionCategory,
+    severity: 'HIGH',
+    reason: 'Brute force or credential stuffing pattern.',
+    confidence: 0.85
+  },
+  {
+    id: 'RULE-SIEM-004',
+    pattern: /(?:\.\.\/){2,}|(?:\.\.\\){2,}/gi,
+    category: 'PATH_TRAVERSAL' as DetectionCategory,
+    severity: 'HIGH',
+    reason: 'Directory traversal sequence attempting to access restricted files.',
+    confidence: 0.92
+  },
+  {
+    id: 'RULE-SIEM-005',
+    pattern: /<script\b[^>]*>.*?<\/script>/gi,
+    category: 'CROSS_SITE_SCRIPTING' as DetectionCategory,
+    severity: 'MEDIUM',
+    reason: 'Reflected or stored XSS payload.',
+    confidence: 0.90
   }
 ];

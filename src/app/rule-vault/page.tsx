@@ -206,12 +206,51 @@ export default function RuleVaultPage() {
                     <div style={{ background: 'var(--surface-muted)', padding: '0.875rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}>
                        <h4 style={{ fontSize: '0.65rem', color: 'var(--human)', textTransform: 'uppercase', marginBottom: '0.25rem', fontWeight: 800 }}>Reviewer Decision</h4>
                        <p style={{ fontSize: '0.8rem', color: 'var(--text-soft)', margin: 0, lineHeight: 1.4 }}>{selectedEntry.reviewerNotes}</p>
-                       <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', marginTop: '0.5rem', fontWeight: 600 }}>By: {selectedEntry.reviewedBy} at {selectedEntry.reviewedAt}</div>
+                       <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', marginTop: '0.5rem', fontWeight: 600 }}>By: {selectedEntry.reviewedBy} at {new Date(selectedEntry.reviewedAt || '').toLocaleString()}</div>
+                    </div>
+                  )}
+
+                  {selectedEntry.status === 'NEEDS_REVIEW' && (
+                    <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                      <button 
+                        className="btn-primary" 
+                        onClick={async () => {
+                          const res = await fetch(`/api/rule-vault/${selectedEntry.id}`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ status: 'APPROVED', reviewerNotes: 'Manually approved by Analyst.' })
+                          });
+                          if (res.ok) {
+                            setEntries(entries.map(e => e.id === selectedEntry.id ? { ...e, status: 'APPROVED', reviewerNotes: 'Manually approved by Analyst.', reviewedBy: 'HumanReviewer', reviewedAt: new Date().toISOString() } : e));
+                            setSelectedId(null);
+                          }
+                        }}
+                        style={{ background: 'var(--safe)', border: 'none' }}
+                      >
+                        Approve Kural
+                      </button>
+                      <button 
+                        className="btn-secondary" 
+                        onClick={async () => {
+                          const res = await fetch(`/api/rule-vault/${selectedEntry.id}`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ status: 'REJECTED', reviewerNotes: 'Rejected by Analyst.' })
+                          });
+                          if (res.ok) {
+                            setEntries(entries.map(e => e.id === selectedEntry.id ? { ...e, status: 'REJECTED', reviewerNotes: 'Rejected by Analyst.', reviewedBy: 'HumanReviewer', reviewedAt: new Date().toISOString() } : e));
+                            setSelectedId(null);
+                          }
+                        }}
+                        style={{ borderColor: 'var(--block)', color: 'var(--block)' }}
+                      >
+                        Reject Kural
+                      </button>
                     </div>
                   )}
 
                   <div className="governance-banner info" style={{ padding: '0.75rem', fontSize: '0.65rem' }}>
-                    <span> Approval in the Vault only makes this signature available for bundling. Actual detection deployment requires formal activation in a Rule Pack.</span>
+                    <span> Approval in the Vault makes this signature available for dynamic detection in the Analyzer.</span>
                   </div>
                </div>
             </SectionCard>

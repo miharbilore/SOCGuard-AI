@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { analyzeLog } from '../../modules/socguard/demo';
 import { getSampleLogs } from '../../modules/socguard/dataset/sample-logs';
 import { AnalysisResult, LogEntry } from '../../modules/socguard/types';
@@ -9,10 +9,34 @@ import SectionCard from '@/components/dashboard/SectionCard';
 import StatusBadge from '@/components/dashboard/StatusBadge';
 import RiskBadge from '@/components/dashboard/RiskBadge';
 
+import { useRouter } from 'next/navigation';
+
 export default function AnalyzerPage() {
+  const router = useRouter();
   const [input, setInput] = useState('');
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [dynamicRules, setDynamicRules] = useState<any[]>([]);
+
+  // Fetch active rules from Rule Vault on mount
+  useEffect(() => {
+    fetch('/api/rule-vault/active')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          const mappedRules = data.map(r => ({
+            id: r.id,
+            pattern: new RegExp(r.suggestedPattern, 'i'),
+            category: r.proposedCategory,
+            severity: r.severity,
+            reason: r.reason || 'Dynamically loaded from Rule Vault',
+            confidence: r.confidence
+          }));
+          setDynamicRules(mappedRules);
+        }
+      })
+      .catch(err => console.error('Failed to load dynamic rules:', err));
+  }, []);
 
   const handleAnalyze = () => {
     if (!input.trim()) return;
@@ -27,7 +51,7 @@ export default function AnalyzerPage() {
         payload: input
       };
       
-      const analysis = analyzeLog(log);
+      const analysis = analyzeLog(log, dynamicRules);
       setResult(analysis);
       setIsAnalyzing(false);
     }, 400);
@@ -138,8 +162,21 @@ export default function AnalyzerPage() {
 
                 <div>
                   <h4 style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.4rem', fontWeight: 700 }}>Recommended Action</h4>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--human)', background: 'rgba(124, 58, 237, 0.05)', padding: '0.75rem', borderRadius: '6px', border: '1px solid rgba(124, 58, 237, 0.1)', fontWeight: 700 }}>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--human)', background: 'rgba(124, 58, 237, 0.05)', padding: '0.75rem', borderRadius: '6px', border: '1px solid rgba(124, 58, 237, 0.1)', fontWeight: 700, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     {result.explanation.recommendedAction}
+                    
+                    {result.policyDecision === 'SAFE' && (
+                      <button 
+                        className="btn-primary"
+                        onClick={() => {
+                          const encodedLog = encodeURIComponent(input);
+                          router.push(`/agent-lab?missedLog=${encodedLog}`);
+                        }}
+                        style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem', marginLeft: '1rem', background: '#F43F5E', border: 'none' }}
+                      >
+                        Escalate to Agent Lab
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

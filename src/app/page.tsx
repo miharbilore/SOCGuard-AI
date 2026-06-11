@@ -101,7 +101,6 @@ export default function CommandCenter() {
           <ActionCard title="Benchmark Evaluation" description="Academic performance metrics and logs." href="/evaluation" />
           <ActionCard title="Rule Intelligence" description="Candidate rules and intel intake." href="/v2" />
           <ActionCard title="Adversarial Lab" description="Red/Blue Team research sandbox." href="/adversarial-lab" />
-          <ActionCard title="Review Queue" description="Promote research candidates." href="/review-queue" badge={pendingReviews > 0 ? pendingReviews.toString() : undefined} />
           <ActionCard title="Rule Packs" description="Inspect versioned detection bundles." href="/rule-packs" />
           <ActionCard title="Agent Lab Runner" description="Orchestrate automated agent research." href="/agent-lab" />
           <ActionCard title="Rule Vault" description="Candidate registry for human audit." href="/rule-vault" />
