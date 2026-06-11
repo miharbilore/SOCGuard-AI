@@ -1,107 +1,128 @@
 # SOCGuard AI
 
-**LLM tabanlı SOC iş akışlarını, SIEM loglarına gömülü dolaylı prompt injection saldırılarına karşı koruyan deterministik araştırma platformu.**
+**A deterministic research platform protecting LLM-based SOC workflows against indirect prompt injection attacks embedded in SIEM logs.**
 
-SOCGuard AI; ham logları normalleştirir, deterministik kurallar ile risk bulguları üretir, skorlama ve politika motoru ile karar verir, bulguları açıklanabilir şekilde sunar. Üzerine araştırma amaçlı bir **Adversarial Lab**, **Rule Vault**, **Review Queue** ve **Audit Trail** katmanları ekleyerek red/blue/judge/curator akışlarını simüle eder.
+SOCGuard AI normalizes raw logs, generates risk findings using deterministic rules, makes decisions via a scoring and policy engine, and presents findings in an explainable manner. It acts as an advanced research platform featuring an **Adversarial Lab**, **Rule Vault**, and **Audit Trail** to simulate comprehensive red/blue/judge/curator workflows.
 
-## Amaç ve Kapsam
+---
 
-- **Amaç:** LLM destekli SOC asistanlarını, loglar içine gizlenmiş dolaylı prompt injection girişimlerinden korumak.
-- **Kapsam:** Deterministik tespit, risk skoru, politika kararı, açıklanabilirlik ve yönetişim.
-- **Kapsam Dışı:** Chatbot, tam SIEM/EDR platformu veya LLM tabanlı nihai karar motoru.
+## 🎯 Purpose and Scope
 
-## Mimari Akış (Deterministik Hat)
+- **Purpose:** To robustly protect LLM-assisted SOC agents from sophisticated, indirect prompt injection attempts hidden within log payloads.
+- **Scope:** Deterministic detection, risk scoring, policy decision formulation, explainability, and rule governance.
+- **Out of Scope:** Acting as a general-purpose chatbot, a full-fledged SIEM/EDR platform, or an ultimate decision-making LLM engine.
 
-1. **Raw Log Input** → 2. **Preprocessing** (decode/normalize) → 3. **Detection** (regex/heuristic) →  
-4. **Scoring** (0-100) → 5. **Policy** (BLOCK / HUMAN_REVIEW / ESCALATE / SAFE) →  
-6. **Explainability** → 7. **UI/API çıktısı**
+## ⚙️ Architecture Flow (Deterministic Pipeline)
 
-## Öne Çıkan Modüller
+The core pipeline processes logs through a rigorous deterministic sequence:
 
-- **dataset**: SIEM benzeri örnek veri seti.
-- **preprocessing**: Çoklu decode + normalizasyon.
-- **detection**: Deterministik imza setleri.
-- **scoring**: Bulguları ağırlıklandırıp skora çevirir.
-- **policy**: Skoru karar aksiyonuna map eder.
-- **explainability**: Neden/kanıt çıktıları üretir.
-- **agent-adapters**: Mock/LLM tabanlı agent adaptörleri.
-- **rule-vault / review-queue**: İnsan onaylı yönetişim katmanı.
-- **audit**: İzlenebilirlik ve denetim kayıtları.
+1. **Raw Log Input** → 2. **Preprocessing** (Decoding/Normalization) → 3. **Detection** (Regex/Heuristics) →  
+4. **Scoring** (0-100 Risk Index) → 5. **Policy** (BLOCK / HUMAN_REVIEW / ESCALATE / SAFE) →  
+6. **Explainability** (Evidence Generation) → 7. **UI/API Output**
 
-## UI Sayfaları (Next.js)
+## 🧩 Key Modules
 
-- **Command Center**: genel metrikler ve navigasyon.
-- **Log Analyzer**: tekil log tespiti.
-- **Evaluation**: benchmark metrikleri.
-- **Adversarial Lab**: red/blue/judge akışı.
-- **Agent Lab**: kontrollü agent koşuları (mock veya API).
-- **Rule Vault**: aday imza kayıtları ve inceleme.
-- **Review Queue**: insan onayı süreci.
-- **Audit Trail**: tüm aksiyonların iz kaydı.
+- **dataset**: Realistic SIEM-like sample dataset for evaluation.
+- **preprocessing**: Multi-layered decoding and log normalization.
+- **detection**: Robust deterministic signature and pattern sets.
+- **scoring**: Weights analytical findings and converts them into an actionable risk score.
+- **policy**: Maps the calculated risk score to a decisive action.
+- **explainability**: Generates transparent reasoning and evidence outputs.
+- **agent-adapters**: Mock and LLM-based agent adapters for scenario testing.
+- **rule-vault**: Human-approved governance layer for managing candidate signatures.
+- **audit**: Comprehensive traceability and audit logging.
 
-## Kurulum
+## 🖥️ UI Pages (Next.js)
 
-### 1) Bağımlılıklar
+Our intuitive interface is divided into functional domains:
+
+- **Command Center**: High-level system metrics and navigation hub.
+- **Log Analyzer**: Granular, single-log detection and analysis.
+- **Evaluation**: Benchmark metrics and performance tracking.
+- **Adversarial Lab**: End-to-end red/blue/judge simulated workflows.
+- **Agent Lab**: Controlled agent execution environments (Mock or API-driven).
+- **Rule Vault**: Candidate signature records, curation, and review.
+- **Audit Trail**: Immutable audit log of all system and user actions.
+
+---
+
+## 🚀 Installation
+
+### 1) Dependencies
 ```bash
 npm install
 ```
 
-### 2) Ortam Değişkenleri
+### 2) Environment Variables
+Copy the example environment file:
 ```bash
 cp .env.example .env.local
 ```
 
-`.env.local` içine **veritabanı** ve opsiyonel **LLM** ayarlarını ekleyin:
+Configure your **database** and optional **LLM** settings within `.env.local`:
 
 ```env
-# SQLite (örnek)
-DATABASE_URL="file:./dev.db"
+# SQLite (Example configuration)
+DATABASE_URL="file:./prisma/dev.db"
 
-# LLM (opsiyonel, API-backed mod için)
+# LLM (Optional, required for API-backed mode)
 ENABLE_LLM_AGENTS=true
 LLM_PROVIDER=GROQ
 LLM_BASE_URL=https://api.groq.com/openai/v1
 LLM_MODEL=llama-3.3-70b-versatile
-LLM_API_KEY=<server-side-api-key>
+LLM_API_KEY=<your-server-side-api-key>
 ```
 
-### 3) Prisma Migrasyon
+### 3) Prisma Database Migration
+Initialize your database schema:
 ```bash
 npx prisma migrate dev --name init
 ```
 
-### 4) Dev Server
+### 4) Development Server
+Start the Next.js development server:
 ```bash
 npm run dev
 ```
 
-## LLM Modları (Mock vs API)
+---
 
-- **Varsayılan:** MOCK (API çağrısı yok).
-- **API-backed:** `ENABLE_LLM_AGENTS=true` + `LLM_API_KEY` gerekir.
-- **Agent Lab**: “Run Single Cycle” API destekliyken gerçek LLM çağrısı yapar; “Run Session (Mock)” deterministik kalır.
+## 🧠 LLM Modes (Mock vs API)
 
-## Kalıcılık (DB)
+SOCGuard AI can operate in different modes depending on your research needs:
 
-Prisma + SQLite ile **Agent Lab oturumları**, **Rule Vault** ve **Audit Trail** kalıcıdır.  
-`DATABASE_URL` tanımlı değilse bu API uçları hata verebilir.
+- **Default Mode:** `MOCK` (Zero API calls, entirely local).
+- **API-backed Mode:** Requires `ENABLE_LLM_AGENTS=true` and a valid `LLM_API_KEY`.
+- **Agent Lab Dynamics:** The "Run Single Cycle" feature makes real LLM API calls when API-backed is enabled, whereas "Run Session (Mock)" enforces deterministic local processing.
 
-## Komutlar
+## 💾 Persistence (Database)
+
+We utilize **Prisma + SQLite** to ensure persistence across sessions.
+**Agent Lab sessions**, the **Rule Vault**, and the **Audit Trail** are fully persistent.
+*Note: If `DATABASE_URL` is undefined or improperly configured, these API endpoints will fail.*
+
+## 🛠️ Common Commands
 
 ```bash
+# Run code linter
 npm run lint
+
+# Build for production
 npm run build
+
+# Execute test suite
 npm test
 ```
 
-## Dokümantasyon
+## 📚 Documentation
 
-Detaylı tasarım ve araştırma notları için `docs/` klasörüne bakın:
-- `ARCHITECTURE.md`, `DETECTION_ENGINE.md`, `POLICY_ENGINE.md`
-- `V4_AGENT_PIPELINE.md`, `RULE_VAULT.md`, `HUMAN_REVIEW_WORKFLOW.md`
+For an in-depth look at our design philosophy and research notes, please explore the `docs/` folder:
 
-## Güvenlik ve Yönetişim İlkeleri
+- **Core Concepts:** `ARCHITECTURE.md`, `DETECTION_ENGINE.md`, `POLICY_ENGINE.md`
+- **Workflows:** `V4_AGENT_PIPELINE.md`, `RULE_VAULT.md`, `HUMAN_REVIEW_WORKFLOW.md`
 
-- **Otomatik onay yok**: Üretim kuralları insan onayı gerektirir.
-- **LLM çıktıları güvensiz veri** olarak kabul edilir.
-- **API anahtarları yalnızca server-side** tutulur.
+## 🛡️ Security and Governance Principles
+
+- **No Auto-Approval**: All production-grade rules require explicit human verification.
+- **Zero Trust for LLMs**: All LLM outputs are treated as untrusted and potentially unsafe data.
+- **Secret Management**: API keys and sensitive credentials are kept strictly server-side.
